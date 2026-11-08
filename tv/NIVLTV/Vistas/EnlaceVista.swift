@@ -23,12 +23,16 @@ struct EnlaceVista: View {
                         .foregroundStyle(Tinta.i9)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                // Siempre presente, también mientras se pide: si apareciera
-                // después, el foco del mando no llegaría a él.
-                Button(enlace == nil ? "Pedir código" : "Pedir otro código", action: pedirOtro)
-                    .buttonStyle(EstiloFoco(invertido: enlace == nil))
-                    .focused($enfocado)
-                    .accessibilityIdentifier("pedirCodigo")
+                // Solo cuando hay algo que pedir. Con un código a la vista, el código se
+                // renueva solo y un clic al coger el mando dejaría huérfano el que se
+                // está escaneando: el iPhone diría «enlazado» y la TV seguiría esperando.
+                if muestraPedir {
+                    Button("Pedir código", action: pedirOtro)
+                        .buttonStyle(EstiloFoco(invertido: true))
+                        .focused($enfocado)
+                        .onAppear { enfocado = true }
+                        .accessibilityIdentifier("pedirCodigo")
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -42,13 +46,14 @@ struct EnlaceVista: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Tinta.i0.ignoresSafeArea())
-        .onAppear { enfocado = true }
     }
+
+    private var muestraPedir: Bool { enlace == nil && motivo != .pidiendo }
 
     @ViewBuilder
     private func activo(_ e: EnlaceActivo) -> some View {
         Text(CodigoTV.visible(e.codigo))
-            .font(Tipo.monumento(136))
+            .font(Tipo.monumento(96))
             .foregroundStyle(Tinta.i10)
             .lineLimit(1)
             .minimumScaleFactor(0.7)
@@ -58,6 +63,7 @@ struct EnlaceVista: View {
         VStack(alignment: .leading, spacing: Hueco.s4) {
             paso("1", Textos.pasoUno)
             paso("2", Textos.pasoDos)
+            paso("3", Textos.pasoTres)
         }
 
         TimelineView(.periodic(from: .now, by: 1)) { contexto in
@@ -76,7 +82,7 @@ struct EnlaceVista: View {
                 .foregroundStyle(Tinta.i0)
                 .frame(width: 48, height: 48)
                 .background(Tinta.i10, ignoresSafeAreaEdges: [])
-            Text(texto).font(Tipo.cuerpo).foregroundStyle(Tinta.i9)
+            Text(texto).font(Tipo.cuerpo).foregroundStyle(Tinta.i9).fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)
     }

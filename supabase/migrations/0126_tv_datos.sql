@@ -9,7 +9,10 @@
 --   · Reutiliza las RPC sociales y no las copia: tras validar el token fija, solo para esta transacción, las
 --     claims que lee auth.uid() y llama a las originales. Un arreglo futuro de visibilidad, bloqueo o
 --     suspensión llega también a la TV. Las claims se restauran antes de devolver.
---   · Solo lectura: lo único que escribe es la caducidad deslizante del propio token (como mucho una vez al día).
+--   · Solo lectura: lo único que escribe es la marca de lectura y la caducidad deslizante del propio token.
+--   · Techo absoluto: 90 días deslizantes, nunca más de 365 desde que se enlazó. Pasado eso, enlazar otra vez.
+--   · Frecuencia en servidor: una lectura por token cada 5 s, sin colas. El token se lee sin cerrojo; el turno
+--     se toma con FOR UPDATE SKIP LOCKED, así N peticiones a la vez no ocupan N conexiones esperando.
 --   · Salud (0030): rutina y peso solo con consentimiento vigente. Las misiones de salud siguen el filtro de
 --     friends_board. Nunca correo, dinero, diario, fotos ni retratos.
 --   · Token inválido, caducado, revocado o cuenta con borrado pendiente: la misma respuesta exacta.
@@ -39,6 +42,9 @@ language plpgsql security definer set search_path = public, pg_temp as $$
 declare
   v_invalida constant jsonb := jsonb_build_object('estado', 'sesion_invalida');
   d public.tv_dispositivos%rowtype;
+  v_techo constant interval := interval '365 days';
+  v_intervalo constant integer := 5;
+  v_caduca timestamptz;
   u uuid;
   p public.profiles%rowtype;
   v_tz text;
@@ -72,9 +78,9 @@ declare
   v_lectura text := 'Pésate al menos tres veces para leer la tendencia.';
 begin
   if p_token is null or p_token !~ '^[0-9a-f]{64}$' then return v_invalida; end if;
-  select * into d from public.tv_dispositivos where token_hash = public._tv_sha(p_token) for update;
+  select * into d from public.tv_dispositivos where token_hash = public._tv_sha(p_token);
   if not found then return v_invalida; end if;
-  if d.caduca_en <= now() then
+  if d.caduca_en <= now() or d.creado_en <= now() - v_techo then
     delete from public.tv_dispositivos where id = d.id;
     return v_invalida;
   end if;
@@ -83,10 +89,20 @@ begin
   select * into p from public.profiles where id = u;
   if not found then return v_invalida; end if;
 
-  if d.ultimo_uso <= now() - interval '1 day' then
-    update public.tv_dispositivos set ultimo_uso = now(), caduca_en = now() + interval '90 days' where id = d.id
-      returning caduca_en into d.caduca_en;
+  -- El turno de esta lectura. Quien llegue mientras otra está en curso se va sin esperar.
+  perform 1 from public.tv_dispositivos t
+    where t.id = d.id and (t.ultima_lectura is null or t.ultima_lectura <= now() - make_interval(secs => v_intervalo))
+    for update skip locked;
+  if not found then
+    return jsonb_build_object('estado', 'demasiado_rapido', 'reintentar_seg', v_intervalo);
   end if;
+  update public.tv_dispositivos t set
+      ultima_lectura = now(),
+      ultimo_uso = case when t.ultimo_uso <= now() - interval '1 day' then now() else t.ultimo_uso end,
+      caduca_en = case when t.ultimo_uso <= now() - interval '1 day'
+        then least(now() + interval '90 days', t.creado_en + v_techo) else t.caduca_en end
+    where t.id = d.id
+    returning t.caduca_en into v_caduca;
 
   v_tz := public.safe_tz(p.timezone);
   -- La fecha de la TV solo vale a un día o menos de la del servidor; si no, manda la zona del perfil.
@@ -276,7 +292,7 @@ begin
     'estado', 'ok',
     'generado_en', now(),
     'hoy', v_hoy,
-    'sesion_caduca_en', d.caduca_en,
+    'sesion_caduca_en', v_caduca,
     'salud_activa', v_salud,
     'perfil', jsonb_build_object(
       'nombre', coalesce(nullif(btrim(p.name), ''), 'Gladiador'),

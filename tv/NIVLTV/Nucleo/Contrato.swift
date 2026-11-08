@@ -241,12 +241,14 @@ enum ContratoTV {
         }
     }
 
-    /// `.sesionInvalida` si el servidor dice que el token ya no vale.
+    /// `.sesionInvalida` si el servidor dice que el token ya no vale. `demasiado_rapido`
+    /// (el freno por token del servidor) es un fallo pasajero: la sesión sigue.
     static func paquete(_ data: Data) throws -> PaqueteTV {
         let sobre = try leer(Sobre.self, data)
         switch sobre.estado {
         case "ok": return try leer(PaqueteTV.self, data)
         case "sesion_invalida": throw ErrorTV.sesionInvalida
+        case "demasiado_rapido": throw ErrorTV.servidor(429)
         default: throw ErrorTV.servidor(nil)
         }
     }
@@ -284,8 +286,8 @@ extension PaqueteTV {
     var vista: DatosTV {
         DatosTV(
             perfil: PerfilTV(
-                nombre: perfil.nombre,
-                titulo: perfil.titulo,
+                nombre: Formato.limpiar(perfil.nombre),
+                titulo: Formato.limpiar(perfil.titulo),
                 rango: perfil.rango,
                 xpTotal: perfil.xpTotal,
                 elite: perfil.elite
@@ -293,13 +295,13 @@ extension PaqueteTV {
             saludActiva: saludActiva,
             rutina: rutina.map(Self.vistaRutina),
             arena: arena.map {
-                FilaArena(id: $0.id, soyYo: $0.soyYo, nombre: $0.nombre, titulo: $0.titulo, rango: $0.rango,
+                FilaArena(id: $0.id, soyYo: $0.soyYo, nombre: Formato.limpiar($0.nombre), titulo: Formato.limpiar($0.titulo), rango: $0.rango,
                           xpTotal: $0.xpTotal, xpVentana: $0.xpVentana, racha: $0.racha,
                           cumplimientoPct: $0.cumplimientoPct, elite: $0.elite)
             },
             ludus: ludus.map { l in
-                LudusTV(nombre: l.nombre, miembros: l.miembros.map {
-                    FilaLudus(id: $0.id, nombre: $0.nombre, xpVentana: $0.xpVentana,
+                LudusTV(nombre: Formato.limpiar(l.nombre), miembros: l.miembros.map {
+                    FilaLudus(id: $0.id, nombre: Formato.limpiar($0.nombre), xpVentana: $0.xpVentana,
                               cumplimientoPct: $0.cumplimientoPct, soyYo: $0.soyYo)
                 })
             },
@@ -316,10 +318,10 @@ extension PaqueteTV {
                 tendenciaKgSemana: semana.tendenciaKgSemana,
                 tendenciaInicio: semana.tendenciaInicio,
                 tendenciaFin: semana.tendenciaFin,
-                lectura: semana.lectura
+                lectura: semana.lectura.map(Formato.limpiar)
             ),
             proxima: proxima.map {
-                ProximaSesion(nombre: $0.nombre, diaSemana: $0.diaSemana, enDias: $0.enDias, ejercicios: $0.ejercicios)
+                ProximaSesion(nombre: Formato.limpiar($0.nombre), diaSemana: $0.diaSemana, enDias: $0.enDias, ejercicios: $0.ejercicios)
             }
         )
     }
@@ -335,13 +337,13 @@ extension PaqueteTV {
             detalle = "rutina semanal"
         }
         return RutinaTV(
-            nombre: r.nombre,
+            nombre: Formato.limpiar(r.nombre),
             dia: "\(dia) · \(detalle)",
             ejercicios: r.ejercicios.map {
                 // Figura, músculos y técnica no llegan del servidor (contrato). Tampoco
                 // se finge una carga: 0 o null es «sin carga prescrita».
-                EjercicioTV(id: $0.id, nombre: $0.nombre, series: max(1, $0.series),
-                            reps: Formato.reps($0.reps), cargaKg: $0.cargaKg.flatMap { $0 > 0 ? $0 : nil },
+                EjercicioTV(id: $0.id, nombre: Formato.limpiar($0.nombre), series: max(1, $0.series),
+                            reps: Formato.reps(Formato.limpiar($0.reps)), cargaKg: $0.cargaKg.flatMap { $0 > 0 ? $0 : nil },
                             descansoSeg: max(0, $0.descansoSeg),
                             figura: nil, musculos: [], tecnica: [])
             },

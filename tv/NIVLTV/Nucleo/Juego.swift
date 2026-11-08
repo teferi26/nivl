@@ -78,6 +78,20 @@ enum Formato {
     }
 
     /// «8-10» se lee «8 a 10». Lo demás («8», «AMRAP») va tal cual.
+    /// Lo que escriben las personas o el coach puede traer guion largo o medio, y en
+    /// pantalla están prohibidos (espejo sencillo de `singuiones.ts`). Entre cifras se lee
+    /// «a»; entre palabras, un punto medio.
+    static func limpiar(_ texto: String) -> String {
+        guard texto.contains("—") || texto.contains("–") else { return texto }
+        var t = texto.replacingOccurrences(of: #"(\d)\s*[—–]\s*(\d)"#, with: "$1 a $2", options: .regularExpression)
+        t = t.replacingOccurrences(of: #"\s*[—–]+\s*"#, with: " · ", options: .regularExpression)
+        t = t.trimmingCharacters(in: .whitespaces)
+        while t.hasPrefix("·") || t.hasSuffix("·") {
+            t = t.trimmingCharacters(in: CharacterSet(charactersIn: "· "))
+        }
+        return t
+    }
+
     static func reps(_ texto: String) -> String {
         let partes = texto.split(separator: "-", omittingEmptySubsequences: false)
         guard partes.count == 2, partes.allSatisfy({ !$0.isEmpty && $0.allSatisfy(\.isNumber) }) else { return texto }

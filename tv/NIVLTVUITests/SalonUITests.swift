@@ -152,7 +152,7 @@ final class SalonUITests: XCTestCase {
         let propia = app.otherElements["filaPropia"].firstMatch
         if !propia.waitForExistence(timeout: 8) {
             // Sin sesión de una vuelta anterior: se enlaza.
-            if app.buttons["Enlazar de nuevo"].exists { XCUIRemote.shared.press(.select) }
+            if app.buttons["enlazarDeNuevo"].exists { XCUIRemote.shared.press(.select) }
             XCTAssertTrue(app.staticTexts["codigoEnlace"].waitForExistence(timeout: 30))
             let aprobado = try await control("aprobar", ["cuenta": "llena"])
             XCTAssertEqual(aprobado["ok"] as? Bool, true, "\(aprobado)")
@@ -176,6 +176,60 @@ final class SalonUITests: XCTestCase {
         let despues = app.otherElements.matching(NSPredicate(format: "identifier == 'filaArena' AND hasFocus == true")).firstMatch
         XCTAssertTrue(despues.exists, "el foco sigue en la tabla tras refrescar")
         XCTAssertEqual(despues.label, etiqueta, "y en la misma fila")
+    }
+
+    /// Necesita el servidor local. Con la sesión guiada abierta se revoca el token:
+    /// el entreno sigue y «Sesión caducada» espera a que se cierre.
+    @MainActor
+    func testSesionCaducadaNoCierraElEntreno() async throws {
+        continueAfterFailure = false
+        let servidor = ProcessInfo.processInfo.environment["NIVL_SERVIDOR"] ?? "http://127.0.0.1:54399"
+        func control(_ ruta: String, _ cuerpo: [String: String] = [:]) async throws -> [String: Any] {
+            var r = URLRequest(url: URL(string: servidor + "/_pruebas/" + ruta)!)
+            r.httpMethod = "POST"
+            r.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            r.httpBody = try JSONSerialization.data(withJSONObject: cuerpo)
+            let (data, _) = try await URLSession.shared.data(for: r)
+            return (try JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
+        }
+        let app = XCUIApplication()
+        app.launchArguments = ["-nivlServidor", servidor, "-nivlClave", "clave-publica-local", "-pestana", "entreno"]
+        app.launch()
+
+        let empezar = app.buttons["empezarSesion"]
+        if !empezar.waitForExistence(timeout: 8) {
+            if app.buttons["enlazarDeNuevo"].exists { XCUIRemote.shared.press(.select) }
+            XCTAssertTrue(app.staticTexts["codigoEnlace"].waitForExistence(timeout: 30))
+            let aprobado = try await control("aprobar", ["cuenta": "llena"])
+            XCTAssertEqual(aprobado["ok"] as? Bool, true, "\(aprobado)")
+            XCTAssertTrue(empezar.waitForExistence(timeout: 40))
+        }
+        pulsarHasta(empezar, .down)
+        XCTAssertTrue(empezar.hasFocus)
+        XCUIRemote.shared.press(.select)
+        let accion = app.buttons["accionSesion"]
+        XCTAssertTrue(accion.waitForExistence(timeout: 10))
+
+        _ = try await control("revocar")
+        // El tope es un refresco por minuto; al volver a primer plano refresca.
+        Thread.sleep(forTimeInterval: 65)
+        XCUIRemote.shared.press(.home)
+        Thread.sleep(forTimeInterval: 2)
+        app.activate()
+        Thread.sleep(forTimeInterval: 6)
+        XCTAssertTrue(accion.waitForExistence(timeout: 10), "el entreno sigue abierto")
+        XCTAssertTrue(esperarFoco(accion), "y el mando sigue en él: el aviso espera detrás")
+        captura("caducada-entreno-sigue")
+
+        XCUIRemote.shared.press(.menu)
+        let salir = app.alerts.buttons["Salir"].firstMatch
+        XCTAssertTrue(salir.waitForExistence(timeout: 5))
+        pulsarHasta(salir, .down)
+        if !salir.hasFocus { pulsarHasta(salir, .right) }
+        XCTAssertTrue(salir.hasFocus)
+        XCUIRemote.shared.press(.select)
+        XCTAssertTrue(app.buttons["enlazarDeNuevo"].waitForExistence(timeout: 10), "al salir, «Sesión caducada»")
+        captura("caducada-tras-salir")
     }
 
     @MainActor

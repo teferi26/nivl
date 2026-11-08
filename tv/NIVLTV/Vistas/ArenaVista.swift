@@ -84,10 +84,10 @@ struct ArenaVista: View {
                             .padding(.top, Hueco.s4)
                     }
                 }
-                // Holgura para la escala de foco (×1,03): la lista se recorta
+                // Holgura para la escala de foco (×1,05): la lista se recorta
                 // en su marco sin morder el marco blanco.
                 .padding(.vertical, Hueco.s4)
-                .padding(.horizontal, Hueco.s6)
+                .padding(.horizontal, Hueco.s8)
             }
             .focusSection()
             // Al bajar desde las pestañas, a tu fila y no a la primera que asome.
@@ -116,9 +116,9 @@ struct ArenaVista: View {
             Rotulo(texto: "Gladiador").frame(maxWidth: .infinity, alignment: .leading)
             Rotulo(texto: "XP 7 días").frame(width: FilaRanking.anchoXP, alignment: .trailing)
             Rotulo(texto: "Racha").frame(width: FilaRanking.anchoRacha, alignment: .trailing)
-            Rotulo(texto: "Cumple").frame(width: FilaRanking.anchoCumple, alignment: .trailing)
+            Rotulo(texto: "Cumplido").frame(width: FilaRanking.anchoCumple, alignment: .trailing)
         }
-        .padding(.horizontal, Hueco.s6 + Hueco.s6)
+        .padding(.horizontal, Hueco.s8 + Hueco.s6)
         .accessibilityHidden(true)
     }
 }
@@ -131,7 +131,7 @@ private struct FilaRanking: View {
     static let anchoPuesto: CGFloat = 88
     static let anchoXP: CGFloat = 150
     static let anchoRacha: CGFloat = 100
-    static let anchoCumple: CGFloat = 132
+    static let anchoCumple: CGFloat = 170
 
     var body: some View {
         HStack(spacing: Hueco.s6) {
@@ -162,8 +162,8 @@ private struct FilaRanking: View {
                         }
                         if fila.elite { LaurelElite(tam: 24).fixedSize() }
                         Text(fila.titulo)
-                            .font(Tipo.rotulo)
-                            .foregroundStyle(Tinta.i6)
+                            .font(Tipo.cuerpoSm)
+                            .foregroundStyle(Tinta.i8)
                             .lineLimit(1)
                             .truncationMode(.tail)
                     }
@@ -179,7 +179,7 @@ private struct FilaRanking: View {
                 .lineLimit(1).minimumScaleFactor(0.7)
                 .frame(width: Self.anchoRacha, alignment: .trailing)
             Text(Formato.cumple(fila.cumplimientoPct))
-                .font(fila.cumplimientoPct == nil ? Tipo.rotulo : Tipo.cuerpo).foregroundStyle(Tinta.i8).monospacedDigit()
+                .font(fila.cumplimientoPct == nil ? Tipo.cuerpoSm : Tipo.cuerpo).foregroundStyle(Tinta.i8).monospacedDigit()
                 .lineLimit(1)
                 .fixedSize()
                 .frame(width: Self.anchoCumple, alignment: .trailing)
@@ -187,9 +187,10 @@ private struct FilaRanking: View {
         .padding(.horizontal, Hueco.s6)
         .padding(.vertical, Hueco.s4)
         .background(enfocada ? Tinta.i2 : Tinta.i1, ignoresSafeAreaEdges: [])
+        // Con foco se ve desde el sofá: marco grueso y escala. Tu fila ya lleva su etiqueta TÚ.
         .overlay(Rectangle().strokeBorder(enfocada ? Tinta.i10 : (fila.soyYo ? Tinta.i8 : Tinta.i3),
-                                          lineWidth: enfocada ? Trazo.rule : (puesto <= 3 || fila.soyYo ? Trazo.rule : Trazo.hairline)))
-        .scaleEffect(enfocada ? 1.03 : 1)
+                                          lineWidth: enfocada ? Trazo.frame : (puesto <= 3 && !fila.soyYo ? Trazo.rule : Trazo.hairline)))
+        .scaleEffect(enfocada ? 1.05 : 1)
         .animation(.easeOut(duration: Foco.duracion), value: enfocada)
     }
 
@@ -246,7 +247,7 @@ private struct FichaGladiador: View {
                         Rotulo(texto: "Nivel")
                         HStack(spacing: Hueco.s3) {
                             Text("Rango \(fila.rango) · \(fila.titulo)")
-                                .font(Tipo.rotulo)
+                                .font(Tipo.cuerpoSm)
                                 .foregroundStyle(Tinta.i8)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
@@ -284,6 +285,12 @@ private struct TablaLudus: View {
                         .lineLimit(1)
                         .truncationMode(.tail)
                 }
+                HStack(spacing: Hueco.s4) {
+                    Spacer(minLength: 0)
+                    Rotulo(texto: "XP 7 días")
+                    Rotulo(texto: "Cumplido").frame(width: Self.anchoCumplido, alignment: .trailing)
+                }
+                .accessibilityHidden(true)
                 ForEach(visibles) { m in
                     HStack(spacing: Hueco.s4) {
                         Text(m.nombre)
@@ -297,22 +304,23 @@ private struct TablaLudus: View {
                             .font(Tipo.cuerpoSm).foregroundStyle(Tinta.i10).monospacedDigit()
                             .fixedSize()
                         Text(Formato.cumple(m.cumplimientoPct))
-                            .font(m.cumplimientoPct == nil ? Tipo.rotulo : Tipo.cuerpoSm).foregroundStyle(Tinta.i6).monospacedDigit()
+                            .font(Tipo.cuerpoSm).foregroundStyle(Tinta.i8).monospacedDigit()
                             .fixedSize()
-                            .frame(width: 120, alignment: .trailing)
+                            .frame(width: Self.anchoCumplido, alignment: .trailing)
                     }
                     .accessibilityElement(children: .combine)
                 }
                 if resto > 0 {
                     Text(Textos.yMas(resto))
-                        .font(Tipo.rotulo)
-                        .foregroundStyle(Tinta.i6)
+                        .font(Tipo.cuerpoSm)
+                        .foregroundStyle(Tinta.i8)
                 }
             }
         }
     }
 
     static let maxFilas = 8
+    private static let anchoCumplido: CGFloat = 150
 
     static func visibles(_ miembros: [FilaLudus]) -> [FilaLudus] {
         guard miembros.count > maxFilas else { return miembros }

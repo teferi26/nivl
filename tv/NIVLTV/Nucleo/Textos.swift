@@ -8,8 +8,9 @@ import Foundation
 enum Textos {
     static let enlaceCeja = "NIVL en tu Apple TV"
     static let enlaceTitulo = "Enlaza esta TV"
-    static let pasoUno = "Apunta la cámara de tu iPhone al código QR."
-    static let pasoDos = "Confirma en NIVL. Sin contraseña."
+    static let pasoUno = "Abre NIVL en tu iPhone y entra en tu cuenta."
+    static let pasoDos = "Apunta la cámara al QR."
+    static let pasoTres = "Comprueba que el iPhone enseña este mismo código y confirma."
     static let renovando = "Renovando el código."
     static let sinConexionEnlace = "Sin conexión. Seguimos intentándolo."
 
@@ -47,7 +48,8 @@ enum Textos {
     static let rutinaVacia = "Tu rutina de hoy no tiene ejercicios. Añádelos en el iPhone."
     static let hoyNoToca = "Hoy no toca"
     static let descansoConProxima = "Hoy no tienes entreno programado."
-    static let descansoSinProxima = "No tienes entreno programado. Tu rutina se prepara en el iPhone."
+    static let sinRutinaTitulo = "Sin rutina"
+    static let sinRutinaTexto = "Prepara tu rutina en el iPhone. Aquí la verás cada día."
     static let proximaRotulo = "Próxima sesión"
     static let sesionTerminada = "Sesión terminada"
     static let sesionTerminadaTexto = "Esta TV no registra nada. Apunta la sesión en tu iPhone para que cuente."
@@ -70,9 +72,9 @@ enum Textos {
     static func frescura(_ red: EstadoRed, hace: String) -> String? {
         switch red {
         case .alDia: return nil
-        case .sincronizando: return "Sincronizando · datos de \(hace)"
-        case .sinRed: return "Sin conexión · datos de \(hace)"
-        case .errorServidor: return "Servidor sin respuesta · datos de \(hace)"
+        case .sincronizando: return "Actualizando · \(hace)"
+        case .sinRed: return "Sin conexión · \(hace)"
+        case .errorServidor: return "Sin servidor · \(hace)"
         }
     }
 
@@ -80,11 +82,11 @@ enum Textos {
         let motivos: [MotivoSinEnlazar] = [.pidiendo, .sinRed, .servidor, .saturado, .denegado, .almacen]
         let redes: [EstadoRed] = [.alDia, .sincronizando, .sinRed, .errorServidor]
         return [
-            enlaceCeja, enlaceTitulo, pasoUno, pasoDos, renovando, sinConexionEnlace, caducaEn("9:59"),
+            enlaceCeja, enlaceTitulo, pasoUno, pasoDos, pasoTres, renovando, sinConexionEnlace, caducaEn("9:59"),
             noDisponibleTitulo, noDisponibleTexto, sinRedTitulo, sinRedTexto, errorTitulo, errorTexto,
             caducadaTitulo, caducadaTexto, confirmarCierre, confirmarCierreTexto, demoCuenta,
             entrenoCeja, entrenoAyuda, entrenoNoRegistra, sinSaludTitulo, sinSaludEntreno, rutinaVacia, hoyNoToca,
-            descansoConProxima, descansoSinProxima, proximaRotulo, sesionTerminada, sesionTerminadaTexto,
+            descansoConProxima, sinRutinaTitulo, sinRutinaTexto, proximaRotulo, sesionTerminada, sesionTerminadaTexto,
             salirTitulo, salirTexto, salirSeguir, salirConfirmar, numeroEjercicios(1), numeroEjercicios(4), yMas(1), yMas(3),
             arenaTitulo, arenaSinAmigos, arenaVacia, semanaVaciaTitulo, semanaVaciaTexto,
         ] + motivos.map(motivo) + redes.compactMap { frescura($0, hace: "hace 3 h") }

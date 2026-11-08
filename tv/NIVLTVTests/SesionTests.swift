@@ -91,6 +91,30 @@ final class ContratoTests: XCTestCase {
         XCTAssertFalse(v.saludActiva)
     }
 
+    func testLoQueLlegaDelServidorNoPintaGuiones() throws {
+        let sucio = paqueteJSON
+            .replacingOccurrences(of: "Press banca", with: "Press — banca")
+            .replacingOccurrences(of: "\"8-10\"", with: "\"8–10\"")
+            .replacingOccurrences(of: "Torso", with: "Torso — fuerza")
+            .replacingOccurrences(of: "Livia", with: "Livia – Tessari")
+            .replacingOccurrences(of: "Veterano", with: "Vete—rano")
+            .replacingOccurrences(of: "Capua", with: "Capua — Sur")
+            .replacingOccurrences(of: "Bajas despacio.", with: "Bajas — despacio.")
+        let v = try ContratoTV.paquete(Data(sucio.utf8)).vista
+        XCTAssertEqual(v.rutina?.ejercicios.first?.reps, "8 a 10")
+        var textos = [v.perfil.nombre, v.perfil.titulo, v.rutina?.nombre, v.ludus?.nombre, v.semana.lectura].compactMap { $0 }
+        textos += v.rutina?.ejercicios.flatMap { [$0.nombre, $0.reps] } ?? []
+        textos += v.arena.flatMap { [$0.nombre, $0.titulo] }
+        textos += v.ludus?.miembros.map(\.nombre) ?? []
+        for t in textos { XCTAssertTrue(Formato.sinGuiones(t), t) }
+    }
+
+    func testDemasiadoRapidoNoEsPerderLaSesion() {
+        XCTAssertThrowsError(try ContratoTV.paquete(Data(#"{"estado":"demasiado_rapido","reintentar_seg":5}"#.utf8))) {
+            XCTAssertEqual($0 as? ErrorTV, .servidor(429))
+        }
+    }
+
     func testSesionInvalidaEsUnErrorPropio() {
         XCTAssertThrowsError(try ContratoTV.paquete(Data(#"{"estado":"sesion_invalida"}"#.utf8))) {
             XCTAssertEqual($0 as? ErrorTV, .sesionInvalida)
@@ -215,6 +239,24 @@ final class TextosTests: XCTestCase {
             XCTAssertTrue(Formato.sinGuiones(t), "guion en «\(t)»")
             XCTAssertFalse(t.contains("!!"), t)
         }
+    }
+
+    func testFrescuraCabeJuntoALasPestanas() {
+        XCTAssertNil(Textos.frescura(.alDia, hace: "hace 3 h"))
+        XCTAssertEqual(Textos.frescura(.sinRed, hace: "hace 3 h"), "Sin conexión · hace 3 h")
+        XCTAssertEqual(Textos.frescura(.errorServidor, hace: "hace 3 h"), "Sin servidor · hace 3 h")
+        XCTAssertEqual(Textos.frescura(.sincronizando, hace: "hace 3 h"), "Actualizando · hace 3 h")
+        for red in [EstadoRed.sincronizando, .sinRed, .errorServidor] {
+            XCTAssertLessThanOrEqual(Textos.frescura(red, hace: "hace un momento")?.count ?? 99, 32)
+        }
+    }
+
+    func testLimpiarGuiones() {
+        XCTAssertEqual(Formato.limpiar("Torso"), "Torso")
+        XCTAssertEqual(Formato.limpiar("Empuje — pecho"), "Empuje · pecho")
+        XCTAssertEqual(Formato.limpiar("Serie–larga"), "Serie · larga")
+        XCTAssertEqual(Formato.limpiar("8–12"), "8 a 12")
+        XCTAssertEqual(Formato.limpiar("— Pierna —"), "Pierna")
     }
 
     func testFormatoAuxiliar() {

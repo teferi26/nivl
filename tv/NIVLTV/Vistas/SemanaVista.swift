@@ -76,7 +76,11 @@ struct SemanaVista: View {
                 .frame(width: 720)
                 Tarjeta(marco: Trazo.hairline, relleno: Hueco.s8) {
                     VStack(alignment: .leading, spacing: Hueco.s6) {
-                        Rotulo(texto: "Últimas 12 semanas")
+                        HStack(spacing: Hueco.s6) {
+                            Rotulo(texto: "Cumplimiento · 12 semanas")
+                            Spacer(minLength: 0)
+                            EscalaMapa()
+                        }
                         MapaCalor(mapa: semana.mapa, celda: peso == nil ? 50 : 22)
                     }
                 }
@@ -160,6 +164,25 @@ private struct Leyenda: View {
     }
 }
 
+/// Lo que el mapa no dice solo: qué significa el gris y que el marco es esta semana.
+private struct EscalaMapa: View {
+    var body: some View {
+        HStack(spacing: Hueco.s2) {
+            Text("Menos").font(Tipo.rotulo).foregroundStyle(Tinta.i8)
+            ForEach(MapaCalor.escala, id: \.self) { v in
+                Rectangle().fill(MapaCalor.tinta(v)).frame(width: 20, height: 20)
+            }
+            Text("Más").font(Tipo.rotulo).foregroundStyle(Tinta.i8)
+            Rectangle().strokeBorder(Tinta.i10, lineWidth: Trazo.hairline)
+                .frame(width: 20, height: 20)
+                .padding(.leading, Hueco.s4)
+            Text("Esta semana").font(Tipo.rotulo).foregroundStyle(Tinta.i8)
+        }
+        .fixedSize()
+        .accessibilityHidden(true)
+    }
+}
+
 /// Rayado a 45° (la trama del sistema: alerta, fallo).
 struct Trama: View {
     var body: some View {
@@ -184,9 +207,11 @@ private struct MapaCalor: View {
     let mapa: [[Double]]
     var celda: CGFloat = 26
     private let iniciales = ["L", "M", "X", "J", "V", "S", "D"]
+    /// Un valor de cada escalón, para la leyenda.
+    static let escala: [Double] = [0, 0.2, 0.5, 0.8, 1]
 
     /// Cinco escalones de gris de la escala ink, del vacío al blanco.
-    private func tinta(_ v: Double) -> Color {
+    static func tinta(_ v: Double) -> Color {
         switch v {
         case ..<0.05: return Tinta.i2
         case ..<0.35: return Tinta.i4
@@ -207,7 +232,7 @@ private struct MapaCalor: View {
                 VStack(spacing: 6) {
                     ForEach(mapa[s].indices, id: \.self) { d in
                         Rectangle()
-                            .fill(tinta(mapa[s][d]))
+                            .fill(Self.tinta(mapa[s][d]))
                             .frame(maxWidth: .infinity)
                             .frame(height: celda)
                             .overlay(

@@ -6,7 +6,7 @@ Esta es una app nativa en SwiftUI para tvOS 17 o superior, con su propio bundle 
 
 | Pestaña | Contenido | Mando |
 |---|---|---|
-| **Entreno** | La rutina del día y su botón Empezar, o «Hoy no toca» con la próxima sesión. La sesión guiada se abre a pantalla completa: series × repeticiones × carga prescrita y un reloj enorme. Lo que el servidor no da (figura, técnica, carga) no se pinta. Al acabar el descanso suena un aviso. Al terminar, la TV dice que se registra en el iPhone: no escribe ni marca nada. | Clic: serie terminada, o saltar el descanso. Play/Pausa: congela el descanso. Menú: confirma antes de salir de la sesión y nunca saca de la app. |
+| **Entreno** | La rutina del día y su botón Empezar, «Hoy no toca» con la próxima sesión, o «Sin rutina» si no hay nada programado. La sesión guiada se abre a pantalla completa: series × repeticiones × carga prescrita y un reloj enorme. Lo que el servidor no da (figura, técnica, carga) no se pinta. Al acabar el descanso suena un aviso. Al terminar, la TV dice que se registra en el iPhone: no escribe ni marca nada. | Clic: serie terminada, o saltar el descanso. Play/Pausa: congela el descanso. Menú: confirma antes de salir de la sesión y nunca saca de la app. |
 | **Arena** | La tabla de amigos ya ordenada por el servidor, tu puesto, y una ficha con el nivel del gladiador que tiene el foco. Debajo, tu ludus si lo hay, en el orden del servidor y sin puestos. Las filas tienen foco pero no son botones: el clic no promete nada. | Al bajar desde las pestañas, el foco cae en tu fila. Arriba y abajo recorren la tabla. |
 | **Semana** | Racha, piedras, XP ganado, misiones hechas y falladas por día (las falladas en trama), el mapa de 12 semanas y la tendencia de peso con la recta del estudio. Sin peso, sin recta o sin consentimiento, esa tarjeta no existe. Cuenta nueva: una frase en vez de ceros. | Solo lectura: nada enfocable. |
 | **Cuenta** | Quién está enlazado, última sincronización, Sincronizar ahora y Cerrar sesión con confirmación. | Arriba y abajo entre los botones. |
@@ -15,11 +15,11 @@ Esta es una app nativa en SwiftUI para tvOS 17 o superior, con su propio bundle 
 
 Contrato con el servidor: `CONTRATO.md`. La TV enseña un código y un QR (`nivl://tv/XXXX-XXXX`), la persona confirma en su iPhone y la TV recibe un token opaco. Nada de teclado ni contraseña.
 
-- **Token** en el Llavero: no sincronizable, solo en este aparato, legible tras el primer desbloqueo (`Nucleo/Almacenes.swift`).
+- **Token** en el Llavero: no sincronizable, solo en este aparato, legible tras el primer desbloqueo (`Nucleo/Almacenes.swift`). Dura 90 días deslizantes, con techo de 365 desde el enlace, y cambiar la contraseña lo corta.
 - **Caché** del último paquete en Caches, para abrir sin red. Con datos que no son de ahora, un sello arriba a la derecha dice de cuándo son.
 - **Primera carga**: cada pestaña enseña su forma en huecos (`Vistas/Huecos.swift`), nunca un spinner. La pestaña elegida sobrevive a la carga.
 - **Pantalla despierta** solo durante la sesión guiada. Sin tocar el mando 45 minutos se da por abandonada y la TV puede apagarse. El reloj va por fechas absolutas: al volver de segundo plano dice la verdad, y un descanso ya vencido no suena tarde.
-- **Solo `sesion_invalida` borra la sesión.** Un fallo de red o un HTTP 5xx nunca. Cerrar sesión borra Llavero y caché en el acto, haya red o no.
+- **Solo `sesion_invalida` borra la sesión.** Un fallo de red o un HTTP 5xx nunca. Si caduca durante un entreno, el token se borra pero la sesión guiada sigue, y «Sesión caducada» espera detrás. Cerrar sesión pide confirmación y borra Llavero y caché en el acto, haya red o no.
 - **Lógica pura** en `Nucleo/MaquinaApp.swift` (estados, transiciones, política de sondeo) y `Nucleo/Contrato.swift` (decodificación). `ModeloApp` solo ejecuta los efectos. Sondeo tras recibir la respuesta anterior y parado en segundo plano; refresco cada 5 minutos, como mucho uno por minuto. Las peticiones en vuelo no se cancelan: un canje aprobado no se pierde.
 
 ## Configuración del servidor
@@ -32,7 +32,7 @@ cp tv/Config/Servidor.ejemplo.xcconfig tv/Config/Servidor.local.xcconfig   # y r
 
 En un xcconfig `//` empieza un comentario: la URL va como `https:/$()/proyecto.supabase.co`. **Release sin configurar no compila** (fase «Comprobar servidor»). Si un binario llegara a ejecutarse sin configuración, enseña «Servicio no disponible». ATS permite la red local solo en Debug (`Config/Info-Debug.plist`).
 
-El diseño sigue «Mármol y tinta» (`docs/design-v2/SISTEMA.md`): solo blanco y negro, Cinzel para los títulos y las cifras, Outfit para el texto, que se registran en tiempo de ejecución, y radio 0. El foco se marca con **escala ×1,1 y un marco blanco**, nunca con hover. El encargo hablaba de «negro y dorado», pero el repo prohíbe el oro fuera de la rueda de modos (AGENTS.md: «Paleta solo blanco y negro»), así que manda la regla del repo. Los tokens copian `src/design/tokens.ts`, con escala de TV: el texto mínimo de lectura es de 30 pt.
+El diseño sigue «Mármol y tinta» (`docs/design-v2/SISTEMA.md`): solo blanco y negro, Cinzel para los títulos y las cifras, Outfit para el texto, que se registran en tiempo de ejecución, y radio 0, salvo la píldora de la barra de pestañas: es del sistema y tvOS no deja cambiarla sin rehacer la barra entera. El foco se marca con **escala ×1,1 y un marco blanco**, nunca con hover. El encargo hablaba de «negro y dorado», pero el repo prohíbe el oro fuera de la rueda de modos (AGENTS.md: «Paleta solo blanco y negro»), así que manda la regla del repo. Los tokens copian `src/design/tokens.ts`, con escala de TV: el texto mínimo de lectura es de 30 pt.
 
 ## Por qué SwiftUI aparte y no react-native-tvos
 
@@ -48,7 +48,7 @@ xcodebuild -project NIVLTV.xcodeproj -scheme NIVLTV \
   -derivedDataPath .build CODE_SIGNING_ALLOWED=NO test
 ```
 
-Los 80 tests de `NIVLTVTests` cubren la máquina de la sesión de entreno, la curva de nivel copiada de `game.ts`, los formatos, lo que enseña cada pestaña (`SalonTests`: sin salud, sin historial, peso que desaparece, ventana de la lista), el contrato (`SesionTests.swift`: decodificación, fechas de Postgres, transiciones, formato del código y QR) y que ninguna cadena lleve guion largo. El foco y el botón Menú se prueban con el mando en `NIVLTVUITests/SalonUITests` (scheme `NIVLTVPuntaAPunta`).
+Los tests de `NIVLTVTests` cubren la máquina de la sesión de entreno, la curva de nivel copiada de `game.ts`, los formatos, lo que enseña cada pestaña (`SalonTests`: sin salud, sin historial, peso que desaparece, ventana de la lista), el contrato (`SesionTests.swift`: decodificación, fechas de Postgres, transiciones, formato del código y QR) y que ninguna cadena lleve guion largo. El foco y el botón Menú se prueban con el mando en `NIVLTVUITests/SalonUITests` (scheme `NIVLTVPuntaAPunta`).
 
 **Con el simulador hay que firmar ad hoc para que funcione el Llavero.** Con `CODE_SIGNING_ALLOWED=NO` compila y pasan los tests, pero `SecItemAdd` falla y la app se queda en «no ha podido guardar la sesión»:
 

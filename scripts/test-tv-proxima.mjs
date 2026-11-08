@@ -83,7 +83,7 @@ async function enlazar(u) {
 }
 const tokenA = await enlazar(A);
 const tokenB = await enlazar(B);
-const datos = async (t) => { await como('anon'); return uno('select tv_datos($1,null::date)', [t]); };
+const datos = async (t) => { await como('postgres'); await db.exec('update tv_dispositivos set ultima_lectura = null'); await como('anon'); return uno('select tv_datos($1,null::date)', [t]); };
 const isodow = (delta) => { const d = new Date(Date.now() + delta * 86400000).getUTCDay(); return d === 0 ? 7 : d; };
 await como('authenticated', A);
 const version = await uno('select health_consent_version()');

@@ -32,4 +32,4 @@ xcodebuild -project tv/NIVLTV.xcodeproj -scheme NIVLTVPuntaAPunta \
   -derivedDataPath tv/.build CODE_SIGNING_ALLOWED=NO test
 ```
 
-`SalonUITests`, en el mismo scheme, recorre la sesión guiada y el foco con la demo y no necesita servidor; `testRefrescarNoPierdeFoco` sí, y tarda algo más de un minuto porque respeta el tope de un refresco por minuto.
+`SalonUITests`, en el mismo scheme, recorre la sesión guiada y el foco con la demo y no necesita servidor; `testRefrescarNoPierdeFoco` y `testSesionCaducadaNoCierraElEntreno` sí, y tardan algo más de un minuto porque respetan el tope de un refresco por minuto.

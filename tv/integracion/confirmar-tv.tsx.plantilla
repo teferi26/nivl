@@ -148,7 +148,7 @@ export default function ConfirmarTv() {
           <Card variant="outline" style={styles.aviso}>
             <Text style={styles.cuerpo} maxFontSizeMultiplier={1.6}>
               Hazlo solo si este código está en tu propia pantalla. Si te lo ha dado otra persona, recházalo: quien
-              tenga esa TV verá tus misiones, tu rutina y tu ranking.
+              tenga esa TV verá tus misiones, tu rutina, tu peso y tu ranking.
             </Text>
           </Card>
           {error ? (

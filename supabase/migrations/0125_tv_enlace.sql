@@ -15,8 +15,10 @@
 -- El contador de fallos NO se reinicia al acertar. Si se reiniciara, quien tantea podría limpiarlo aprobando
 -- un código propio cada nueve intentos.
 --
--- Sin revocación automática al cambiar la contraseña: el token no depende de la sesión de Auth. El dueño la
--- revoca con tv_revocar y borrar la cuenta se la lleva por la FK en cascada.
+-- Contención de una cuenta robada: el token no depende de la sesión de Auth, así que cambiar la contraseña
+-- borra a propósito todas las TV de la cuenta y sus enlaces ya aprobados (trigger en auth.users). Además tiene
+-- un techo absoluto de 365 días desde que se enlazó (0126). El dueño la revoca con tv_revocar y borrar la
+-- cuenta se la lleva por la FK en cascada.
 begin;
 
 create table if not exists public.tv_enlaces (
@@ -35,6 +37,7 @@ create table if not exists public.tv_enlaces (
 create unique index if not exists tv_enlaces_codigo_pendiente on public.tv_enlaces(codigo) where estado = 'pendiente';
 create index if not exists tv_enlaces_caduca on public.tv_enlaces(caduca_en);
 create index if not exists tv_enlaces_usuario on public.tv_enlaces(user_id) where user_id is not null;
+create index if not exists tv_enlaces_pendientes_vivos on public.tv_enlaces(coalesce(ultimo_sondeo, creado_en)) where estado = 'pendiente';
 
 create table if not exists public.tv_dispositivos (
   id uuid primary key default gen_random_uuid(),
@@ -43,6 +46,7 @@ create table if not exists public.tv_dispositivos (
   token_hash bytea not null unique check (octet_length(token_hash) = 32),
   creado_en timestamptz not null default now(),
   ultimo_uso timestamptz not null default now(),
+  ultima_lectura timestamptz,
   caduca_en timestamptz not null
 );
 create index if not exists tv_dispositivos_usuario on public.tv_dispositivos(user_id);
@@ -96,18 +100,34 @@ language sql set search_path = public as $$
     ventana_desde = case when i.ventana_desde > now() - interval '1 hour' then i.ventana_desde else now() end
 $$;
 
-revoke all on function public._tv_sha(text), public._tv_codigo(text), public._tv_frenado(uuid), public._tv_contar_fallo(uuid)
+-- El nombre lo elige quien pide el código y luego se pinta en la lista de TV del iPhone. Fuera lo invisible y
+-- lo que invierte el texto (controles, formato, separadores, rellenos): un nombre en blanco escondería una TV.
+-- Lista explícita porque el regex de Postgres no tiene \p{Cf}. Se limita la entrada antes del regex.
+create or replace function public._tv_nombre(p_nombre text) returns text
+language sql immutable set search_path = pg_catalog as $$
+  select case when limpio ~ '[0-9A-Za-z\u00C0-\u02FF\u0370-\U0010FFFF]' then limpio else 'Apple TV' end
+  from (select btrim(left(btrim(regexp_replace(regexp_replace(regexp_replace(
+      translate(left(coalesce(p_nombre, ''), 200), '—–', '--'),
+      '[\u0080-\u00A0\u00AD\u034F\u0600-\u0605\u061C\u06DD\u070F\u115F\u1160\u17B4\u17B5\u180B-\u180F\u1680\u2000-\u200F\u2028-\u202F\u205F-\u206F\u2800\u3000\u3164\uFE00-\uFE0F\uFEFF\uFFA0\uFFF0-\uFFFB\U000E0000-\U000E0FFF]+', ' ', 'g'),
+      '[[:cntrl:]]+', ' ', 'g'), '\s+', ' ', 'g')), 40)) as limpio) x
+$$;
+
+revoke all on function public._tv_sha(text), public._tv_codigo(text), public._tv_frenado(uuid), public._tv_contar_fallo(uuid),
+  public._tv_nombre(text)
   from public, anon, authenticated, service_role;
 
 -- ── La TV pide un código ─────────────────────────────────────────────────────────────────────────
--- Sin sesión. Limpia lo caducado y aplica un tope global de pendientes: no hay IP fiable a este nivel, así
--- que el tope es la defensa contra inundación. Con 32^8 códigos posibles, 5000 pendientes no ayudan a tantear.
+-- Sin sesión. Limpia lo caducado y aplica un tope global: no hay IP fiable a este nivel, así que el tope es la
+-- defensa contra inundación. Solo cuentan los códigos vivos (sondeados o emitidos hace menos de 30 s): emitir
+-- sin sondear deja de ocupar sitio en medio minuto y a los dos minutos se borra, porque una TV de verdad sondea
+-- cada 5 s. Para bloquear a las demás hay que sostener unas 167 emisiones por segundo. Con 32^8 códigos
+-- posibles, 5000 pendientes no ayudan a tantear.
 create or replace function public.tv_emitir_codigo(p_nombre text default null) returns jsonb
 language plpgsql security definer set search_path = public, pg_temp as $$
 declare
   v_alfabeto constant text := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   v_tope constant integer := 5000;
-  v_nombre text := left(btrim(regexp_replace(translate(coalesce(p_nombre, ''), '—–', '--'), '[[:cntrl:]]+', ' ', 'g')), 40);
+  v_nombre text := public._tv_nombre(p_nombre);
   v_secreto text := encode(extensions.gen_random_bytes(32), 'hex');
   v_caduca timestamptz := now() + interval '10 minutes';
   v_bytes bytea;
@@ -116,12 +136,13 @@ declare
   i integer;
   v_intento integer := 0;
 begin
-  delete from public.tv_enlaces where caduca_en <= now();
-  delete from public.tv_dispositivos where caduca_en <= now();
-  if (select count(*) from public.tv_enlaces where estado = 'pendiente') >= v_tope then
+  delete from public.tv_enlaces where caduca_en <= now()
+    or (estado = 'pendiente' and coalesce(ultimo_sondeo, creado_en) <= now() - interval '2 minutes');
+  delete from public.tv_dispositivos where caduca_en <= now() or creado_en <= now() - interval '365 days';
+  if (select count(*) from public.tv_enlaces
+      where estado = 'pendiente' and coalesce(ultimo_sondeo, creado_en) > now() - interval '30 seconds') >= v_tope then
     return jsonb_build_object('estado', 'saturado', 'reintentar_seg', 60);
   end if;
-  if v_nombre = '' then v_nombre := 'Apple TV'; end if;
 
   loop
     v_intento := v_intento + 1;
@@ -237,6 +258,8 @@ declare
   v_id uuid;
 begin
   if u is null then raise exception 'No autenticado' using errcode = '42501'; end if;
+  -- El mismo cerrojo que tv_aprobar: sin él, una ráfaga pasa el freno a la vez.
+  perform pg_advisory_xact_lock(hashtextextended(u::text, 630030));
   if public.account_erasure_pending(u) then return jsonb_build_object('ok', false, 'reason', 'borrado_pendiente'); end if;
   if public._tv_frenado(u) then return jsonb_build_object('ok', false, 'reason', 'demasiados_intentos'); end if;
   if v_codigo is null then return jsonb_build_object('ok', false, 'reason', 'codigo_invalido'); end if;
@@ -284,6 +307,29 @@ begin
   if u is null then raise exception 'No autenticado' using errcode = '42501'; end if;
   delete from public.tv_dispositivos where id = p_id and user_id = u returning id into v_id;
   return jsonb_build_object('ok', v_id is not null);
+end $$;
+
+-- ── Cambiar la contraseña corta las TV ───────────────────────────────────────────────────────────
+-- Quien enlazó una TV con una sesión robada no debe seguir leyendo cuando la víctima recupera la cuenta.
+create or replace function public._tv_revocar_al_cambiar_clave() returns trigger
+language plpgsql security definer set search_path = public, pg_temp as $$
+begin
+  delete from public.tv_dispositivos where user_id = new.id;
+  delete from public.tv_enlaces where user_id = new.id and estado = 'aprobado';
+  return null;
+end $$;
+revoke all on function public._tv_revocar_al_cambiar_clave() from public, anon, authenticated, service_role;
+
+-- Condicional solo por las pruebas locales: varias montan un auth.users mínimo sin esa columna. GoTrue la tiene.
+do $$
+begin
+  if exists (select 1 from information_schema.columns
+             where table_schema = 'auth' and table_name = 'users' and column_name = 'encrypted_password') then
+    drop trigger if exists tv_revocar_al_cambiar_clave on auth.users;
+    create trigger tv_revocar_al_cambiar_clave after update of encrypted_password on auth.users
+      for each row when (old.encrypted_password is distinct from new.encrypted_password)
+      execute function public._tv_revocar_al_cambiar_clave();
+  end if;
 end $$;
 
 -- ── Permisos ─────────────────────────────────────────────────────────────────────────────────────

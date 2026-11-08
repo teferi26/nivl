@@ -127,6 +127,7 @@ struct SesionVista: View {
                         .font(Tipo.titulo)
                         .foregroundStyle(Tinta.i10)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.6)
                         .truncationMode(.tail)
                         .accessibilityIdentifier("ejercicioActual")
                 }
@@ -175,13 +176,7 @@ struct SesionVista: View {
         Tarjeta(marco: Trazo.rule, relleno: Hueco.s8) {
             VStack(alignment: .leading, spacing: Hueco.s4) {
                 Inscripcion(texto: rotulo)
-                Text(cifra)
-                    .font(Tipo.monumento(maquina.rutina.tieneTecnica ? 150 : 200))
-                    .foregroundStyle(Tinta.i10)
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .contentTransition(reducirMovimiento ? .identity : .numericText())
-                    .accessibilityIdentifier("relojSesion")
+                RelojFijo(texto: cifra, tam: maquina.rutina.tieneTecnica ? 150 : 200, transicion: !reducirMovimiento)
                 if let fraccion {
                     Barra(fraccion: fraccion, alto: 14)
                 }
@@ -255,6 +250,38 @@ struct SesionVista: View {
     }
 }
 
+// MARK: Reloj
+
+/// Cinzel no trae cifras tabulares (el «1» avanza 39 y el «0» 65 a 100 pt) y
+/// `.monospacedDigit()` no hace nada con ella: cada carácter va en su celda y el
+/// reloj no baila al cambiar de segundo.
+private struct RelojFijo: View {
+    let texto: String
+    let tam: CGFloat
+    let transicion: Bool
+
+    /// Avance del dígito más ancho de Cinzel Bold y de los dos puntos, por punto de cuerpo.
+    private static let anchoCifra: CGFloat = 0.66
+    private static let anchoDosPuntos: CGFloat = 0.25
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(Array(texto.enumerated()), id: \.offset) { _, c in
+                Text(String(c))
+                    .font(Tipo.monumento(tam))
+                    .foregroundStyle(Tinta.i10)
+                    .lineLimit(1)
+                    .fixedSize()
+                    .contentTransition(transicion ? .numericText() : .identity)
+                    .frame(width: tam * (c.isNumber ? Self.anchoCifra : Self.anchoDosPuntos))
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(texto)
+        .accessibilityIdentifier("relojSesion")
+    }
+}
+
 // MARK: Columna de la rutina
 
 private struct ColumnaRutina: View {
@@ -308,7 +335,8 @@ private struct ColumnaRutina: View {
                     .font(Tipo.cuerpo)
                     .foregroundStyle(actual ? Tinta.i10 : (pasado ? Tinta.i8 : Tinta.i9))
                     .strikethrough(pasado, color: Tinta.i6)
-                    .lineLimit(1)
+                    // El actual, entero: dos líneas en todas no caben en el alto de la TV.
+                    .lineLimit(actual ? 2 : 1)
                 Text(Formato.prescripcion(series: ej.series, reps: ej.reps, cargaKg: ej.cargaKg))
                     .font(Tipo.cuerpoSm)
                     .foregroundStyle(Tinta.i8)

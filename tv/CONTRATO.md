@@ -22,12 +22,14 @@ Migraciones `0125_tv_enlace`, `0126_tv_datos`, `0127_tv_export` y `0128_tv_proxi
 
 ### `tv_emitir_codigo(p_nombre text)`
 
-`p_nombre`: nombre visible del aparato. Se recorta a 40 caracteres. Vacío o null: `Apple TV`.
+`p_nombre`: nombre visible del aparato. Sin caracteres invisibles ni de dirección, recortado a 40 caracteres. Vacío, null o sin nada legible: `Apple TV`.
+
+Un código sin sondeos durante 2 minutos se borra: `tv_canjear` dirá `caducado` y la TV pide otro.
 
 | `estado` | Claves |
 |---|---|
 | `ok` | `codigo` string (8 caracteres de `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`, sin guion; la TV lo parte en 4 y 4), `secreto` string (64 hex, solo para la TV; no se enseña), `caduca_en` timestamptz (+10 min), `sondeo_seg` int (5) |
-| `saturado` | `reintentar_seg` int (60). Tope global de 5000 pendientes |
+| `saturado` | `reintentar_seg` int (60). Tope global de 5000 códigos vivos: pendientes sondeados, o emitidos, hace menos de 30 s |
 
 ### `tv_canjear(p_secreto text)`
 
@@ -46,7 +48,9 @@ Con `demasiado_rapido` el token **no** se entrega aunque ya esté aprobado: espe
 
 Token inválido, caducado, revocado o cuenta con borrado pendiente: exactamente `{"estado":"sesion_invalida"}`. No se distingue la causa. La TV borra el token y vuelve a la pantalla de enlace.
 
-Caducidad: 90 días deslizantes. Se renueva con la primera lectura pasadas 24 h de la anterior renovación. Refresca como mucho una vez por minuto.
+Caducidad: 90 días deslizantes y un techo de 365 días desde el enlace, por mucho que se use. Se renueva con la primera lectura pasadas 24 h de la anterior renovación. Cambiar la contraseña de la cuenta borra todas sus TV.
+
+Refresca como mucho una vez por minuto. El servidor frena a una lectura por token cada 5 s, y una lectura simultánea no hace cola: `{"estado":"demasiado_rapido","reintentar_seg":5}`. No es perder la sesión: trátalo como un fallo de servidor y reintenta.
 
 Con `"estado":"ok"`:
 
@@ -165,5 +169,5 @@ Filas: `id` uuid, `nombre` text, `creado_en`, `ultimo_uso`, `caduca_en` timestam
 - **Margen de 1 s en el sondeo.** El servidor corta por debajo de 4 s. Un cliente que espera 5 s tras cada respuesta no ve el aviso.
 - **`p_hoy` fuera de margen no es un error**: se ignora. Un reloj mal puesto no debe dejar la TV sin datos.
 - **El mapa usa la lista actual de misiones**, no `daily_scorecards`: así comparte definición y filtro de salud con las barras de la semana. Borrar una misión la saca de su historia en la TV, igual que en `friends_board`.
-- **El token no caduca al cambiar la contraseña.** No depende de la sesión de Auth. Se revoca con `tv_revocar`; borrar la cuenta se lo lleva por la FK.
-- **Sin tope por IP.** A nivel de base no hay una IP fiable: la emisión solo tiene tope global.
+- **Cambiar la contraseña borra las TV.** El token no depende de la sesión de Auth, y sin esto una TV enlazada con una sesión robada seguiría leyendo tras recuperar la cuenta. El cierre global de sesiones no las toca. Se revoca también con `tv_revocar`; borrar la cuenta se lo lleva por la FK.
+- **Sin tope por IP.** A nivel de base no hay una IP fiable y no se ha podido comprobar qué cabecera lo es en Supabase real: la emisión solo tiene el tope global de códigos vivos.

@@ -5,11 +5,18 @@
 // amigos y ludus), Semana (resumen) y Cuenta. Ver tv/README.md.
 
 import SwiftUI
+import UIKit
 
 @main
 struct NIVLTVApp: App {
     init() {
         Fuentes.registrar()
+        // La píldora de la barra es del sistema (excepción al radio 0: ver README); el texto no.
+        if let fuente = UIFont(name: "Outfit-Bold", size: 30) {
+            for estado: UIControl.State in [.normal, .focused, .selected] {
+                UITabBarItem.appearance().setTitleTextAttributes([.font: fuente], for: estado)
+            }
+        }
     }
 
     var body: some Scene {
@@ -66,6 +73,7 @@ private struct RaizDemo: View {
                 CuentaVista(perfil: datos.perfil, contenido: nil, aviso: nil)
             }
         }
+        .modifier(AnclaSesion())
         .overlay(alignment: .topTrailing) {
             if l.estado == "sinred" {
                 SelloFrescura(contenido: Contenido(
@@ -81,10 +89,14 @@ private struct RaizDemo: View {
 struct RaizVista: View {
     let arrancar: Bool
     @State private var modelo = ModeloApp.real()
+    @State private var confirmandoCierre = false
     @Environment(\.scenePhase) private var escena
 
     var body: some View {
         contenido
+            // Por encima de todas las pantallas: si la sesión caduca a mitad de un
+            // entreno, el token se borra ya pero «Sesión caducada» espera detrás.
+            .modifier(AnclaSesion())
             .task { if arrancar { modelo.arrancar() } }
             .onChange(of: escena) { _, nueva in
                 guard arrancar else { return }
@@ -133,6 +145,7 @@ struct RaizVista: View {
             PantallaAviso(titulo: Textos.caducadaTitulo, texto: Textos.caducadaTexto) {
                 Button("Enlazar de nuevo") { modelo.enviar(.reintentar) }
                     .buttonStyle(EstiloFoco(invertido: true))
+                    .accessibilityIdentifier("enlazarDeNuevo")
             }
         }
     }
@@ -166,8 +179,14 @@ struct RaizVista: View {
         HStack(spacing: Hueco.s8) {
             Button("Reintentar") { modelo.enviar(.reintentar) }
                 .buttonStyle(EstiloFoco(invertido: true))
-            Button("Cerrar sesión") { modelo.enviar(.cerrarSesion) }
+            Button("Cerrar sesión") { confirmandoCierre = true }
                 .buttonStyle(EstiloFoco())
+        }
+        .alert(Textos.confirmarCierre, isPresented: $confirmandoCierre) {
+            Button("Cerrar sesión") { modelo.enviar(.cerrarSesion) }
+            Button("Cancelar", role: .cancel) {}
+        } message: {
+            Text(Textos.confirmarCierreTexto)
         }
     }
 
@@ -246,8 +265,9 @@ struct SelloFrescura: View {
             if let texto = Textos.frescura(contenido.red, hace: Formato.hace(contenido.sincronizado, ahora: t.date)),
                contenido.red != .sincronizando || t.date.timeIntervalSince(contenido.sincronizado) >= Politica.refrescoMinimoSeg {
                 Text(texto)
-                    .font(Tipo.rotulo)
+                    .font(Tipo.cuerpoSm)
                     .foregroundStyle(Tinta.i0)
+                    .lineLimit(1)
                     .padding(.horizontal, Hueco.s4)
                     .padding(.vertical, Hueco.s2)
                     .background(Tinta.i10, ignoresSafeAreaEdges: [])

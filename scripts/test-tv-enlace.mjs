@@ -1,4 +1,4 @@
-// Prueba SQL local del enlace de Apple TV (0125, 0126, 0127). Sin red, sin credenciales y sin tocar producción:
+// Prueba SQL local del enlace de Apple TV (0125 a 0128). Sin red, sin credenciales y sin tocar producción:
 // PostgreSQL en memoria (PGlite) con TODAS las migraciones reales del repo, salvo la 0010 (cron y vault).
 //   PGLITE_PACKAGE_ROOT=<carpeta con @electric-sql/pglite> node scripts/test-tv-enlace.mjs
 //
@@ -22,7 +22,7 @@ await db.exec(`
 create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
 create schema auth; create schema storage; create schema extensions;
 create extension pgcrypto with schema extensions;
-create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}');
+create table auth.users(id uuid primary key,email text,encrypted_password text,raw_user_meta_data jsonb default '{}');
 create function auth.uid() returns uuid language sql stable as $$
   select coalesce(nullif(current_setting('request.jwt.claim.sub',true),''),
     (nullif(current_setting('request.jwt.claims',true),'')::jsonb->>'sub'))::uuid $$;
@@ -49,9 +49,10 @@ const migraciones = (await readdir(path.join(root, 'supabase/migrations')))
 for (const n of migraciones) {
   try { await db.exec(await leer(n)); } catch (e) { throw new Error(`Migración ${n}: ${e.message}`); }
 }
-const MIAS = ['0125_tv_enlace.sql', '0126_tv_datos.sql', '0127_tv_export.sql'];
+const MIAS = ['0125_tv_enlace.sql', '0126_tv_datos.sql', '0127_tv_export.sql', '0128_tv_proxima.sql'];
 for (const n of MIAS) assert.ok(migraciones.includes(n), 'falta ' + n);
-for (const n of MIAS) await db.exec(await leer(n)); // Reejecutables.
+// Reejecutables. La 0126 no: reponerla quitaría el envoltorio de la 0128 y estas pruebas correrían sin él.
+for (const n of MIAS.filter((m) => !m.startsWith('0126'))) await db.exec(await leer(n));
 
 const A = 'a0000000-0000-4000-8000-00000000000a', B = 'b0000000-0000-4000-8000-00000000000b',
   C = 'c0000000-0000-4000-8000-00000000000c', D = 'd0000000-0000-4000-8000-00000000000d',
@@ -77,7 +78,10 @@ async function test(nombre, fn) { await como('postgres'); await fn(); console.lo
 const emitir = async (nombre = 'Salón') => { await como('anon'); return uno('select tv_emitir_codigo($1)', [nombre]); };
 const canjear = async (s) => { await como('anon'); return uno('select tv_canjear($1)', [s]); };
 const aprobar = async (u, c) => { await como('authenticated', u); return uno('select tv_aprobar($1)', [c]); };
-const datos = async (t, hoy = null) => { await como('anon'); return uno('select tv_datos($1,$2::date)', [t, hoy]); };
+// Estas pruebas leen seguido: se limpia el turno, salvo la que prueba justo el freno por token.
+const dejarLeer = async () => { await como('postgres'); await db.exec('alter table tv_dispositivos disable trigger account_write_guard; update tv_dispositivos set ultima_lectura = null; alter table tv_dispositivos enable trigger account_write_guard'); };
+const leerSinLimpiar = async (t, hoy = null) => { await como('anon'); return uno('select tv_datos($1,$2::date)', [t, hoy]); };
+const datos = async (t, hoy = null) => { await dejarLeer(); return leerSinLimpiar(t, hoy); };
 const rejuvenecer = async (s) => { await como('postgres'); await db.query("update tv_enlaces set ultimo_sondeo = now() - interval '10 seconds' where secreto_hash = sha256(convert_to($1,'UTF8'))", [s]); };
 async function enlazar(u, nombre = 'Salón') {
   const e = await emitir(nombre);
@@ -149,6 +153,52 @@ await test('emisión: limpia lo caducado y aplica el tope global', async () => {
   await asentar('delete from tv_enlaces');
 });
 
+await test('emisión: emitir sin sondear no bloquea a las demás TV (M1)', async () => {
+  const llenar = (creado) => asentar(`insert into tv_enlaces(codigo,secreto_hash,nombre,caduca_en,creado_en)
+    select 'BBBB' || lpad(translate(upper(to_hex(i)), '01', 'QR'), 4, 'Z'), sha256(convert_to('m1' || i::text,'UTF8')), 'x', now() + interval '9 minutes', now() - interval '${creado}'
+    from generate_series(1,5000) i`);
+  await llenar('31 seconds');
+  const r = await emitir();
+  assert.equal(r.estado, 'ok', 'a los 30 s sin sondeo ya no cuentan');
+  await como('postgres');
+  assert.equal(await uno("select count(*)::int from tv_enlaces where codigo like 'BBBB%'"), 5000, 'pero aún no se borran');
+
+  await asentar("update tv_enlaces set ultimo_sondeo = now() where codigo like 'BBBB%'");
+  assert.equal((await emitir()).estado, 'saturado', 'sondeados sí cuentan');
+
+  await asentar("update tv_enlaces set ultimo_sondeo = now() - interval '121 seconds' where codigo like 'BBBB%'");
+  assert.equal((await emitir()).estado, 'ok');
+  await como('postgres');
+  assert.equal(await uno("select count(*)::int from tv_enlaces where codigo like 'BBBB%'"), 0, 'a los dos minutos sin sondeo se borran');
+
+  const aprobado = await emitir();
+  assert.equal((await aprobar(A, aprobado.codigo)).ok, true);
+  await asentar("update tv_enlaces set ultimo_sondeo = now() - interval '3 minutes' where codigo = $1", [aprobado.codigo]);
+  await emitir();
+  await como('postgres');
+  assert.equal(await uno('select count(*)::int from tv_enlaces where codigo = $1', [aprobado.codigo]), 1, 'lo aprobado no se purga');
+  await asentar('delete from tv_enlaces');
+});
+
+await test('nombre: fuera lo invisible y lo que invierte el texto (B1)', async () => {
+  const nombre = async (crudo) => {
+    const e = await emitir(crudo);
+    assert.equal(e.estado, 'ok');
+    await como('postgres');
+    return uno('select nombre from tv_enlaces where codigo = $1', [e.codigo]);
+  };
+  for (const crudo of ['\u200B\u200B', '\u202E', '\uFEFF\u00A0\u2028', '   ', '\u3164', '\u0301', '.!?', '']) {
+    assert.equal(await nombre(crudo), 'Apple TV', JSON.stringify(crudo));
+  }
+  assert.equal(await nombre('Sal\u202Eón\u200B de\u00A0casa\nabajo'), 'Sal ón de casa abajo');
+  assert.equal(await nombre('Salón'), 'Salón');
+  assert.equal(await nombre('Сало́н 4K'), 'Сало́н 4K');
+  assert.equal((await nombre('x'.repeat(5000))).length, 40);
+  const largo = await nombre(' '.repeat(5000) + 'Salón');
+  assert.equal(largo, 'Apple TV', 'solo se mira el principio de la entrada');
+  await asentar('delete from tv_enlaces');
+});
+
 await test('anon y authenticated no leen ni escriben las tablas', async () => {
   for (const rol of ['anon', 'authenticated']) {
     await como(rol, rol === 'authenticated' ? A : '');
@@ -171,7 +221,7 @@ await test('permisos de cada RPC y funciones internas cerradas', async () => {
   const prv = (rol, f) => uno('select has_function_privilege($1,$2,\'execute\')', [rol, 'public.' + f]);
   for (const f of anon) { assert.equal(await prv('anon', f), true, f); assert.equal(await prv('authenticated', f), false, f); }
   for (const f of auth) { assert.equal(await prv('authenticated', f), true, f); assert.equal(await prv('anon', f), false, f); }
-  for (const f of ['_tv_sha(text)', '_tv_codigo(text)', '_tv_frenado(uuid)', '_tv_contar_fallo(uuid)', '_export_my_data_sin_tv()']) {
+  for (const f of ['_tv_sha(text)', '_tv_codigo(text)', '_tv_frenado(uuid)', '_tv_contar_fallo(uuid)', '_tv_nombre(text)', '_tv_revocar_al_cambiar_clave()', '_tv_datos_0126(text,date)', '_export_my_data_sin_tv()']) {
     for (const r of ['anon', 'authenticated']) assert.equal(await prv(r, f), false, r + ' ' + f);
   }
   for (const f of [...anon, ...auth]) {
@@ -286,7 +336,7 @@ await test('tv_datos: forma completa, sin correo, retratos ni hashes', async () 
   assert.equal(d.estado, 'ok');
   assert.equal(d.hoy, hoy);
   assert.equal(d.salud_activa, true);
-  for (const k of ['generado_en', 'sesion_caduca_en', 'perfil', 'rutina', 'arena', 'ludus', 'semana']) assert.ok(k in d, 'falta ' + k);
+  for (const k of ['generado_en', 'sesion_caduca_en', 'perfil', 'rutina', 'arena', 'ludus', 'semana', 'proxima']) assert.ok(k in d, 'falta ' + k);
   assert.equal(d.perfil.nombre, 'Ana');
   assert.equal(d.perfil.rango, 'C');
   assert.equal(d.perfil.titulo, 'Veterano', 'sin título equipado, el del rango');
@@ -405,8 +455,10 @@ await test('el token de TV no sirve para mover economía', async () => {
   await negado("select award_xp(50,'INT','x','{}')");
 
   // Misma transacción: tras tv_datos, la identidad prestada ya no existe.
+  await dejarLeer();
+  await como('anon');
   await db.exec('begin');
-  await db.query('select tv_datos($1,null)', [tokenA]);
+  assert.equal(await uno('select tv_datos($1,null)->>\'estado\'', [tokenA]), 'ok');
   assert.equal(await uno('select auth.uid()'), null);
   assert.equal(await uno('select auth.role()'), 'anon');
   await negado("select award_xp(50,'INT','x','{}')");
@@ -429,6 +481,58 @@ await test('caducidad deslizante: como mucho una escritura al día', async () =>
   assert.ok(dias > 89.9 && dias <= 90, 'desliza a 90 días');
   await como('postgres');
   assert.equal(await uno("select ultimo_uso > now() - interval '1 minute' from tv_dispositivos where token_hash = sha256(convert_to($1,'UTF8'))", [tokenA]), true);
+});
+
+await test('techo absoluto: 365 días desde el enlace, por mucho que se use (M2)', async () => {
+  const t = await enlazar(F, 'Viejo');
+  await asentar("update tv_dispositivos set creado_en = now() - interval '360 days', ultimo_uso = now() - interval '2 days', caduca_en = now() + interval '10 days' where token_hash = sha256(convert_to($1,'UTF8'))", [t]);
+  const d = await datos(t);
+  assert.equal(d.estado, 'ok');
+  const dias = (new Date(d.sesion_caduca_en) - Date.now()) / 86400000;
+  assert.ok(dias > 4.9 && dias <= 5, 'la renovación no pasa del techo: ' + dias);
+
+  await asentar("update tv_dispositivos set creado_en = now() - interval '10 years', ultimo_uso = now() - interval '2 days', caduca_en = now() + interval '30 days' where token_hash = sha256(convert_to($1,'UTF8'))", [t]);
+  assert.deepEqual(await datos(t), { estado: 'sesion_invalida' });
+  await como('postgres');
+  assert.equal(await uno("select count(*)::int from tv_dispositivos where token_hash = sha256(convert_to($1,'UTF8'))", [t]), 0, 'y se borra');
+});
+
+await test('cambiar la contraseña corta las TV de esa cuenta y nada más (M2)', async () => {
+  const propia = await enlazar(F, 'Propia');
+  const ajena = await enlazar(E, 'Ajena');
+  const aprobado = await emitir();
+  assert.equal((await aprobar(F, aprobado.codigo)).ok, true);
+  const pendiente = await emitir();
+  await asentar("update auth.users set email = 'otro@correo.invalid' where id = $1", [F]);
+  assert.equal((await datos(propia)).estado, 'ok', 'cambiar otro campo no revoca');
+
+  await asentar("update auth.users set encrypted_password = 'hash-nuevo' where id = $1", [F]);
+  assert.deepEqual(await datos(propia), { estado: 'sesion_invalida' }, 'la TV de la víctima cae');
+  assert.equal((await datos(ajena)).estado, 'ok', 'las de otra cuenta siguen');
+  await rejuvenecer(aprobado.secreto);
+  assert.equal((await canjear(aprobado.secreto)).estado, 'caducado', 'lo aprobado sin canjear también cae');
+  assert.equal((await canjear(pendiente.secreto)).estado, 'pendiente', 'lo pendiente de nadie sigue');
+  await asentar('delete from tv_enlaces');
+});
+
+await test('frecuencia: una lectura cada 5 s por token, sin soltar datos (B2)', async () => {
+  const t = await enlazar(F, 'Rápida');
+  const otra = await enlazar(F, 'Otra');
+  assert.equal((await datos(t)).estado, 'ok');
+  assert.deepEqual(await leerSinLimpiar(t), { estado: 'demasiado_rapido', reintentar_seg: 5 });
+  assert.equal((await leerSinLimpiar(otra)).estado, 'ok', 'el turno es por token');
+  await asentar("update tv_dispositivos set ultima_lectura = now() - interval '6 seconds' where token_hash = sha256(convert_to($1,'UTF8'))", [t]);
+  assert.equal((await leerSinLimpiar(t)).estado, 'ok', 'pasado el intervalo vuelve');
+  assert.deepEqual(await leerSinLimpiar('a'.repeat(64)), { estado: 'sesion_invalida' }, 'un token falso no aprende nada del freno');
+  await asentar('delete from tv_dispositivos where user_id = $1', [F]);
+});
+
+await test('cerrojos: tv_rechazar comparte el de tv_aprobar y tv_datos no hace cola (B2, B3)', async () => {
+  const fuente = async (f) => uno('select prosrc from pg_proc where oid = to_regprocedure($1)', [f]);
+  assert.match(await fuente('public.tv_rechazar(text)'), /pg_advisory_xact_lock\(hashtextextended\(u::text, 630030\)\)/);
+  const lectura = await fuente('public._tv_datos_0126(text,date)');
+  assert.match(lectura, /for update skip locked/);
+  assert.equal((lectura.match(/for update/g) || []).length, 1, 'ningún otro cerrojo de fila');
 });
 
 await test('token inválido, caducado o cerrado: la misma respuesta', async () => {
@@ -543,7 +647,7 @@ await test('borrar la cuenta se lleva sus filas en cascada', async () => {
 
 await test('las huellas de scripts/apply-migrations.mjs dan verdadero', async () => {
   const src = await readFile(path.join(root, 'scripts/apply-migrations.mjs'), 'utf8');
-  for (const m of ['0125', '0126', '0127']) {
+  for (const m of ['0125', '0126', '0127', '0128']) {
     const hit = new RegExp(`'${m}': \`([^\`]+)\``).exec(src);
     assert.ok(hit, 'falta la huella ' + m);
     assert.equal(await uno('select ' + hit[1]), true, m);

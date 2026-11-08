@@ -51,14 +51,21 @@ final class EnlaceUITests: XCTestCase {
         let codigo = app.staticTexts["codigoEnlace"]
         XCTAssertTrue(codigo.waitForExistence(timeout: 30), "tiene que aparecer el código")
         let pedir = app.buttons["pedirCodigo"]
-        XCTAssertTrue(pedir.waitForExistence(timeout: 5))
+        XCTAssertFalse(pedir.exists, "con un código a la vista no hay botón que lo deje huérfano")
+        captura("1-codigo")
+
+        // Rechazado en el iPhone: aparece el botón, con el foco, y pide otro.
+        _ = try await control("rechazar")
+        XCTAssertTrue(pedir.waitForExistence(timeout: 20), "sin código hay que poder pedir otro")
         var espera = 0
         while !pedir.hasFocus && espera < 10 {
             Thread.sleep(forTimeInterval: 0.3)
             espera += 1
         }
-        XCTAssertTrue(pedir.hasFocus, "el reintento tiene que tener el foco")
-        captura("1-codigo")
+        XCTAssertTrue(pedir.hasFocus, "el botón tiene que tener el foco")
+        captura("1b-rechazado")
+        XCUIRemote.shared.press(.select)
+        XCTAssertTrue(codigo.waitForExistence(timeout: 20), "vuelve el código")
 
         let r = try await control("aprobar", ["cuenta": "llena"])
         XCTAssertEqual(r["ok"] as? Bool, true, "\(r)")

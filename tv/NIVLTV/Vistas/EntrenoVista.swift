@@ -7,10 +7,35 @@ import SwiftUI
 
 /// Una sesión abierta: lleva su propia copia de la rutina, así un refresco de
 /// datos o el cambio de día nunca le cambia el entreno a quien está sudando.
-private struct SesionAbierta: Identifiable {
+struct SesionAbierta: Identifiable {
     let id = UUID()
     let rutina: RutinaTV
     let estadoInicial: String?
+}
+
+private struct ClaveAbrirSesion: EnvironmentKey {
+    static let defaultValue: (SesionAbierta) -> Void = { _ in }
+}
+
+extension EnvironmentValues {
+    var abrirSesion: (SesionAbierta) -> Void {
+        get { self[ClaveAbrirSesion.self] }
+        set { self[ClaveAbrirSesion.self] = newValue }
+    }
+}
+
+/// Donde vive la portada de la sesión guiada: en la raíz, no en la pestaña. Si un
+/// refresco cambia de pantalla por debajo (sesión caducada, sin red), el entreno sigue.
+struct AnclaSesion: ViewModifier {
+    @State private var sesion: SesionAbierta?
+
+    func body(content: Content) -> some View {
+        content
+            .environment(\.abrirSesion) { sesion = $0 }
+            .fullScreenCover(item: $sesion) { s in
+                SesionVista(rutina: s.rutina, estadoInicial: s.estadoInicial) { sesion = nil }
+            }
+    }
 }
 
 struct EntrenoPantalla: View {
@@ -19,7 +44,9 @@ struct EntrenoPantalla: View {
     var proxima: ProximaSesion?
     var estadoInicial: String?
 
-    @State private var sesion: SesionAbierta?
+    @Environment(\.abrirSesion) private var abrirSesion
+    /// Solo capturas: `-estado` abre la sesión una vez, no cada vez que aparece la pestaña.
+    @State private var capturaAbierta = false
     @Namespace private var espacioFoco
 
     private var estado: EstadoEntreno {
@@ -41,14 +68,11 @@ struct EntrenoPantalla: View {
         }
         .modifier(MargenPestana())
         .focusScope(espacioFoco)
-        // Fuera del switch: si cambia el estado, la sesión abierta no se cierra.
-        .fullScreenCover(item: $sesion) { s in
-            SesionVista(rutina: s.rutina, estadoInicial: s.estadoInicial) { sesion = nil }
-        }
         .onAppear {
             // Solo capturas (`-estado descanso|serie|fin`); con datos reales llega nil.
-            if ["descanso", "serie", "fin"].contains(estadoInicial), sesion == nil, let rutina, !rutina.ejercicios.isEmpty {
-                sesion = SesionAbierta(rutina: rutina, estadoInicial: estadoInicial)
+            if ["descanso", "serie", "fin"].contains(estadoInicial), !capturaAbierta, let rutina, !rutina.ejercicios.isEmpty {
+                capturaAbierta = true
+                abrirSesion(SesionAbierta(rutina: rutina, estadoInicial: estadoInicial))
             }
         }
     }
@@ -68,8 +92,9 @@ struct EntrenoPantalla: View {
 
     private func descanso(_ proxima: ProximaSesion?) -> some View {
         VStack(alignment: .leading, spacing: Hueco.s10) {
-            EncabezadoTV(ceja: Textos.entrenoCeja, titulo: Textos.hoyNoToca)
-            Text(proxima == nil ? Textos.descansoSinProxima : Textos.descansoConProxima)
+            // Sin nada programado en toda la semana no es un descanso: falta la rutina.
+            EncabezadoTV(ceja: Textos.entrenoCeja, titulo: proxima == nil ? Textos.sinRutinaTitulo : Textos.hoyNoToca)
+            Text(proxima == nil ? Textos.sinRutinaTexto : Textos.descansoConProxima)
                 .font(Tipo.cuerpo)
                 .foregroundStyle(Tinta.i8)
                 .lineLimit(3)
@@ -115,7 +140,7 @@ struct EntrenoPantalla: View {
                     .foregroundStyle(Tinta.i8)
                     .lineLimit(3)
                 Button(r.hecha ? "Repetir sesión" : "Empezar") {
-                    sesion = SesionAbierta(rutina: r, estadoInicial: nil)
+                    abrirSesion(SesionAbierta(rutina: r, estadoInicial: nil))
                 }
                 .buttonStyle(EstiloFoco(invertido: true))
                 .prefersDefaultFocus(in: espacioFoco)
@@ -137,7 +162,8 @@ private struct ListaPrescrita: View {
     let ejercicios: [EjercicioTV]
 
     /// Más de lo que cabe no se aprieta: se dice cuánto queda fuera.
-    private static let capacidad = 14
+    /// Cinco filas por columna con los nombres a dos líneas, más el «y N más».
+    private static let capacidad = 10
     private var visibles: ArraySlice<EjercicioTV> { ejercicios.prefix(Self.capacidad) }
     private var columnas: [GridItem] {
         Array(repeating: GridItem(.flexible(), spacing: Hueco.s4, alignment: .top), count: ejercicios.count > 6 ? 2 : 1)
@@ -156,7 +182,7 @@ private struct ListaPrescrita: View {
                             Text(ej.nombre)
                                 .font(Tipo.cuerpo)
                                 .foregroundStyle(Tinta.i10)
-                                .lineLimit(1)
+                                .lineLimit(2)
                             Text(Formato.prescripcion(series: ej.series, reps: ej.reps, cargaKg: ej.cargaKg))
                                 .font(Tipo.cuerpoSm)
                                 .foregroundStyle(Tinta.i8)
