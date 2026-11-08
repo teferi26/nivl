@@ -3,17 +3,19 @@
 --
 -- Decisión de Teferi (8-nov-2026): quien paga usa el coach sin contadores ni
 -- pagos extra. La cartera de la 0078 se queda (reserva atómica, nadie la
--- rebasa), pero con límites que no alcanza una persona. Solo planes de pago:
+-- rebasa), pero sin avisos y con un tope que nadie alcanza usándolo a mano y
+-- que nunca supera lo que deja su cuota. Solo planes de pago:
 -- la prueba y la cortesía conservan los suyos. Cambiar un valor es un UPDATE.
 begin;
 
-update public.ai_plans
-   set monthly_budget_micro_usd = 10000000, deep_budget_micro_usd = 0
- where plan in ('pro_mensual', 'pro_anual');
-
-update public.ai_plans
-   set monthly_budget_micro_usd = 40000000, deep_budget_micro_usd = 10000000
- where plan in ('elite_mensual', 'elite_anual', 'elite_fundador');
+-- El freno es, como mucho, lo que queda al mes de lo que paga cada plan: precio
+-- sin IVA del 21 % y con la comisión del 15 % de la tienda (docs/PRECIOS.md), a
+-- 1 $ = 0,93 €. Si cambia un precio, hay que rehacer esta cuenta.
+update public.ai_plans set monthly_budget_micro_usd = 9000000, deep_budget_micro_usd = 0 where plan = 'pro_mensual';
+update public.ai_plans set monthly_budget_micro_usd = 6000000, deep_budget_micro_usd = 0 where plan = 'pro_anual';
+update public.ai_plans set monthly_budget_micro_usd = 22000000, deep_budget_micro_usd = 5500000 where plan = 'elite_mensual';
+update public.ai_plans set monthly_budget_micro_usd = 18000000, deep_budget_micro_usd = 4500000 where plan = 'elite_anual';
+update public.ai_plans set monthly_budget_micro_usd = 15000000, deep_budget_micro_usd = 3750000 where plan = 'elite_fundador';
 
 -- Sin reparto diario apreciable: el día puede gastar 30 veces la media que queda.
 insert into public.app_config (key, value, public)
