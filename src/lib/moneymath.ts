@@ -201,10 +201,50 @@ export function ritmoPresupuesto(
   return gastado / tope / transcurrido;
 }
 
-/** Proyección de cierre de mes al ritmo actual. */
-export function proyeccionMes(gastado: number, diaDelMes: number, totalDias: number): number {
+/** Gastos que no crecen con los días del mes: se pagan una vez. */
+const CATEGORIAS_FIJAS = ['vivienda', 'suministros'];
+
+/** Un recurrente sin cargos en este tiempo se da por cancelado. */
+const DIAS_RECURRENTE_VIVO = 45;
+
+export interface FijosDelMes {
+  pagado: number;
+  pendiente: number;
+}
+
+/**
+ * Lo fijo del mes en curso: lo ya pagado (vivienda, suministros y cargos
+ * recurrentes) y los recurrentes vivos que aún no han pasado este mes.
+ */
+export function fijosDelMes(delMes: Movimiento[], suscripciones: Suscripcion[], hoy: string): FijosDelMes {
+  const recurrentes = new Set(suscripciones.map((s) => s.cobrador));
+  const cobrados = new Set<string>();
+  let pagado = 0;
+  for (const m of delMes) {
+    if (m.is_internal || m.amount >= 0 || CATEGORIAS_NO_GASTO.includes(m.category)) continue;
+    const cobrador = normalizarCobrador(m);
+    cobrados.add(cobrador);
+    if (CATEGORIAS_FIJAS.includes(m.category) || recurrentes.has(cobrador)) pagado += -m.amount;
+  }
+  const pendiente = suscripciones
+    .filter((s) => !cobrados.has(s.cobrador) && (Date.parse(hoy) - Date.parse(s.ultimo)) / 86400000 <= DIAS_RECURRENTE_VIVO)
+    .reduce((a, s) => a + s.importeMedio, 0);
+  return { pagado, pendiente };
+}
+
+/**
+ * Proyección de cierre de mes. Solo lo variable se extrapola: un alquiler ya
+ * pagado el día 3 no se repite cada tres días.
+ */
+export function proyeccionMes(
+  gastado: number,
+  diaDelMes: number,
+  totalDias: number,
+  fijos: FijosDelMes = { pagado: 0, pendiente: 0 },
+): number {
   const dia = Math.min(Math.max(diaDelMes, 1), totalDias);
-  return (gastado / dia) * totalDias;
+  const variable = Math.max(gastado - fijos.pagado, 0);
+  return fijos.pagado + fijos.pendiente + (variable / dia) * totalDias;
 }
 
 /**

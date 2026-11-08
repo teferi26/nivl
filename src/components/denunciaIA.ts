@@ -29,7 +29,7 @@ export function etiquetaMotivo(motivo: MotivoIA): string {
 }
 
 export const MAX_EXTRACTO = 2000;
-export const CORREO_SOPORTE = 'teferilaforga@gmail.com';
+export const CORREO_SOPORTE = 'soporte@nivl.app';
 
 /** El extracto que viaja con la denuncia: sin espacios sobrantes y con tope. */
 export function extractoDenuncia(texto: string): string {

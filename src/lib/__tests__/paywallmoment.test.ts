@@ -350,6 +350,6 @@ describe('fin de la prueba (fase 3)', () => {
   test('energía agotada a Élite: no promete más energía ni turnos', () => {
     const c = copyUpsell('energia_agotada', 'elite');
     expect(`${c.linea} ${c.contexto}`).not.toMatch(/más energía|más turnos|presupuesto propio|su propio presupuesto/i);
-    expect(c.contexto).toMatch(/límite mensual/);
+    expect(c.contexto).toMatch(/sin contadores/);
   });
 });

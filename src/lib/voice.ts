@@ -183,6 +183,7 @@ export const RUTAS_PERMITIDAS: readonly string[] = [
   '/amigos',
   '/fotos',
   '/avances',
+  '/moderacion',
 ];
 
 /** La ruta del aviso si está permitida; si no, Hoy. */

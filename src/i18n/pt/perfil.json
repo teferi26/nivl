@@ -35,7 +35,7 @@
   },
   "vista": {
     "nombreA11y": "O teu nome. Toca para o mudar.",
-    "avisoRevision": "O teu nome, foto e título são mostrados a outras pessoas depois de revistos. Entretanto, verão um pseudónimo provisório.",
+    "avisoRevision": "Outras pessoas veem o teu nome, foto e título. O que não cumprir as regras pode ser denunciado e retirado.",
     "camino": "Caminho das patentes",
     "arena": "Arena",
     "compartir": "Partilhar o meu progresso",
@@ -47,6 +47,8 @@
     "codigoDetalle": "Alguém te trouxe? Escreve o código dessa pessoa",
     "panelCreador": "Painel de criador",
     "panelCreadorDetalle": "O teu código, as tuas vendas e os teus pagamentos",
+    "moderacion": "Moderação",
+    "moderacionDetalle": "Denúncias e perfis por rever",
     "enPausa": "Sistema em pausa",
     "pausaHasta": "{{frase}} Até {{dia}}.",
     "registro": "Registo",

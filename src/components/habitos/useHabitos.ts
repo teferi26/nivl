@@ -11,7 +11,8 @@ import { vibrar } from '@/design/haptics';
 import { t } from '@/i18n';
 import { sincronizarRango } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
-import { createQuest, deleteQuest, ensureProfile, updateQuest, type QuestInput } from '@/lib/data';
+import { createQuest, deleteQuest, ensureProfile, fetchCompletionsSince, updateQuest, type QuestInput } from '@/lib/data';
+import { debeEsperarAManana, questsScheduledOn } from '@/lib/closing';
 import { dateKey } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
 import { desmarcarRegla, fetchRuleChecks, fetchRules, marcarReglaCumplida } from '@/lib/contract';
@@ -33,8 +34,8 @@ export interface HojaHabito {
   visible: boolean;
   initial: Quest | null;
   onClose: () => void;
-  onSubmit: (input: QuestInput) => Promise<void>;
-  onDelete: (q: Quest) => Promise<void>;
+  onSubmit: (input: QuestInput) => Promise<void | false>;
+  onDelete: (q: Quest) => Promise<void | false>;
 }
 
 export function useHabitos(): { vista: HabitosVistaProps; hoja: HojaHabito } {
@@ -213,6 +214,13 @@ export function useHabitos(): { vista: HabitosVistaProps; hoja: HojaHabito } {
     },
   };
 
+  const hayQueEsperar = async (q: Quest, hoy: string): Promise<boolean> => {
+    const hechas = await fetchCompletionsSince(hoy);
+    const espera = debeEsperarAManana(q, hoy, new Set(hechas.filter((c) => c.date === hoy).map((c) => c.quest_id)));
+    if (espera) avisar(t('habitos:esperaManana.titulo'), t('habitos:esperaManana.mensaje'));
+    return espera;
+  };
+
   const hoja: HojaHabito = {
     visible: formOpen,
     initial: editando,
@@ -221,13 +229,20 @@ export function useHabitos(): { vista: HabitosVistaProps; hoja: HojaHabito } {
       setEditando(null);
     },
     onSubmit: async (input) => {
-      if (editando) await updateQuest(editando.id, input);
-      else if (userId) await createQuest(userId, input, 'habitos');
+      if (editando) {
+        const hoy = dateKey();
+        const saleDeHoy = !questsScheduledOn([{ ...editando, ...input } as Quest], hoy).length;
+        if (saleDeHoy && (await hayQueEsperar(editando, hoy))) return false;
+        await updateQuest(editando.id, input);
+      } else if (userId) {
+        await createQuest(userId, input, 'habitos');
+      }
       setFormOpen(false);
       setEditando(null);
       await cargar();
     },
     onDelete: async (q) => {
+      if (await hayQueEsperar(q, dateKey())) return false;
       await deleteQuest(q.id);
       setFormOpen(false);
       setEditando(null);

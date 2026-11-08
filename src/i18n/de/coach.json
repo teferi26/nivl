@@ -60,7 +60,7 @@
     "haLeido_other": "Hat deinen Tag gelesen · {{count}} Abfragen",
     "titulo": "COACH",
     "profundoTag": "TIEF",
-    "verPlan": "Deinen Plan und die Energie des Coachs ansehen",
+    "verPlan": "Deinen Plan ansehen",
     "verMemoria": "Das Gedächtnis des Systems ansehen",
     "vacioTitulo": "DAS SYSTEM HÖRT DIR ZU.",
     "vacioCuerpo": "Er bestimmt deinen Tag, entscheidet, was jede Sache wert ist, erinnert dich abends daran, was auf dem Spiel steht und merkt sich alles, was er über dich lernt. Sprich mit ihm, wie du mit jemandem sprechen würdest, der dein Leben führt.",
@@ -132,6 +132,7 @@
     "ir": "Zu {{modo}}"
   },
   "uso": {
+    "freno": "Der Coach pausiert wegen ungewöhnlicher Nutzung. Er ist bald zurück.",
     "etiqueta": "KI diesen Monat",
     "restante": "{{pct}} % verfügbar",
     "a11y": "KI diesen Monat: {{pct}} % übrig",

@@ -9,7 +9,7 @@ import { deepEqual, equal, ok } from 'node:assert/strict';
 import { instalar, type Llamada } from './sec_coach_fake_test.ts';
 
 Deno.env.set('RITUAL_SECRET', 'secreto-del-cron-de-prueba-0123456789');
-const { handler, avisarModeracion } = await import('../ritual/handler.ts');
+const { handler, avisarModeracion, cuerpoModeracion } = await import('../ritual/handler.ts');
 const { adminClient } = await import('./db.ts');
 
 const OWNER_A = '0000000a-0000-4000-8000-00000000000a';
@@ -85,9 +85,9 @@ Deno.test('moderación: nuevos > 0 envía solo a los dispositivos de los owners,
     const mensajes = enviados[0].body as { to: string; title: string; body: string; data?: unknown }[];
     deepEqual(mensajes.map((m) => m.to).sort(), ['ExponentPushToken[ownerA]', 'ExponentPushToken[ownerB]']);
     for (const m of mensajes) {
-      equal(m.title, 'Moderación');
+      equal(m.title, 'Moderación: 2 casos nuevos');
       equal(m.body, '2 denuncias o revisiones nuevas · 5 abiertas');
-      deepEqual(m.data, { ruta: '/(tabs)' }, 'solo la ruta permitida, sin contenido');
+      deepEqual(m.data, { ruta: '/moderacion' }, 'solo la ruta de la bandeja, sin contenido');
     }
     // Con los consentimientos NEGADOS también sale: es operativo.
     ok(!fake.proveedor.length, 'no llama a ningún modelo');
@@ -164,4 +164,21 @@ Deno.test('moderación: cualquier fallo (red, respuesta rara) devuelve 0 y no la
   } finally {
     fake2.restaurar();
   }
+});
+
+Deno.test('moderación: el aviso dice de qué va, sin datos de nadie (0088)', () => {
+  const base = { nuevos: 1, abiertos: 1, denuncias: 1, perfiles: 0 };
+  equal(cuerpoModeracion({ ...base, detalle: { tipo: 'perfil', motivo: 'avatar' } }), 'Denuncia de perfil: foto ofensiva');
+  equal(cuerpoModeracion({ ...base, detalle: { tipo: 'ia', motivo: 'salud' } }), 'Denuncia de respuesta de IA: consejo de salud peligroso');
+  equal(cuerpoModeracion({ ...base, detalle: { tipo: 'ia', motivo: 'otro' } }), 'Denuncia de respuesta de IA');
+  equal(cuerpoModeracion({ ...base, abiertos: 3, detalle: { tipo: 'perfil', motivo: 'name' } }), 'Denuncia de perfil: nombre ofensivo · 3 abiertas');
+  equal(cuerpoModeracion({ nuevos: 2, abiertos: 2, denuncias: 2, perfiles: 0 }), '2 denuncias nuevas');
+  equal(cuerpoModeracion({ nuevos: 3, abiertos: 5, denuncias: 2, perfiles: 1 }), '2 denuncias nuevas y 1 perfil por revisar · 5 abiertas');
+  equal(cuerpoModeracion({ nuevos: 1, abiertos: 1, denuncias: 0, perfiles: 1 }), '1 perfil por revisar');
+});
+
+Deno.test('moderación: un motivo fuera de la lista no llega a la notificación', () => {
+  const texto = cuerpoModeracion({ nuevos: 1, abiertos: 1, denuncias: 1, perfiles: 0, detalle: { tipo: 'perfil', motivo: 'Pepe García me insulta' } });
+  equal(texto, 'Denuncia de perfil');
+  equal(cuerpoModeracion({ nuevos: 1, abiertos: 1, denuncias: 1, perfiles: 0, detalle: { tipo: 'constructor', motivo: 'x' } }), '1 denuncia nueva');
 });

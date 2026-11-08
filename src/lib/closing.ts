@@ -19,6 +19,16 @@ export function questsScheduledOn(quests: Quest[], date: string): Quest[] {
 }
 
 /**
+ * Una misión pendiente hoy no se puede borrar ni sacar de hoy hasta mañana: si
+ * no, vaciar el día a las 23:59 evitaría el castigo. Lo creado hoy sí se puede
+ * corregir, y lo ya hecho no se juega nada.
+ */
+export function debeEsperarAManana(q: Quest, hoy: string, hechasHoy: ReadonlySet<string>): boolean {
+  if (q.is_penalty || q.is_bonus || diaDeAlta(q) === hoy) return false;
+  return questsScheduledOn([q], hoy).length > 0 && !hechasHoy.has(q.id);
+}
+
+/**
  * Cuántas misiones puedes fallar en un día sin romper la racha.
  *
  * Todo o nada no funcionaba. Con ocho misiones diarias, un día perfecto es

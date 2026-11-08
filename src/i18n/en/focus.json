@@ -74,7 +74,7 @@
     "relojDescanso": "BREAK",
     "sesionA11y": "{{fase}}. {{titulo}}. {{reloj}} left.",
     "temaN": "Topic {{n}} · {{nombre}}",
-    "silencio": "Phone on silent when you start",
+    "silencio": "Turn on Do Not Disturb",
     "noMolestarA11y": "How to put your phone on Do Not Disturb",
     "misionElegir": "Link a FOCUS mission",
     "empezar": "Start block",

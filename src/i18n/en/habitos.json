@@ -1,4 +1,8 @@
 {
+  "esperaManana": {
+    "titulo": "It still counts today",
+    "mensaje": "This mission is still pending today. Complete it, or change it from tomorrow."
+  },
   "derivar": {
     "listo": "Ready to be yours",
     "faltan_one": "{{count}} day to go",

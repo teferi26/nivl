@@ -60,7 +60,7 @@
     "haLeido_other": "Has read your day · {{count}} lookups",
     "titulo": "COACH",
     "profundoTag": "DEEP",
-    "verPlan": "See your plan and the coach's energy",
+    "verPlan": "See your plan",
     "verMemoria": "See the system's memory",
     "vacioTitulo": "THE SYSTEM IS LISTENING.",
     "vacioCuerpo": "It runs your day, decides what each thing scores, reminds you at night what's at stake and remembers everything it learns about you. Talk to it the way you'd talk to whoever runs your life.",
@@ -132,6 +132,7 @@
     "ir": "Go to {{modo}}"
   },
   "uso": {
+    "freno": "The coach is paused because of unusual use. It'll be back soon.",
     "etiqueta": "AI this month",
     "restante": "{{pct}} % available",
     "a11y": "AI this month: {{pct}} % left",

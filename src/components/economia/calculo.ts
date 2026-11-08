@@ -6,12 +6,12 @@ import type { MoneyAccount, MoneyPlan, Transaction } from '@/lib/money';
 import {
   detectarSuscripciones,
   diasDelMes,
+  fijosDelMes,
   mesDe,
   mesesDeAire,
   porCategoria,
   proyeccionMes,
   resumenPorMes,
-  ritmoPresupuesto,
 } from '@/lib/moneymath';
 import type { EconomiaDatos } from './EconomiaVista';
 
@@ -35,14 +35,18 @@ export function calcularEconomia(
     : esteMes.gastos;
   const saldo = cuentas.reduce((a, c) => a + Number(c.balance ?? 0), 0);
   const delMes = movs.filter((m) => mesDe(m.date) === mesActual);
+  const suscripciones = detectarSuscripciones(movs);
+  const proyeccion = proyeccionMes(esteMes.gastos, dia, totalDias, fijosDelMes(delMes, suscripciones, hoy));
+  const tope = Number(plan?.spend_cap ?? 0);
 
   return {
     mesActual, dia, totalDias, esteMes, cerrados, gastoMedio, saldo,
     categorias: porCategoria(delMes),
-    suscripciones: detectarSuscripciones(movs),
+    suscripciones,
     sinClasificar: movs.filter((m) => m.category === 'sin_clasificar' && m.amount < 0),
     aire: mesesDeAire(saldo, gastoMedio),
-    proyeccion: proyeccionMes(esteMes.gastos, dia, totalDias),
-    ritmo: plan?.spend_cap ? ritmoPresupuesto(esteMes.gastos, Number(plan.spend_cap), dia, totalDias) : null,
+    proyeccion,
+    // Contra el cierre previsto: lo fijo ya pagado no adelanta el ritmo.
+    ritmo: tope > 0 ? proyeccion / tope : null,
   };
 }
