@@ -33,13 +33,13 @@ Comprobado en el código para quien sigue en la 1.0.11: la versión del permiso 
 
 Migraciones → funciones (`coach`, `prevision`, `ritual`, `revenuecat-webhook`) → productos en tiendas → binario → OTA → 0113.
 
-**Hace falta binario nuevo:** `expo-calendar`, `react-native-maps`, `expo-keep-awake`, HealthKit, ubicación en segundo plano, targets de Watch, UIScene. Sube `version` en `app.json` y regenera el lockfile con npm 10.9.2 si cambia alguna dependencia. Playfair Display por sí sola no pedía binario.
+**Hace falta binario nuevo:** `expo-calendar`, `react-native-maps`, `expo-keep-awake`, HealthKit, ubicación en segundo plano, targets de Watch, UIScene. `app.json` ya está en 1.1.0 (las OTA de esta versión solo llegan a ese binario). Regenera el lockfile con npm 10.9.2 si cambia alguna dependencia. Playfair Display por sí sola no pedía binario.
 
 ## Verificación
 
 `npm run typecheck`, `npm test` (6615), `npm run lint` (0 errores), `npx expo export --platform ios` y `deno check` de `coach`, `prevision` y `ritual`. El permiso de salud y la activación de la medición se prueban además sobre todas las migraciones reales con `scripts/test-medicion-permiso.mjs` (PGlite): usuario antiguo, usuario antiguo que activa y usuario nuevo.
 
-**Tras fusionar adaptativo.** Recorrido web en Chrome, 375 y 1280, General e IRON: 110 combinaciones, 0 problemas del arnés, 6 fallos de interacción. Cuatro son de las pestañas de login: el arnés espera que cambie el número de campos y el registro corto ya tiene los mismos dos. Dos son del coach, sin campo de texto visible con los datos simulados; lo más probable es la pausa del coach, que cambia el campo por su pie, pero no se ha confirmado. En iOS, tras la fusión, solo se ha comprobado el arranque y la portada: la pasada a toques queda pendiente.
+**Tras fusionar adaptativo.** Recorrido web en Chrome, 375 y 1280, General e IRON: 110 combinaciones y 0 problemas del arnés. Las pruebas de teclado y ratón acaban con 0 fallos de 28. Los 4 de las pestañas de login eran de una expectativa antigua del arnés (el registro corto tiene los mismos campos): ahora mira la pestaña marcada. Los 2 del coach eran de la subida de versión ya retirada: el cliente pedía la v2, los datos simulados daban la v1 y la puerta de salud tapaba el chat; no era la pausa. En iOS, tras la fusión, solo se ha comprobado el arranque y la portada: la pasada a toques queda pendiente.
 
 **Binario Debug de verdad en simulador iOS 27.2 (Xcode 27.2), contra un servidor falso local.** Qué ha corrido contra ese servidor falso, no contra Supabase: autenticación, perfiles, misiones, permisos de salud e IA, derechos de modos, firma, pausa y el coach (respuesta fija, sin modelo). Lo verificado en iPhone:
 

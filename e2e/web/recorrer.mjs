@@ -654,21 +654,22 @@ async function pruebasDeUnMotor(browser, motor, sesion, resultado) {
         // Espacio y Enter en la pestaña Entrar/Crear cuenta.
         const pestanas = page.locator('[role=tab]:visible');
         if ((await pestanas.count()) >= 2) {
-          const campos = () => page.locator('input:visible').count();
-          const n0 = await campos();
+          // El registro corto tiene los mismos campos que el login: manda la pestaña marcada.
+          const marcada = () => pestanas.nth(1).getAttribute('aria-selected');
+          const n0 = await marcada();
           await pestanas.nth(1).focus();
           await page.keyboard.press('Enter');
           await page.waitForTimeout(350);
-          const n1 = await campos();
-          anotar({ prueba: 'enter_activa', etiqueta: `pestaña de login ${ancho}`, ancho, ok: n1 !== n0, n0, n1 });
+          const n1 = await marcada();
+          anotar({ prueba: 'enter_activa', etiqueta: `pestaña de login ${ancho}`, ancho, ok: n0 !== 'true' && n1 === 'true', n0, n1 });
           await pestanas.first().click();
           await page.waitForTimeout(350);
-          const n2 = await campos();
+          const n2 = await marcada();
           await pestanas.nth(1).focus();
           await page.keyboard.press('Space');
           await page.waitForTimeout(350);
-          const n3 = await campos();
-          anotar({ prueba: 'espacio_activa', etiqueta: `pestaña de login ${ancho}`, ancho, ok: n3 !== n2, n2, n3, rol: 'tab' });
+          const n3 = await marcada();
+          anotar({ prueba: 'espacio_activa', etiqueta: `pestaña de login ${ancho}`, ancho, ok: n2 !== 'true' && n3 === 'true', n2, n3, rol: 'tab' });
           await pestanas.first().click();
           await page.waitForTimeout(350);
         }
@@ -822,7 +823,7 @@ async function pruebasDeUnMotor(browser, motor, sesion, resultado) {
           const despues = await campo.inputValue().catch(() => '');
           anotar({ prueba: 'enter_envia_coach', etiqueta: `coach ${ancho}`, ancho, ok: peticiones > 0, peticiones, antes, despues });
         } else {
-          anotar({ prueba: 'enter_envia_coach', etiqueta: `coach ${ancho}`, ancho, ok: false, nota: 'no hay campo de texto visible' });
+          anotar({ prueba: 'enter_envia_coach', etiqueta: `coach ${ancho}`, ancho, ok: false, ruta: page.url(), texto: (await page.locator('body').innerText()).slice(0, 400), nota: 'no hay campo de texto visible' });
         }
       } finally {
         await ctx.close().catch(() => {});
