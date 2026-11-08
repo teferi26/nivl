@@ -20,7 +20,7 @@ create table public.entrenos_medidos (
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
   origen text not null check (origen in ('watch', 'iphone_gps', 'salud', 'manual')),
   externo_id text not null check (char_length(externo_id) between 1 and 200),
-  deporte text not null check (deporte in ('carrera', 'bici', 'piscina', 'aguas_abiertas', 'fuerza', 'otro')),
+  deporte text not null check (deporte in ('carrera', 'bici', 'piscina', 'aguas_abiertas', 'caminar', 'fuerza', 'otro')),
   fecha date not null check (fecha between date '2000-01-01' and date '2100-12-31'),
   inicio timestamptz not null,
   fin timestamptz not null,

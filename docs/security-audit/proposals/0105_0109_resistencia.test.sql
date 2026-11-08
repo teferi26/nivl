@@ -53,7 +53,7 @@ insert into r select '13 borrado de salud vacía las cinco', ((select count(*) f
   +(select count(*) from public.objetivos_carrera where user_id='5ec0a105-0000-4000-8000-00000000000a')
   +(select count(*) from public.plan_sesiones where user_id='5ec0a105-0000-4000-8000-00000000000a')=0)::text;
 insert into r select '14 infer_link brick y triatlón', (public.infer_link('Brick')='cardio' and public.infer_link('Entreno de triatlón')='cardio')::text;
-insert into r select '14b infer_link carrera y piscina (0111)', (public.infer_link('Entreno de carrera')='cardio' and public.infer_link('Entrenamiento de carrera')='cardio' and public.infer_link('Entreno de piscina')='cardio' and public.infer_link('Entreno de carrera profesional')='gym')::text;
+insert into r select '14b infer_link carrera y piscina (0109)', (public.infer_link('Entreno de carrera')='cardio' and public.infer_link('Entrenamiento de carrera')='cardio' and public.infer_link('Entreno de piscina')='cardio' and public.infer_link('Entreno de carrera profesional')='gym')::text;
 insert into r select '15 infer_link sigue conservador', (public.infer_link('Tirada de cartas')='ninguno' and public.infer_link('Entreno de ventas')='ninguno' and public.infer_link('Entrenar piernas')='gym')::text;
 insert into r select '16 RLS en las cinco', (select bool_and(relrowsecurity) from pg_class where oid in ('public.entrenos_medidos'::regclass,'public.entreno_perfil'::regclass,'public.entreno_bienestar'::regclass,'public.objetivos_carrera'::regclass,'public.plan_sesiones'::regclass))::text;
 select jsonb_agg(jsonb_build_object('s',step,'ok',result='true','r',result) order by step) from r;

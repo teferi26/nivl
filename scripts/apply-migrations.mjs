@@ -67,8 +67,6 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
-  '0111': `coalesce(obj_description(to_regprocedure('public.infer_link(text)'), 'pg_proc') like '%nivl:infer-link-0111%', false)`,
-  '0110': `coalesce(obj_description(to_regprocedure('public.award_xp(integer,text,text,jsonb)'), 'pg_proc') like '%nivl:award-xp-cardio-0110%', false)`,
   '0109': `coalesce(obj_description(to_regprocedure('public.infer_link(text)'), 'pg_proc') like '%nivl:infer-link-0109%', false)`,
   '0108': `coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:export-resistencia-0108%', false) and coalesce(obj_description(to_regprocedure('public.complete_health_erasure(uuid,uuid)'), 'pg_proc') like '%nivl:borrado-resistencia-0108%', false)`,
   '0107': `coalesce(obj_description(to_regclass('public.objetivos_carrera'), 'pg_class') like '%nivl:objetivos-carrera-0107%', false) and coalesce(obj_description(to_regclass('public.plan_sesiones'), 'pg_class') like '%nivl:plan-sesiones-0107%', false)`,

@@ -14,6 +14,7 @@ import { C, F, fs, px } from '@/components/ironmundo/tema';
 import { t } from '@/i18n';
 import { distanciaM } from '@/lib/entrenomath';
 import type { PuntoRuta } from '@/lib/entrenoMedido';
+import { moduloMapas } from './moduloMapas';
 
 export type PuntoPlano = { x: number; y: number };
 export type MarcaKm = PuntoPlano & { km: number };
@@ -94,8 +95,7 @@ function mapasNativos(): MapasNativos | null {
   nativos = null;
   try {
     if (Platform.OS === 'ios' && UIManager.hasViewManagerConfig?.('AIRMap')) {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports -- sin el nativo, un import estático rompería la OTA
-      const m = require('react-native-maps') as { default?: unknown; Polyline?: unknown };
+      const m = moduloMapas();
       if (m?.default && m?.Polyline) {
         nativos = { MapView: m.default as MapasNativos['MapView'], Polyline: m.Polyline as MapasNativos['Polyline'] };
       }
