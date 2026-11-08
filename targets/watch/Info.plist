@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>es</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Cinzel_600SemiBold.ttf</string>
+		<string>Cinzel_700Bold.ttf</string>
+	</array>
+	<key>WKBackgroundModes</key>
+	<array>
+		<string>mindfulness</string>
+		<string>workout-processing</string>
+	</array>
+	<key>NSHealthShareUsageDescription</key>
+	<string>NIVL lee tu pulso, tus calorías y tu distancia mientras entrenas para enseñártelos en el reloj.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>NIVL guarda en Salud los entrenos que mides con el reloj.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>NIVL usa el GPS del reloj para medir la distancia y dibujar la ruta de tus entrenos al aire libre.</string>
+</dict>
+</plist>

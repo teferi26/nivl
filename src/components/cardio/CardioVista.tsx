@@ -22,11 +22,13 @@ import {
   TarjetaArena,
 } from '@/components/arena';
 import { DescargoSalud } from '@/components/DescargoSalud';
-import { EmptyState, Screen, Section, Tag } from '@/components/ui';
+import { SelloMedicion, selloLeido } from '@/components/medicion/SelloMedicion';
+import { Button, EmptyState, Screen, Section, Tag } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 import { paceOf } from '@/lib/bodymath';
 import type { CardioSession } from '@/lib/bodywork';
+import type { ResultadoContraste } from '@/lib/medicion/contraste';
 import { addDays } from '@/lib/dates';
 import { ICONO, cifraCorta, etiquetaCardio, fechaCorta, zonaCardio } from './tipos';
 
@@ -44,11 +46,15 @@ export interface CardioVistaProps {
   /** «Hoy» (AAAA-MM-DD): de él salen los 28 días. */
   hoy: string;
   sesiones: CardioSession[];
+  /** Por id de sesión. Solo informa: sin entrada, la fila va sin sello. */
+  sellos?: Record<string, ResultadoContraste>;
   anuncio: AnuncioCardio | null;
   acciones: {
     onVolver: () => void;
     onReintentar: () => void;
     onRegistrar: () => void;
+    /** Abre la medición con GPS. Sin ella (galería) no hay botón. */
+    onMedirGps?: () => void;
     onBorrar: (s: CardioSession) => void;
     onCerrarAnuncio: () => void;
   };
@@ -57,7 +63,7 @@ export interface CardioVistaProps {
 const ALTO_ARENA = 112;
 const BOTON = 44;
 
-function FilaCardio({ s, primera, onBorrar }: { s: CardioSession; primera: boolean; onBorrar: () => void }) {
+function FilaCardio({ s, primera, sello, onBorrar }: { s: CardioSession; primera: boolean; sello?: ResultadoContraste; onBorrar: () => void }) {
   const ritmo = paceOf(s.distance_km, s.duration_min);
   const cifras = [
     s.distance_km ? `${cifraCorta(Number(s.distance_km))} km` : null, // i18n-ok: unidad
@@ -80,10 +86,12 @@ function FilaCardio({ s, primera, onBorrar }: { s: CardioSession; primera: boole
     extra,
     xp: s.xp_awarded,
   };
-  const leido =
+  const leidoBase =
     s.xp_awarded > 0
       ? t(extra ? 'cardio:fila.leidoExtraXp' : 'cardio:fila.leidoXp', datosLeido)
       : t(extra ? 'cardio:fila.leidoExtra' : 'cardio:fila.leido', datosLeido);
+  const leidoSello = selloLeido(sello);
+  const leido = leidoSello ? `${leidoBase} ${leidoSello}` : leidoBase;
   return (
     <Pressable
       onLongPress={onBorrar}
@@ -103,6 +111,7 @@ function FilaCardio({ s, primera, onBorrar }: { s: CardioSession; primera: boole
             {etiquetaCardio(s.kind)}
           </Text>
           <Tag>{zonaCardio(s.zone)}</Tag>
+          <SelloMedicion resultado={sello} />
         </View>
         <Text style={styles.cifras} maxFontSizeMultiplier={1.35}>
           {cifras}
@@ -132,7 +141,7 @@ function FilaCardio({ s, primera, onBorrar }: { s: CardioSession; primera: boole
   );
 }
 
-export function CardioVista({ cargado, errorCarga, hoy, sesiones, anuncio, acciones }: CardioVistaProps) {
+export function CardioVista({ cargado, errorCarga, hoy, sesiones, sellos, anuncio, acciones }: CardioVistaProps) {
   const [anchoArena, setAnchoArena] = useState(0);
 
   const ultimas28 = sesiones.filter((s) => s.date >= addDays(hoy, -28));
@@ -214,6 +223,16 @@ export function CardioVista({ cargado, errorCarga, hoy, sesiones, anuncio, accio
             { valor: Math.round(min28), rotulo: t('cardio:vista.cifraMin') },
           ]}
         />
+        {acciones.onMedirGps ? (
+          <Button
+            title={t('medicion:entrada.gps')}
+            icon="navigate-outline"
+            variant="ghost"
+            size="sm"
+            onPress={acciones.onMedirGps}
+            style={styles.medirGps}
+          />
+        ) : null}
       </Entrada>
 
       <Entrada indice={2} style={styles.arenaBloque}>
@@ -253,7 +272,7 @@ export function CardioVista({ cargado, errorCarga, hoy, sesiones, anuncio, accio
             </TarjetaArena>
           ) : (
             sesiones.map((s, i) => (
-              <FilaCardio key={s.id} s={s} primera={i === 0} onBorrar={() => acciones.onBorrar(s)} />
+              <FilaCardio key={s.id} s={s} primera={i === 0} sello={sellos?.[s.id]} onBorrar={() => acciones.onBorrar(s)} />
             ))
           )}
         </Section>
@@ -266,6 +285,7 @@ export function CardioVista({ cargado, errorCarga, hoy, sesiones, anuncio, accio
 
 const styles = StyleSheet.create({
   bloque: { marginBottom: space.s5 },
+  medirGps: { marginTop: space.s3, alignSelf: 'center' },
   anuncio: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s2 },
   anuncioTexto: {
     flex: 1,

@@ -86,6 +86,8 @@ import ayuda from './es/ayuda.json';
 // IRON Resistencia: pantallas (src/components/resistencia) y plan de carrera.
 import resistencia from './es/resistencia.json';
 import resistenciaPlan from './es/resistenciaPlan.json';
+// Medición: Salud, GPS del iPhone y el sello del historial (src/components/medicion).
+import medicion from './es/medicion.json';
 
 /** Los catálogos en español: la fuente de verdad de todas las claves. */
 export const RECURSOS_ES = {
@@ -147,6 +149,7 @@ export const RECURSOS_ES = {
   ayuda,
   resistencia,
   resistenciaPlan,
+  medicion,
 };
 
 export type RecursosEs = typeof RECURSOS_ES;

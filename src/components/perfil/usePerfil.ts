@@ -46,6 +46,7 @@ import { setFreeze } from '@/lib/engine';
 import { exportAllData } from '@/lib/exporter';
 import type { Ancla } from '@/lib/share';
 import { deleteAccount } from '@/lib/account';
+import { borrarCopiasLocales } from '@/lib/medicion/buzon';
 import {
   consentimientoVigente,
   fetchConsentimiento,
@@ -527,6 +528,8 @@ export function usePerfil(): UsePerfil {
     setAvisoBorrar(null);
     try {
       await deleteAccount();
+      // Sin cuenta ya no correrá nada que lo limpie después.
+      if (userId) await borrarCopiasLocales(userId);
       setBorrarOpen(false);
       anunciar(t('perfil:borrar.eliminada'));
       router.replace('/login');

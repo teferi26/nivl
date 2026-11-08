@@ -68,6 +68,8 @@ import { DIAS_VENTANA } from '@/lib/socialmath';
 import { mensajeSistema } from '@/lib/validation';
 import type { Completion, Profile, Quest } from '@/lib/types';
 import { useModo } from '@/modos';
+import { MOTIVO_RELOJ, motivoParaNoCompletar, parteHoy } from '@/watch/contrato';
+import { atenderReloj, limpiarReloj, publicarEnReloj } from '@/watch/puente';
 import { derivarHoy } from './derivarHoy';
 import type { DesdeHero, HoyVistaProps } from './HoyVista';
 
@@ -430,8 +432,9 @@ export function useHoy() {
     return result.assets[0]?.base64 ?? null;
   };
 
-  const finishQuest = async (quest: Quest, evidence: string | null) => {
-    if (!profile || !userId) return;
+  /** Paga la misión. Devuelve el XP o PB cobrado, o null si falló (el aviso ya salió). */
+  const finishQuest = async (quest: Quest, evidence: string | null): Promise<number | null> => {
+    if (!profile || !userId) return null;
     const today = dateKey();
     try {
       const logrosAntes = logrosRef.current ? [...logrosRef.current] : undefined;
@@ -548,9 +551,11 @@ export function useHoy() {
       }
       // El rango, al final: cierra la ventana de la acción.
       sincronizar(res.profile, accion);
+      return res.bonusEarned > 0 ? res.bonusEarned : pagado;
     } catch (e) {
       vibrar('penalizacion');
       avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
+      return null;
     }
   };
 
@@ -697,6 +702,60 @@ export function useHoy() {
       racha: heroVisto.racha,
     };
   }, [heroVisto, userId]);
+
+  // Apple Watch: Hoy publica en el reloj misiones, racha, nivel y piedras
+  // cada vez que cambia lo pintado (carga, misión completada, cierre).
+  useEffect(() => {
+    if (!userId || !profile || !loaded || !heroVisto) return;
+    publicarEnReloj(
+      'hoy',
+      parteHoy({
+        hoy,
+        hero: heroVisto,
+        quests: todayQuests,
+        hechas: new Set(Object.keys(completions)),
+        streakDays: profile.streak_days,
+        recuperacionAbierta,
+      }),
+    );
+  }, [userId, profile, loaded, heroVisto, hoy, todayQuests, completions, recuperacionAbierta]);
+  // Sin sesión (cerrar sesión con Hoy montado), el reloj lo borra todo.
+  useEffect(() => {
+    if (!userId) limpiarReloj();
+  }, [userId]);
+
+  // «Hecha» desde el reloj: el mismo camino que «Completar» en la hoja (el
+  // cerrojo por misión y finishQuest), sin foto. Lo que no se puede hacer
+  // desde la muñeca vuelve con su motivo y no toca nada.
+  const relojRef = useRef({ finishQuest, release, todayQuests, recuperacionAbierta });
+  relojRef.current = { finishQuest, release, todayQuests, recuperacionAbierta };
+  useEffect(() => {
+    if (!userId) return;
+    return atenderReloj('completar', async (p) => {
+      if (p.tipo !== 'completar') return { ok: false, motivo: MOTIVO_RELOJ.noReconocida };
+      const r = relojRef.current;
+      const motivo = motivoParaNoCompletar(p, {
+        hoy: dateKey(),
+        quests: r.todayQuests,
+        hechas: new Set(Object.keys(completionsRef.current)),
+        recuperacionAbierta: r.recuperacionAbierta,
+        ocupada: completing.current.has(p.id),
+      });
+      if (motivo) return { ok: false, motivo };
+      const quest = r.todayQuests.find((q) => q.id === p.id);
+      if (!quest) return { ok: false, motivo: MOTIVO_RELOJ.sinMision };
+      completing.current.add(quest.id);
+      setBusyQuestId(quest.id);
+      try {
+        const premio = await r.finishQuest(quest, null);
+        return premio === null
+          ? { ok: false, motivo: MOTIVO_RELOJ.sistema }
+          : { ok: true, premio };
+      } finally {
+        r.release(quest.id);
+      }
+    });
+  }, [userId]);
 
   const vista: HoyVistaProps = {
     estado: loaded ? 'listo' : 'cargando',

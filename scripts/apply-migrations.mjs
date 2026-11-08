@@ -67,6 +67,8 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0111': `public.health_consent_version() = '2026-11-08-salud-v2'`,
+  '0110': `to_regclass('public.salud_diaria') is not null and coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:salud-diaria-0110%', false) and coalesce(obj_description(to_regprocedure('public.complete_health_erasure(uuid,uuid)'), 'pg_proc') like '%nivl:salud-diaria-0110%', false)`,
   '0140': `to_regprocedure('public.mis_modos()') is not null`,
   '0136': `coalesce(col_description('public.ai_plans'::regclass, (select attnum::int from pg_attribute where attrelid = 'public.ai_plans'::regclass and attname = 'routes')) like '%nivl:un-modelo-0136%', false)`,
   '0135': `coalesce(obj_description(to_regprocedure('public.reactivar_coach()'), 'pg_proc') like '%nivl:coach-pausa-0135%', false)`,

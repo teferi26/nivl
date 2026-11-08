@@ -3,6 +3,7 @@
 // La pantalla sale con lo suyo y la previsión llega después: es un extra y su
 // fallo no tumba nada.
 
+import { conCerrojoCardio } from '@/lib/cerrojoCardio';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { uuidV4 } from '@/components/fotos/modelo';
@@ -226,7 +227,7 @@ export function useHub(): UseHub {
       }
       setGuardandoEntreno(true);
       setErroresEntreno(SIN_ERRORES_ENTRENO);
-      const res = await guardarEntrenoMedido(userId, v.entrada, { rpe: v.rpe, notas: v.notas, esOtraSesion: coincide });
+      const res = await conCerrojoCardio(userId, () => guardarEntrenoMedido(userId, v.entrada, { rpe: v.rpe, notas: v.notas, esOtraSesion: coincide }));
       if (!res.ok) {
         vibrar('penalizacion');
         setErroresEntreno({ ...SIN_ERRORES_ENTRENO, servidor: MOTIVOS_TECNICOS.has(res.motivo) ? t('resistencia:hoja.errorGuardar') : res.motivo });

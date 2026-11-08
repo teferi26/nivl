@@ -16,7 +16,7 @@
 
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, Platform } from 'react-native';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { vibrar } from '@/design/haptics';
@@ -32,13 +32,16 @@ import {
   type CardioSession,
   type CardioZone,
 } from '@/lib/bodywork';
+import { conCerrojoCardio } from '@/lib/cerrojoCardio';
 import { ensureProfile } from '@/lib/data';
 import { addDays, dateKey } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
 import { CARDIO_DAILY_CAP, cardioXp } from '@/lib/game';
 import { propagarActo } from '@/lib/links';
+import { hayModuloSalud } from '@/lib/medicion/saludNativa';
 import { anuncioCardio, pagoDelModulo, primeraSesionQuePropaga, xpPagado } from '@/lib/pagoActo';
 import { mensajeSistema } from '@/lib/validation';
+import { useSellosCardio } from '@/components/medicion/useSellosCardio';
 import type { AnuncioCardio, CardioVistaProps } from './CardioVista';
 import type { ErroresCardio, HojaCardioProps } from './HojaCardio';
 import { etiquetaCardio, fechaCorta } from './tipos';
@@ -72,6 +75,7 @@ export function useCardio(): UseCardio {
   const [errorCarga, setErrorCarga] = useState<string | null>(null);
   const [errores, setErrores] = useState<ErroresCardio>(SIN_ERRORES);
   const [anuncio, setAnuncio] = useState<AnuncioCardio | null>(null);
+  const sellos = useSellosCardio(sesiones);
 
   const cargar = useCallback(async () => {
     try {
@@ -129,54 +133,59 @@ export function useCardio(): UseCardio {
 
     setGuardando(true);
     try {
-      const hoy = dateKey();
-      // Dos reglas a la vez: corregir una sesión ya registrada no vuelve a
-      // premiar (y conserva lo que pagó en su día, o el tope se recalcularía
-      // mal), y el total del día no puede pasar de CARDIO_DAILY_CAP.
-      const { pagadoHoy, pagadoEsteTipo, tiposHoy } = await cardioDayState(hoy, kind);
-      const esCorreccion = pagadoEsteTipo !== null;
+      // Hasta el último apunte: el buzón lee y paga lo mismo y no puede colarse en medio.
+      const { eco, pagado, nuevo, primera, esCorreccion } = await conCerrojoCardio(userId, async () => {
+        const hoy = dateKey();
+        // Dos reglas a la vez: corregir una sesión ya registrada no vuelve a
+        // premiar (y conserva lo que pagó en su día, o el tope se recalcularía
+        // mal), y el total del día no puede pasar de CARDIO_DAILY_CAP.
+        const { pagadoHoy, pagadoEsteTipo, tiposHoy } = await cardioDayState(hoy, kind);
+        const esCorreccion = pagadoEsteTipo !== null;
 
-      const base = esCorreccion ? 0 : cardioXp(kind, pagadoHoy);
-      const fila = {
-        date: hoy,
-        kind,
-        distance_km: km,
-        duration_min: min,
-        avg_hr: pulso.trim() ? Number(pulso) : null,
-        rpe: esfuerzo,
-        zone,
-        notes: notas.trim() || null,
-      };
-      // Primero se guarda el acto; si la misión enlazada paga parte, la fila se
-      // corrige después (de `xp` sale el tope diario, tiene que ser exacto).
-      await saveCardio(userId, { ...fila, xp: esCorreccion ? pagadoEsteTipo : base });
+        const base = esCorreccion ? 0 : cardioXp(kind, pagadoHoy);
+        const fila = {
+          date: hoy,
+          kind,
+          distance_km: km,
+          duration_min: min,
+          avg_hr: pulso.trim() ? Number(pulso) : null,
+          rpe: esfuerzo,
+          zone,
+          notes: notas.trim() || null,
+        };
+        // Primero se guarda el acto; si la misión enlazada paga parte, la fila se
+        // corrige después (de `xp` sale el tope diario, tiene que ser exacto).
+        await saveCardio(userId, { ...fila, xp: esCorreccion ? pagadoEsteTipo : base });
 
-      // Un solo gesto: con la sesión guardada se marcan solas la misión, la
-      // regla y el bloque aeróbico. Caminar no: un paseo no salda un "Correr
-      // 5 km". La misión descuenta solo a la PRIMERA sesión del día que la
-      // marca: la doble sesión real sigue cobrando lo suyo, con el tope de
-      // siempre. Antes se miraba `pagadoHoy === 0`, y como la primera sesión
-      // descontada guarda 0 XP, la segunda volvía a perder la misión.
-      const primera = primeraSesionQuePropaga(tiposHoy);
-      const eco =
-        !esCorreccion && kind !== 'caminar'
-          ? await propagarActo(await ensureProfile(userId), 'cardio', hoy)
-          : null;
-      const nuevo = esCorreccion ? 0 : pagoDelModulo(base, eco, primera);
+        // Un solo gesto: con la sesión guardada se marcan solas la misión, la
+        // regla y el bloque aeróbico. Caminar no: un paseo no salda un "Correr
+        // 5 km". La misión descuenta solo a la PRIMERA sesión del día que la
+        // marca: la doble sesión real sigue cobrando lo suyo, con el tope de
+        // siempre. Antes se miraba `pagadoHoy === 0`, y como la primera sesión
+        // descontada guarda 0 XP, la segunda volvía a perder la misión.
+        const primera = primeraSesionQuePropaga(tiposHoy);
+        const eco =
+          !esCorreccion && kind !== 'caminar'
+            ? await propagarActo(await ensureProfile(userId), 'cardio', hoy)
+            : null;
+        const nuevo = esCorreccion ? 0 : pagoDelModulo(base, eco, primera);
 
-      // Se paga `nuevo`, nunca `xp`: `xp` solo conserva en la fila lo que ya se
-      // cobró en su momento. Y se apunta lo PAGADO (el servidor recorta por
-      // topes): de `xp` sale el tope diario de cardio.
-      let pagado = 0;
-      if (nuevo > 0) {
-        const perfil = await ensureProfile(userId);
-        const res = await awardXp(perfil, nuevo, 'FUE', 'cardio_session', { kind, km, min, zone });
-        pagado = xpPagado(nuevo, perfil.xp_total, res.profile.xp_total);
-      }
-      // Vibra solo lo que entró de verdad: la misión enlazada y lo pagado por
-      // el módulo. Una corrección o un día ya en el tope no vibran.
-      if ((eco?.xp ?? 0) + pagado > 0) vibrar('mision');
-      if (!esCorreccion && pagado !== base) await saveCardio(userId, { ...fila, xp: pagado });
+        // Se paga `nuevo`, nunca `xp`: `xp` solo conserva en la fila lo que ya se
+        // cobró en su momento. Y se apunta lo PAGADO (el servidor recorta por
+        // topes): de `xp` sale el tope diario de cardio.
+        let pagado = 0;
+        if (nuevo > 0) {
+          const perfil = await ensureProfile(userId);
+          const res = await awardXp(perfil, nuevo, 'FUE', 'cardio_session', { kind, km, min, zone });
+          pagado = xpPagado(nuevo, perfil.xp_total, res.profile.xp_total);
+        }
+        // Vibra solo lo que entró de verdad: la misión enlazada y lo pagado por
+        // el módulo. Una corrección o un día ya en el tope no vibran.
+        if ((eco?.xp ?? 0) + pagado > 0) vibrar('mision');
+        if (!esCorreccion && pagado !== base) await saveCardio(userId, { ...fila, xp: pagado });
+
+        return { eco, pagado, nuevo, primera, esCorreccion };
+      });
 
       setAbierto(false);
       limpiar();
@@ -235,6 +244,7 @@ export function useCardio(): UseCardio {
       errorCarga,
       hoy: dateKey(),
       sesiones,
+      sellos,
       anuncio,
       acciones: {
         onVolver: () => volver(router),
@@ -242,6 +252,8 @@ export function useCardio(): UseCardio {
           cargar();
         },
         onRegistrar: abrir,
+        // Solo donde existe: en Android o sin el módulo sería un callejón sin salida.
+        ...(Platform.OS === 'ios' && hayModuloSalud() ? { onMedirGps: () => router.push('/entreno-gps') } : {}),
         onBorrar: borrar,
         onCerrarAnuncio: () => setAnuncio(null),
       },

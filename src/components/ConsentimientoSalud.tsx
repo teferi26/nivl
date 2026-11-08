@@ -3,6 +3,7 @@ import { AppState, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { useAuth } from '@/lib/auth';
+import { borrarCopiasLocales } from '@/lib/medicion/buzon';
 import { acceptHealthConsent, fetchHealthConsent, withdrawAndEraseHealth, HEALTH_COPY as T, HEALTH_ROUTES, type HealthConsent } from '@/lib/health';
 import { clearEvidenceSignatures } from '@/lib/data';
 import { cancelarAvisosSalud } from '@/lib/notifications';
@@ -136,6 +137,7 @@ export function HealthConsentSheet({ visible, close, accepted }: { visible: bool
 
 export function HealthPrivacySection() {
   const health = useHealthConsent();
+  const uid = useAuth().session?.user.id;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const lock = useRef(false);
@@ -144,7 +146,7 @@ export function HealthPrivacySection() {
   const erase = async () => {
     if (lock.current) return;
     lock.current = true; setBusy(true); setError(null);
-    try { await withdrawAndEraseHealth(); }
+    try { await withdrawAndEraseHealth(); if (uid) await borrarCopiasLocales(uid); }
     catch (e) { if (alive.current) setError(mensajeSistema(e)); }
     finally { await health.refresh(); lock.current = false; if (alive.current) setBusy(false); }
   };

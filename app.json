@@ -21,6 +21,11 @@
         "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "NIVL usa el micrófono solo cuando tú lo pides: para dictarle a tu coach mientras mantienes pulsado el botón de voz. Nunca graba en segundo plano.",
         "NSPhotoLibraryAddUsageDescription": "NIVL guarda en tus fotos solo las tarjetas que tú decides guardar al compartir.",
+        "NSHealthShareUsageDescription": "NIVL lee de Salud solo las categorías que tú elijas (entrenos, pasos, energía activa, pulso, sueño y peso) para mostrar tu evolución y contrastar lo que registras.",
+        "NSHealthUpdateUsageDescription": "NIVL guarda en Salud los entrenos que mides con la app, si tú lo permites.",
+        "NSLocationWhenInUseUsageDescription": "NIVL usa tu ubicación mientras mides una carrera o una salida en bici para calcular distancia, ritmo y ruta.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "NIVL usa tu ubicación durante la carrera o la salida en bici que tú arrancas, también con la pantalla apagada. Fuera de esa sesión no la usa.",
+        "UIBackgroundModes": ["location"],
         "CFBundleDevelopmentRegion": "es",
         "CFBundleLocalizations": ["es", "en", "fr", "de", "pt", "it"],
         "UISupportedInterfaceOrientations~ipad": [
@@ -32,7 +37,9 @@
         "UIRequiresFullScreen": false
       },
       "entitlements": {
-        "com.apple.developer.usernotifications.time-sensitive": true
+        "com.apple.developer.usernotifications.time-sensitive": true,
+        "com.apple.developer.healthkit": true,
+        "com.apple.developer.healthkit.access": []
       }
     },
     "android": {
@@ -108,6 +115,7 @@
         }
       ],
       "expo-secure-store",
+      "@bacons/apple-targets",
       "./plugins/withEscenas.js",
       [
         "expo-speech-recognition",

@@ -60,6 +60,7 @@ import enGeneral from './en/general.json';
 import enAyuda from './en/ayuda.json';
 import enResistencia from './en/resistencia.json';
 import enResistenciaPlan from './en/resistenciaPlan.json';
+import enMedicion from './en/medicion.json';
 import frComun from './fr/comun.json';
 import frRaiz from './fr/raiz.json';
 import frUi from './fr/ui.json';
@@ -114,6 +115,7 @@ import frGeneral from './fr/general.json';
 import frAyuda from './fr/ayuda.json';
 import frResistencia from './fr/resistencia.json';
 import frResistenciaPlan from './fr/resistenciaPlan.json';
+import frMedicion from './fr/medicion.json';
 import ptComun from './pt/comun.json';
 import ptRaiz from './pt/raiz.json';
 import ptUi from './pt/ui.json';
@@ -168,6 +170,7 @@ import ptGeneral from './pt/general.json';
 import ptAyuda from './pt/ayuda.json';
 import ptResistencia from './pt/resistencia.json';
 import ptResistenciaPlan from './pt/resistenciaPlan.json';
+import ptMedicion from './pt/medicion.json';
 import deComun from './de/comun.json';
 import deRaiz from './de/raiz.json';
 import deUi from './de/ui.json';
@@ -222,6 +225,7 @@ import deGeneral from './de/general.json';
 import deAyuda from './de/ayuda.json';
 import deResistencia from './de/resistencia.json';
 import deResistenciaPlan from './de/resistenciaPlan.json';
+import deMedicion from './de/medicion.json';
 import itComun from './it/comun.json';
 import itRaiz from './it/raiz.json';
 import itUi from './it/ui.json';
@@ -276,6 +280,7 @@ import itGeneral from './it/general.json';
 import itAyuda from './it/ayuda.json';
 import itResistencia from './it/resistencia.json';
 import itResistenciaPlan from './it/resistenciaPlan.json';
+import itMedicion from './it/medicion.json';
 
 /** Los idiomas con interfaz traducida (el español no está: es la base). */
 export const IDIOMAS_TRADUCIDOS = ['en', 'fr', 'pt', 'de', 'it'] as const;
@@ -339,6 +344,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     ayuda: enAyuda,
     resistencia: enResistencia,
     resistenciaPlan: enResistenciaPlan,
+    medicion: enMedicion,
   },
   fr: {
     comun: frComun,
@@ -395,6 +401,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     ayuda: frAyuda,
     resistencia: frResistencia,
     resistenciaPlan: frResistenciaPlan,
+    medicion: frMedicion,
   },
   pt: {
     comun: ptComun,
@@ -451,6 +458,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     ayuda: ptAyuda,
     resistencia: ptResistencia,
     resistenciaPlan: ptResistenciaPlan,
+    medicion: ptMedicion,
   },
   de: {
     comun: deComun,
@@ -507,6 +515,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     ayuda: deAyuda,
     resistencia: deResistencia,
     resistenciaPlan: deResistenciaPlan,
+    medicion: deMedicion,
   },
   it: {
     comun: itComun,
@@ -563,5 +572,6 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     ayuda: itAyuda,
     resistencia: itResistencia,
     resistenciaPlan: itResistenciaPlan,
+    medicion: itMedicion,
   },
 };

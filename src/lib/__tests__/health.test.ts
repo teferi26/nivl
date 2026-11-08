@@ -19,6 +19,7 @@ jest.mock('../supabase', () => ({ supabase: {
 } }));
 jest.mock('../auth', () => ({ useAuth: () => ({ session: mockSession }) }));
 jest.mock('../data', () => ({ clearEvidenceSignatures: () => mockClear() }));
+jest.mock('../medicion/buzon', () => ({ borrarCopiasLocales: jest.fn().mockResolvedValue(undefined) }));
 jest.mock('../notifications', () => ({ cancelarAvisosSalud: jest.fn().mockResolvedValue(undefined) }));
 jest.mock('expo-image', () => ({ Image: { clearMemoryCache: jest.fn().mockResolvedValue(true), clearDiskCache: jest.fn().mockResolvedValue(true) } }));
 jest.mock('expo-router', () => ({ router: { canGoBack: () => false, replace: jest.fn(), push: jest.fn() } }));

@@ -1,0 +1,156 @@
+{
+  "sello": {
+    "medido": "Medido",
+    "coherente": "Coherente"
+  },
+  "contraste": {
+    "medido": "Medido: hay un entreno guardado ese día que encaja con lo que apuntaste.",
+    "introducidoAMano": "Coherente: Salud tiene ese entreno, introducido a mano.",
+    "cifrasAproximadas": "Coherente: hay un entreno guardado ese día, con cifras algo distintas.",
+    "actividad": "Coherente: la actividad de ese día es compatible con lo que apuntaste.",
+    "sinDatos": "Sin datos con los que comparar."
+  },
+  "entrada": {
+    "seccion": "Medición",
+    "titulo": "Conexión con Salud",
+    "detalle": "Qué lee NIVL de Salud de Apple y qué llega al coach.",
+    "gps": "Medir con el GPS del iPhone"
+  },
+  "categoria": {
+    "entrenos": {
+      "titulo": "Entrenos y rutas",
+      "para": "Los entrenos que guardan el reloj u otras apps, con su recorrido si lo tienen. Para no apuntarlos dos veces."
+    },
+    "fc": {
+      "titulo": "Frecuencia cardiaca",
+      "para": "Tu pulso en reposo y durante el día. Para ver medias y máximos."
+    },
+    "energia": {
+      "titulo": "Energía activa",
+      "para": "Las kilocalorías activas de cada día. Para ver tu actividad real."
+    },
+    "pasos": {
+      "titulo": "Pasos",
+      "para": "Los pasos de cada día. Para ver cuánto te mueves fuera de los entrenos."
+    },
+    "sueno": {
+      "titulo": "Sueño",
+      "para": "Las horas dormidas de cada noche. Para ver cómo descansas."
+    },
+    "peso": {
+      "titulo": "Peso",
+      "para": "Tu peso. Para seguir tu evolución sin apuntarlo a mano."
+    }
+  },
+  "conexion": {
+    "eyebrow": "Cuerpo",
+    "titulo": "Salud",
+    "sub": "Tú eliges qué lee NIVL. La decisión final es la del diálogo de Apple.",
+    "cargando": "Comprobando la conexión con Salud",
+    "noDisponibleRotulo": "No disponible aquí",
+    "noDisponible": {
+      "web": "Salud de Apple solo existe en el iPhone. Desde la web no hay nada que conectar.",
+      "android": "Salud de Apple es solo de iPhone. En Android esta conexión todavía no existe.",
+      "sin_modulo": "Esta versión de NIVL no trae la conexión con Salud. Hace falta la app de la tienda, actualizada.",
+      "sin_salud": "Este dispositivo no tiene Salud de Apple."
+    },
+    "noDisponiblePie": "El resto de NIVL sigue igual. Puedes apuntar tus sesiones a mano.",
+    "queLee": "Qué puede leer",
+    "preguntada": "Preguntado",
+    "categoriaA11y": "Incluir {{categoria}} al pedir permiso a Salud",
+    "escribirTitulo": "Guardar mis entrenos en Salud",
+    "escribirDetalle": "Lo que midas con NIVL se escribe también en Salud, para que otras apps lo vean.",
+    "antesDelDialogo": "Al continuar se abre el diálogo de Salud de Apple. Lo que marques allí es lo que vale. Apple no le dice a NIVL qué has contestado: aquí solo consta que ya se preguntó.",
+    "continuar": "Continuar a Salud",
+    "errorDialogo": "No se ha podido abrir el diálogo de Salud. Inténtalo de nuevo.",
+    "dialogoHecho": "Hecho. Si no has visto el diálogo es que ya estaba contestado.",
+    "todoPreguntado": "Ya se ha preguntado por todas las categorías.",
+    "cambiarDespues": "Para cambiarlo después: app Salud, tu perfil, Apps, NIVL.",
+    "coachSeccion": "Coach",
+    "coachTitulo": "Compartir con el coach",
+    "coachDetalle": "El resumen de cada día: pasos, energía, pulso, sueño y peso.",
+    "coachNota": "Conectar Salud no activa esto. Es otra aceptación, apagada de inicio, y además hace falta tu permiso de envío de datos a la IA. Sin los dos, el resumen se queda en tu cuenta de NIVL y el coach no lo recibe.",
+    "traerSeccion": "Traer de Salud",
+    "traerCuerpo": "Revisa los entrenos de Salud que NIVL aún no tiene. Los de días pasados quedan guardados: no suman puntos ni recuperan rachas.",
+    "traer": "Traer entrenos",
+    "traerNada": "Nada nuevo en Salud.",
+    "traerFallo": "No se ha podido leer Salud. Inténtalo de nuevo.",
+    "traerIncompleto": "Una parte no se ha podido guardar. NIVL lo reintentará solo.",
+    "traerHecho_one": "{{count}} entreno revisado.",
+    "traerHecho_other": "{{count}} entrenos revisados.",
+    "hoySeccion": "Hoy en Salud",
+    "hoyFc": "Pulso medio",
+    "filaHoyA11y": "{{titulo}}: {{valor}}",
+    "hoyNota": "Sin cifra significa que Salud no tiene ese dato o no lo comparte con NIVL. No cambia nada en tu progreso."
+  },
+  "gps": {
+    "eyebrow": "Cardio",
+    "titulo": "Medir con GPS",
+    "sub": "Carrera o bici, con el iPhone encima.",
+    "noDisponibleRotulo": "No disponible aquí",
+    "noDisponible": {
+      "web": "Medir con GPS solo funciona en la app de iPhone.",
+      "android": "Medir con GPS todavía no existe en Android.",
+      "sin_modulo": "Esta versión de NIVL no trae la medición con GPS. Hace falta la app de la tienda, actualizada.",
+      "sin_salud": "Este dispositivo no puede medir con GPS."
+    },
+    "noDisponiblePie": "Puedes apuntar la sesión a mano en Cardio.",
+    "permisoRotulo": "Ubicación",
+    "permisoCuerpo": "Para medir distancia y ritmo, NIVL necesita tu ubicación. Solo se usa durante la sesión que arranques tú, también con la pantalla apagada. Al terminar, la ruta se guarda en tu cuenta de NIVL.",
+    "permisoDenegado": "NIVL no tiene acceso a tu ubicación. Para medir con GPS, actívalo en Ajustes.",
+    "permisoContinuar": "Continuar",
+    "abrirAjustes": "Abrir Ajustes",
+    "deporte": "Deporte",
+    "carrera": "Carrera",
+    "bici": "Bici",
+    "autoPausa": "Pausa automática",
+    "autoPausaDetalle": "El tiempo se para cuando te detienes.",
+    "empezar": "Empezar",
+    "errorEmpezar": "La sesión no ha arrancado. Inténtalo de nuevo.",
+    "errorParar": "La sesión no se ha podido cerrar. Inténtalo de nuevo.",
+    "errorLeer": "La sesión no se ha podido leer y no se ha guardado.",
+    "notaReloj": "Si llevas Apple Watch, empieza desde el reloj: cada sesión se mide en un solo sitio.",
+    "fase": {
+      "midiendo": "Midiendo",
+      "pausa_auto": "Pausa automática",
+      "pausa": "En pausa"
+    },
+    "tiempo": "Tiempo",
+    "tiempoA11y": "Tiempo: {{tiempo}}",
+    "km": "Km",
+    "ritmo": "Min/km",
+    "velocidad": "Km/h",
+    "precision": "Señal",
+    "precisionA11y": "Señal {{calidad}}, margen de {{metros}} metros",
+    "calidad": {
+      "buena": "Buena",
+      "media": "Media",
+      "debil": "Débil"
+    },
+    "pausar": "Pausar",
+    "reanudar": "Reanudar",
+    "fin": "Terminar",
+    "descartar": "Descartar sesión",
+    "confirmarFinTitulo": "Terminar la sesión",
+    "confirmarFinMensaje": "Lo medido hasta ahora se guardará.",
+    "confirmarDescartarTitulo": "Descartar la sesión",
+    "confirmarDescartarMensaje": "Lo medido se perderá. Esta acción no se puede deshacer.",
+    "parciales": "Parciales",
+    "parcial": "Parcial {{n}}",
+    "interrumpidaRotulo": "Sesión interrumpida",
+    "interrumpidaCuerpo": "NIVL se cerró con la sesión en marcha. Lo medido hasta entonces sigue aquí. Mientras estuvo cerrada no se midió nada.",
+    "terminarGuardar": "Terminar y guardar",
+    "guardando": "Guardando la sesión",
+    "cortaRotulo": "Sin sesión que guardar",
+    "cortaCuerpo": "Duró menos de 30 segundos o el GPS no llegó a dar puntos. No se ha guardado nada.",
+    "nueva": "Nueva sesión",
+    "guardadaRotulo": "Sesión guardada",
+    "guardadaCuerpo": "La sesión ya está en tu historial.",
+    "duplicadaRotulo": "Ya la teníamos",
+    "duplicadaCuerpo": "Esta sesión ya estaba registrada desde otro dispositivo. No se ha añadido otra vez.",
+    "deOtroDia": "Terminó otro día. Queda guardada, pero no cuenta para aquel día.",
+    "pendienteRotulo": "Aún sin subir",
+    "pendienteCuerpo": "La sesión está a salvo en este móvil. NIVL volverá a intentarlo al abrirse de nuevo.",
+    "volverCardio": "Volver"
+  }
+}

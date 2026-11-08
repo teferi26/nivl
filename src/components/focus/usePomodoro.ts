@@ -28,6 +28,8 @@ import {
 } from '@/focus/pomodoro';
 import { avisarFin, cancelarAvisoFin, guardarConfig, guardarEstado, leerConfig, leerEstado } from '@/focus/temporizador';
 import { t } from '@/i18n';
+import { MOTIVO_RELOJ, focusReloj } from '@/watch/contrato';
+import { atenderReloj, publicarEnReloj } from '@/watch/puente';
 import { prepararFin, sonarFin } from './sonidoFin';
 
 export interface UsePomodoro {
@@ -150,6 +152,24 @@ export function usePomodoro(uid: string | null, onFin: (c: Cierre, config: Confi
     },
     [uid],
   );
+
+  // Apple Watch: el reloj sigue este pomodoro (fase, fin y bloque) y puede
+  // arrancarlo, pausarlo o pararlo mientras FOCUS está montado. El reloj
+  // cuenta solo con `finEn`: no hace falta publicar cada segundo.
+  useEffect(() => {
+    if (!listo) return;
+    publicarEnReloj('focus', focusReloj(estado, config, Date.now()));
+  }, [listo, estado, config]);
+  useEffect(() => {
+    if (!listo) return;
+    return atenderReloj('focus', async (p) => {
+      if (p.tipo !== 'focus') return { ok: false, motivo: MOTIVO_RELOJ.noReconocida };
+      if (p.accion === 'empezar') empezar();
+      else if (p.accion === 'pausar') pausarFn();
+      else parar();
+      return { ok: true };
+    });
+  }, [listo, empezar, pausarFn, parar]);
 
   return { listo, config, estado, ahora, empezar, pausar: pausarFn, saltar, parar, fijarObjetivo, fijarConfig };
 }

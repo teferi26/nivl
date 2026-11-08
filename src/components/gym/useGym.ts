@@ -12,7 +12,7 @@
 
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, Platform } from 'react-native';
 import { useCelebracion } from '@/components/celebracion/contexto';
 import { avisar, confirmar } from '@/components/ui/confirmar';
@@ -54,6 +54,8 @@ import type { LogroInfo } from '@/lib/progression';
 import { supabase } from '@/lib/supabase';
 import type { GymDay, GymExercise, GymSession } from '@/lib/types';
 import { mensajeSistema } from '@/lib/validation';
+import { ironReloj } from '@/watch/contrato';
+import { publicarEnReloj } from '@/watch/puente';
 import type { GymVistaProps } from './GymVista';
 import type { HojaDiaProps, HojaEjercicioProps } from './HojasGym';
 import type { LiftInput, SerieInput } from './SesionEnCurso';
@@ -467,6 +469,14 @@ export function useGym(): UseGym {
     setExEditando(null);
     setExFormDay(null);
   };
+
+  // Apple Watch: con la sesión en marcha, el reloj enseña la serie que toca y
+  // su descanso. Al terminar o salir sin entrenar, se retira.
+  useEffect(() => {
+    publicarEnReloj('iron', training ? ironReloj(lifts, prescrito) : null);
+  }, [training, lifts, prescrito]);
+  // La sesión vive en esta pantalla: al desmontarse, el reloj no la enseña más.
+  useEffect(() => () => publicarEnReloj('iron', null), []);
 
   // IRON en Gimnasio (Modos F1): solo con `modos_activos`. Apagado, la
   // pantalla es la de siempre: sin «Ver técnica» ni catálogo en la hoja.
