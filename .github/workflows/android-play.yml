@@ -1,0 +1,132 @@
+# NIVL · AAB de Android para la prueba cerrada de Google Play, sin gastar cupo de EAS.
+#
+# Mismo planteamiento que ios-testflight.yml: `eas build --local` compila en el
+# runner y EAS solo pone la firma, las variables de `production` y el contador
+# de versionCode. Único secreto: EXPO_TOKEN.
+#
+# Se lanza con un push a una rama `android/**` (así no hace falta tocar la rama
+# por defecto) o a mano desde Actions si el archivo ya está en ella.
+#
+# No hay cuenta de servicio de Google en EAS, así que `eas submit` no sirve: el
+# AAB sale como artefacto y se sube a mano en Play Console. En un repo público
+# cualquiera con cuenta de GitHub puede bajarlo mientras exista; por eso dura
+# solo 3 días. Lleva lo mismo que recibe un tester (nada de la clave de firma).
+
+name: Android a Play (AAB)
+
+on:
+  push:
+    branches:
+      - 'android/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-play
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    uses: ./.github/workflows/ci.yml
+
+  build:
+    needs: preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EAS_NO_VCS: '0'
+    steps:
+      - name: Falta el token
+        if: ${{ env.EXPO_TOKEN == '' }}
+        run: |
+          echo "::error::Falta el secreto EXPO_TOKEN en Settings → Secrets and variables → Actions."
+          exit 1
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+
+      - name: Memoria para Gradle
+        run: |
+          mkdir -p ~/.gradle
+          echo 'org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=2g -XX:+HeapDumpOnOutOfMemoryError' >> ~/.gradle/gradle.properties
+          echo 'org.gradle.daemon=false' >> ~/.gradle/gradle.properties
+          echo 'kotlin.daemon.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1g' >> ~/.gradle/gradle.properties
+
+      # El wrapper de Gradle baja el zip de GitHub Releases una sola vez y sin
+      # reintentos: un 504 de ese host tiró la build. Se deja ya en su caché
+      # (el directorio es el MD5 de la URL en base 36), con reintentos, un espejo
+      # de respaldo y la huella oficial, que es lo que da fe del archivo.
+      - name: Precargar Gradle
+        env:
+          GRADLE_ZIP: gradle-8.14.3-bin.zip
+          GRADLE_SHA256: bd71102213493060956ec229d946beee57158dbd89d0e62b91bca0fa2c5f3531
+        run: |
+          set -euo pipefail
+          dir="$HOME/.gradle/wrapper/dists/gradle-8.14.3-bin/cv11ve7ro1n3o1j4so8xd9n66"
+          mkdir -p "$dir"
+          curl -fsSL --retry 4 --retry-all-errors --retry-delay 15 -m 240 \
+            -o "$dir/$GRADLE_ZIP" "https://services.gradle.org/distributions/$GRADLE_ZIP" \
+          || curl -fsSL --retry 4 --retry-all-errors --retry-delay 15 -m 240 \
+            -o "$dir/$GRADLE_ZIP" "https://mirrors.cloud.tencent.com/gradle/$GRADLE_ZIP"
+          echo "$GRADLE_SHA256  $dir/$GRADLE_ZIP" | sha256sum -c -
+
+      # El portal de plugins redirige los jar de Kotlin a GitHub Releases, que da
+      # 504 a rachas. Maven Central los sirve directos: va delante del portal.
+      - name: Maven Central primero en Gradle
+        run: |
+          mkdir -p ~/.gradle/init.d
+          cat > ~/.gradle/init.d/central-primero.gradle <<'EOF'
+          def primero = { repos ->
+            def central = repos.mavenCentral()
+            repos.remove(central)
+            repos.addFirst(central)
+            // Solo el grupo exacto: los marcadores de plugin (org.jetbrains.kotlin.jvm…) siguen en el portal.
+            repos.all { r ->
+              if (r.name.startsWith('Gradle Central Plugin')) r.content { excludeGroup 'org.jetbrains.kotlin' }
+            }
+          }
+          beforeSettings { s ->
+            primero(s.pluginManagement.repositories)
+            primero(s.buildscript.repositories)
+            primero(s.dependencyResolutionManagement.repositories)
+          }
+          allprojects {
+            primero(buildscript.repositories)
+            primero(repositories)
+          }
+          EOF
+
+      - run: npm ci
+
+      - run: npm install --global eas-cli@21.2.0
+
+      - name: Compilar el AAB
+        run: |
+          eas build --platform android --profile production --local \
+            --non-interactive --output "$RUNNER_TEMP/nivl.aab"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nivl-aab
+          path: ${{ runner.temp }}/nivl.aab
+          retention-days: 3
+          if-no-files-found: error
