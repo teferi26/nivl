@@ -1,7 +1,6 @@
 // Idiomas antes que nada: el init de i18next es síncrono y `t()` tiene que
 // valer desde el primer módulo que lo use (docs/i18n/PLAN-1010.md).
 import { activarIdiomasInterfaz, t, useIdiomaInterfaz } from '@/i18n';
-import { Cinzel_600SemiBold, Cinzel_700Bold, Cinzel_900Black } from '@expo-google-fonts/cinzel';
 import { PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display/700Bold';
 import { Outfit_400Regular, Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold, Outfit_800ExtraBold } from '@expo-google-fonts/outfit';
 import { useFonts } from 'expo-font';
@@ -232,10 +231,6 @@ export default function RootLayout() {
   // Playfair para la marca, los títulos y las cifras; Outfit para todo lo que habla.
   const [loaded, error] = useFonts({
     PlayfairDisplay_700Bold,
-    Cinzel_600SemiBold,
-    Cinzel_700Bold,
-    // Los nombres de modo grandes de la rueda y la cabecera de cada mundo (P01).
-    Cinzel_900Black,
     Outfit_500Medium,
     Outfit_600SemiBold,
     Outfit_700Bold,
