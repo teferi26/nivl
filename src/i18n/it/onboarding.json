@@ -80,9 +80,9 @@
   },
   "coach": {
     "inscripcion": "Il coach",
-    "titulo": "Firmato. Ora, chi lo dirige.",
-    "pista": "Le tue abitudini, la tua organizzazione e i tuoi progressi sono gratis. NIVL Pro aggiunge il coach IA.",
-    "pistaHoja": "Le tue abitudini, la tua organizzazione e i tuoi progressi sono gratis. NIVL Pro aggiunge il coach IA. Decidi ora o più avanti: l'impegno vale lo stesso.",
+    "titulo": "Il tuo piano è pronto. Scegli come continuare.",
+    "pista": "NIVL e le tue abitudini restano gratis. Ogni modalità a pagamento apre il suo mondo e il suo coach.",
+    "pistaHoja": "NIVL e le tue abitudini restano gratis. Ogni modalità a pagamento apre il suo mondo e il suo coach.",
     "preparandoA11y": "Preparazione del tuo ingresso",
     "seguirGratis": "Continua gratis per ora"
   },

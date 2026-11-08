@@ -455,7 +455,9 @@ export default function Onboarding() {
         return;
       }
       if (s) estadoIA.current = s;
-      const d = await ofrecerSi('firma', s, { celebrando: false });
+      const sugerida = await ofrecerSi('firma', s, { celebrando: false });
+      // Tras el plan de 90 días siempre va la oferta entera, nunca la línea discreta.
+      const d = sugerida.mostrar ? { ...sugerida, forma: 'hoja' as const } : sugerida;
       // Se guarda también el «no»: si entrar falla, el pie da el botón para reintentarlo.
       setDecisionOferta(d);
       if (!d.mostrar) await finish();
