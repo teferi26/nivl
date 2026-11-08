@@ -13,6 +13,7 @@ const DEPORTES_QUE_PAGAN: readonly EntrenoMedido['deporte'][] = [
   'bici',
   'piscina',
   'aguas_abiertas',
+  'caminar',
 ];
 const PRIORIDAD: Record<OrigenEntreno, number> = { watch: 3, iphone_gps: 2, salud: 1, manual: 0 };
 

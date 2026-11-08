@@ -357,6 +357,8 @@ final class LectorSalud: @unchecked Sendable {
         ? "aguas_abiertas" : "piscina"
     case .traditionalStrengthTraining, .functionalStrengthTraining, .coreTraining:
       return "fuerza"
+    case .walking, .hiking:
+      return "caminar"
     default:
       return "otro"
     }
