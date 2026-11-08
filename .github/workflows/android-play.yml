@@ -99,10 +99,15 @@ jobs:
             def central = repos.mavenCentral()
             repos.remove(central)
             repos.addFirst(central)
+            // Solo el grupo exacto: los marcadores de plugin (org.jetbrains.kotlin.jvm…) siguen en el portal.
+            repos.all { r ->
+              if (r.name.startsWith('Gradle Central Plugin')) r.content { excludeGroup 'org.jetbrains.kotlin' }
+            }
           }
           beforeSettings { s ->
             primero(s.pluginManagement.repositories)
             primero(s.buildscript.repositories)
+            primero(s.dependencyResolutionManagement.repositories)
           }
           allprojects {
             primero(buildscript.repositories)
