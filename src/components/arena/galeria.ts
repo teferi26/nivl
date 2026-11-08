@@ -33,6 +33,7 @@ export type IdPantalla =
   | 'memoria'
   | 'economia'
   | 'creador'
+  | 'moderacion'
   // Modos F1 (solo con modos_activos encendido en la app).
   | 'modos'
   // El mundo IRON en la piel de la P01 (src/components/ironmundo).
@@ -88,6 +89,7 @@ export const PANTALLAS_DEMO: { id: IdPantalla; titulo: string }[] = [
   { id: 'memoria', titulo: 'Memoria' },
   { id: 'economia', titulo: 'Economía' },
   { id: 'creador', titulo: 'Creador' },
+  { id: 'moderacion', titulo: 'Moderación' },
   { id: 'modos', titulo: 'Modos' },
   { id: 'iron', titulo: 'IRON' },
   { id: 'prueba', titulo: 'Prueba Élite' },

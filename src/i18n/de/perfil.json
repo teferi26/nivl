@@ -47,6 +47,8 @@
     "codigoDetalle": "Hat dich jemand gebracht? Gib den Code ein",
     "panelCreador": "Creator-Panel",
     "panelCreadorDetalle": "Dein Code, deine Verkäufe und deine Auszahlungen",
+    "moderacion": "Moderation",
+    "moderacionDetalle": "Meldungen und zu prüfende Profile",
     "enPausa": "System pausiert",
     "pausaHasta": "{{frase}} Bis {{dia}}.",
     "registro": "Bilanz",

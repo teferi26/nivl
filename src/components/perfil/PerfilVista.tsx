@@ -51,6 +51,8 @@ export interface PerfilDatos {
   /** La fila «Código de creador»: sin atribución y en plazo. */
   codigoCreador: boolean;
   esCreador: boolean;
+  /** La fila «Moderación»: solo cuentas en `admins` (es_admin). */
+  esAdmin: boolean;
   logros: LogroVitrina[];
   stats: { total: number; withEvidence: number };
   /** La frase de racha del sistema: va como `linea` del Hero. */
@@ -185,6 +187,14 @@ export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, accione
                 titulo={t('perfil:vista.panelCreador')}
                 detalle={t('perfil:vista.panelCreadorDetalle')}
                 onPress={() => router.push('/creador')}
+              />
+            ) : null}
+            {datos.esAdmin ? (
+              <FilaArena
+                icono="shield-outline"
+                titulo={t('perfil:vista.moderacion')}
+                detalle={t('perfil:vista.moderacionDetalle')}
+                onPress={() => router.push('/moderacion' as never)}
               />
             ) : null}
           </View>

@@ -47,6 +47,8 @@
     "codigoDetalle": "Alguém te trouxe? Escreve o código dessa pessoa",
     "panelCreador": "Painel de criador",
     "panelCreadorDetalle": "O teu código, as tuas vendas e os teus pagamentos",
+    "moderacion": "Moderação",
+    "moderacionDetalle": "Denúncias e perfis por rever",
     "enPausa": "Sistema em pausa",
     "pausaHasta": "{{frase}} Até {{dia}}.",
     "registro": "Registo",

@@ -47,6 +47,8 @@
     "codigoDetalle": "Quelqu'un t'a amené ? Saisis son code",
     "panelCreador": "Tableau de bord créateur",
     "panelCreadorDetalle": "Ton code, tes ventes et tes paiements",
+    "moderacion": "Modération",
+    "moderacionDetalle": "Signalements et profils à vérifier",
     "enPausa": "Système en pause",
     "pausaHasta": "{{frase}} Jusqu'au {{dia}}.",
     "registro": "Historique",

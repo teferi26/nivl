@@ -47,6 +47,8 @@
     "codigoDetalle": "Did someone bring you? Enter their code",
     "panelCreador": "Creator dashboard",
     "panelCreadorDetalle": "Your code, your sales and your payouts",
+    "moderacion": "Moderation",
+    "moderacionDetalle": "Reports and profiles to review",
     "enPausa": "System paused",
     "pausaHasta": "{{frase}} Until {{dia}}.",
     "registro": "Record",
