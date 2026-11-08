@@ -151,3 +151,59 @@ func formatoReloj(_ segundos: Double) -> String {
 func formatoKilos(_ k: Double) -> String {
   k.rounded() == k ? String(Int(k)) : String(format: "%.1f", k).replacingOccurrences(of: ".", with: ",")
 }
+
+/// Los controles del entreno: icono y una palabra, tocables con guantes o con
+/// la mano mojada. Sin alto fijo: crece con el tipo y no corta en 40 mm.
+struct BotonControl: ButtonStyle {
+  var invertido = false
+  @Environment(\.isEnabled) private var activo
+
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label
+      .font(Tipo.rotulo)
+      .tracking(1)
+      .textCase(.uppercase)
+      .lineLimit(1)
+      .minimumScaleFactor(0.6)
+      .padding(.vertical, 6)
+      .padding(.horizontal, 2)
+      .frame(maxWidth: .infinity, minHeight: 50)
+      .foregroundStyle(!activo ? Ink.ink6 : (invertido ? Ink.ink0 : Ink.ink9))
+      .background(invertido && activo ? Ink.ink10 : (configuration.isPressed ? Ink.ink2 : Ink.ink0))
+      .overlay(Rectangle().stroke(invertido && activo ? Color.clear : Ink.ink4, lineWidth: 1))
+      .scaleEffect(configuration.isPressed ? 0.97 : 1)
+      .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
+  }
+}
+
+/// El valor que el sensor no ha dado. Dos guiones simples, nunca un 0: un 0
+/// se leería como medido.
+let sinMedir = "--"
+
+/// Cronómetro de lo transcurrido: «4:05», «1:02:00». Hacia abajo, al revés
+/// que formatoReloj (una cuenta atrás), para no adelantar un segundo.
+func formatoCrono(_ segundos: Double) -> String {
+  guard segundos.isFinite else { return "0:00" }
+  let s = max(0, Int(segundos))
+  let h = s / 3600, m = (s % 3600) / 60, ss = s % 60
+  return h > 0 ? String(format: "%d:%02d:%02d", h, m, ss) : String(format: "%d:%02d", m, ss)
+}
+
+/// Un decimal fijo con coma: «12,48».
+func formatoDecimal(_ n: Double, decimales: Int) -> String {
+  String(format: "%.\(decimales)f", n).replacingOccurrences(of: ".", with: ",")
+}
+
+/// Ritmo «4:32» a partir de segundos. Parado, el ritmo se dispara: más de una
+/// hora por tramo no es un dato que enseñar.
+func formatoRitmo(_ segundos: Double?) -> String {
+  guard let segundos, segundos.isFinite, segundos > 0, segundos < 3600 else { return sinMedir }
+  let s = Int(segundos.rounded())
+  return String(format: "%d:%02d", s / 60, s % 60)
+}
+
+/// Un entero medido, o los dos guiones si no lo hay.
+func formatoEntero(_ n: Double?) -> String {
+  guard let n, n.isFinite else { return sinMedir }
+  return formatoMiles(Int(n.rounded()))
+}

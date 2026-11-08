@@ -89,6 +89,10 @@ export interface EstadoReloj {
   piedrasMax: number;
   focus: FocusReloj | null;
   iron: IronReloj | null;
+  /** Permiso de salud de NIVL. null = no consta, y sin él el reloj no mide. */
+  saludAceptada: boolean | null;
+  /** La cuenta del iPhone: el reloj sella con ella lo que mide. */
+  dueno: string | null;
 }
 
 // ── Las tres partes que publica cada pantalla ─────────────────────────
@@ -99,13 +103,20 @@ export type ParteHoy = Pick<
   'fecha' | 'misiones' | 'racha' | 'rachaCerrada' | 'nivel' | 'xpEnNivel' | 'xpSiguiente' | 'rango' | 'titulo' | 'piedras'
 >;
 
+/** Lo que publica la raíz de la app, sin esperar a ninguna pantalla. */
+export interface PermisoSaludReloj {
+  aceptada: boolean;
+  dueno: string;
+}
+
 export interface PartesReloj {
   hoy: ParteHoy | null;
   focus: FocusReloj | null;
   iron: IronReloj | null;
+  salud?: PermisoSaludReloj | null;
 }
 
-export const PARTES_VACIAS: PartesReloj = { hoy: null, focus: null, iron: null };
+export const PARTES_VACIAS: PartesReloj = { hoy: null, focus: null, iron: null, salud: null };
 
 /** Lo que Hoy ya tiene derivado (HeroHoy de derivarHoy) y hace falta aquí. */
 export interface HeroParaReloj {
@@ -279,7 +290,19 @@ export function componerEstado(p: PartesReloj, ahora: number, sesion = true): Es
     piedrasMax: MAX_STONES,
     focus: sesion ? p.focus : null,
     iron: sesion ? p.iron : null,
+    saludAceptada: sesion ? (p.salud?.aceptada ?? null) : null,
+    dueno: sesion ? (p.salud?.dueno ?? null) : null,
   };
+}
+
+/** La cuenta con la que el reloj selló un entreno; null si no consta. */
+export function duenoEntreno(json: string): string | null {
+  try {
+    const v = JSON.parse(json) as { dueno?: unknown } | null;
+    return typeof v?.dueno === 'string' && v.dueno.length > 0 ? v.dueno : null;
+  } catch {
+    return null;
+  }
 }
 
 /**

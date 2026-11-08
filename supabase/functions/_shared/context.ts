@@ -247,6 +247,38 @@ async function lineaFotos(sb: Db): Promise<string | null> {
   }
 }
 
+/**
+ * Datos de Apple Salud, solo con el interruptor «Compartir con el coach» y el
+ * consentimiento de IA vigentes (el permiso de salud ya lo exige buildContext).
+ * Solo días cerrados: el de hoy cambia con cada sincronización y esta parte va
+ * en el sistema cacheado. Cualquier fallo es no enviar nada.
+ */
+async function lineasSaludDiaria(sb: Db, userId: string, today: string): Promise<string[]> {
+  try {
+    const pref = await sb.from('salud_preferencias').select('enviar_a_coach').eq('user_id', userId).maybeSingle();
+    if (pref.error || pref.data?.enviar_a_coach !== true) return [];
+    const ia = await sb.rpc('my_ai_consent');
+    if (ia.error || (ia.data as { granted?: unknown } | null)?.granted !== true) return [];
+    const { data, error } = await sb.from('salud_diaria')
+      .select('fecha, pasos, kcal_activas, fc_media, fc_reposo, sueno_min, peso_kg')
+      .eq('user_id', userId).lt('fecha', today).order('fecha', { ascending: false }).limit(7);
+    if (error || !Array.isArray(data)) return [];
+    return (data as any[]).map((d) => {
+      const partes = [
+        d.pasos != null ? `${d.pasos} pasos` : null,
+        d.kcal_activas != null ? `${d.kcal_activas} kcal activas` : null,
+        d.fc_media != null ? `pulso medio ${d.fc_media}` : null,
+        d.fc_reposo != null ? `reposo ${d.fc_reposo}` : null,
+        d.sueno_min != null ? `sueño ${Math.floor(d.sueno_min / 60)} h ${d.sueno_min % 60} min` : null,
+        d.peso_kg != null ? `${d.peso_kg} kg` : null,
+      ].filter(Boolean);
+      return partes.length ? `- ${enUnaLinea(d.fecha, 10)}: ${partes.join(' · ')}` : null;
+    }).filter((l): l is string => l !== null);
+  } catch {
+    return [];
+  }
+}
+
 export async function buildContext(
   sb: Db,
   userId: string,
@@ -266,6 +298,7 @@ export async function buildContext(
   // (nunca leen datos de terceros). En paralelo; si fallan, no hay línea.
   const ligaP = LIGAS_ACTIVAS ? lineaLiga(sb) : Promise.resolve(null);
   const fotosP = lineaFotos(sb);
+  const saludDiariaP = lineasSaludDiaria(sb, userId, today);
 
   const [
     profileRes,
@@ -498,6 +531,16 @@ export async function buildContext(
     push('## Peso (más reciente primero)');
     push((weightRes.data as any[]).map((w) => `${w.date}: ${w.weight_kg} kg`).join(' · '));
     push();
+  }
+
+  {
+    const saludDiaria = await saludDiariaP;
+    if (saludDiaria.length) {
+      push('## Apple Salud (días cerrados, lo más reciente primero)');
+      for (const l of saludDiaria) push(l);
+      push('Datos de Apple Salud; algunos pueden estar introducidos a mano. Úsalo para ajustar carga y descanso; no diagnostiques con ello.');
+      push();
+    }
   }
 
   {

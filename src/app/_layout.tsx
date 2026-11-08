@@ -7,11 +7,11 @@ import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { EdadMinimaGuard, EdadMinimaProvider, useEdadMinima } from '@/components/EdadMinima';
-import { HealthConsentGuard, HealthConsentProvider } from '@/components/ConsentimientoSalud';
+import { HealthConsentGuard, HealthConsentProvider, useHealthConsent } from '@/components/ConsentimientoSalud';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { CelebracionProvider } from '@/components/celebracion/CelebracionProvider';
 import { TopeAncho } from '@/design/useSizeClass';
@@ -19,12 +19,15 @@ import { sincronizarIdioma } from '@/i18n/sincronizar';
 import { arrancarAnalitica } from '@/lib/analitica';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { useFlags } from '@/lib/flags';
+import { arrancarBuzon } from '@/lib/medicion/buzon';
+import { gpsDescartar } from '@/lib/medicion/saludNativa';
 import { identificarEnTienda } from '@/lib/pro';
 import { registrarDispositivo } from '@/lib/push';
 import { destinoPortal, SITIO_CREADORES } from '@/lib/sitio';
 import { colors } from '@/lib/theme';
 import { useNotificationRouting } from '@/lib/useNotificationRouting';
 import { ModoProvider } from '@/modos';
+import { publicarPermisoSalud } from '@/watch/puente';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -104,6 +107,33 @@ function ProtectedStack() {
     if (loading || !userId) return;
     return sincronizarIdioma(userId);
   }, [loading, userId]);
+
+  // El buzón de entrenos medidos solo corre con sesión y permiso de salud. Sin
+  // permiso confirmado (no por un fallo de red) el GPS se apaga: su pantalla
+  // queda tapada y no habría desde dónde pararlo. Lo que espera en los buzones
+  // se retiene; solo un borrado expreso lo elimina (`borrarCopiasLocales`).
+  const { accepted: saludAceptada, loading: saludCargando, error: saludError } = useHealthConsent();
+  useEffect(() => {
+    if (Platform.OS !== 'ios' || loading || !userId || !edadConfirmada) return;
+    if (saludAceptada) return arrancarBuzon(userId);
+    if (!saludCargando && !saludError) gpsDescartar();
+  }, [loading, userId, edadConfirmada, saludAceptada, saludCargando, saludError]);
+
+  // Una sesión GPS es de la cuenta que la empezó: sin sesión o con otra, fuera.
+  const usuarioPrevio = useRef<string | null>(null);
+  useEffect(() => {
+    if (Platform.OS !== 'ios' || loading) return;
+    if (!userId || (usuarioPrevio.current !== null && usuarioPrevio.current !== userId)) gpsDescartar();
+    usuarioPrevio.current = userId;
+  }, [loading, userId]);
+
+  // El reloj no mide sin este permiso. Con un fallo de red se queda lo último
+  // que supo: un corte no debe dejarle sin entrenar.
+  useEffect(() => {
+    if (Platform.OS !== 'ios' || loading) return;
+    if (!userId) publicarPermisoSalud(null);
+    else if (!saludCargando && !saludError) publicarPermisoSalud({ aceptada: saludAceptada, dueno: userId });
+  }, [loading, userId, saludAceptada, saludCargando, saludError]);
 
   useEffect(() => {
     if (loading) return;

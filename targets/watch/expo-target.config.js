@@ -13,9 +13,11 @@ module.exports = (config) => ({
   colors: {
     $accent: '#FFFFFF',
   },
-  frameworks: ['SwiftUI', 'WatchConnectivity', 'WidgetKit', 'UserNotifications'],
+  frameworks: ['SwiftUI', 'WatchConnectivity', 'WidgetKit', 'UserNotifications', 'HealthKit', 'CoreLocation'],
   entitlements: {
     // La complicación lee lo que guarda la app del reloj.
     'com.apple.security.application-groups': [`group.${config.ios.bundleIdentifier}`],
+    // Medir entrenos con HKWorkoutSession.
+    'com.apple.developer.healthkit': true,
   },
 });

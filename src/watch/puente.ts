@@ -17,9 +17,11 @@ import {
   MOTIVO_RELOJ,
   PARTES_VACIAS,
   componerEstado,
+  duenoEntreno,
   leerPeticion,
   type PartesReloj,
   type PeticionReloj,
+  type PermisoSaludReloj,
   type RespuestaReloj,
 } from './contrato';
 
@@ -29,12 +31,20 @@ interface PendienteNativo {
   json: string;
 }
 
+interface EntregaEntreno {
+  id: string;
+  json: string;
+}
+
 interface ModuloNivlWatch {
   disponible(): boolean;
   actualizarContexto(json: string): void;
   tomarPendientes(): PendienteNativo[];
   responder(id: string, json: string): void;
-  addListener(evento: 'onMensaje', fn: () => void): { remove: () => void };
+  // Opcionales: los binarios anteriores a la medición no los traen.
+  tomarEntrenos?(): EntregaEntreno[];
+  confirmarEntreno?(id: string): void;
+  addListener(evento: 'onMensaje' | 'onEntreno', fn: () => void): { remove: () => void };
 }
 
 const nativo: ModuloNivlWatch | null =
@@ -87,6 +97,15 @@ export function publicarEnReloj<K extends keyof PartesReloj>(parte: K, valor: Pa
   sesion = true;
   partes = { ...partes, [parte]: valor };
   programarEnvio();
+}
+
+/** El permiso de salud y la cuenta. `null` si no hay sesión. */
+export function publicarPermisoSalud(permiso: PermisoSaludReloj | null): void {
+  if (!nativo) return;
+  partes = { ...partes, salud: permiso };
+  // Viaja con la parte de Hoy: sin ella el contexto diría «sin sesión» y el
+  // reloj borraría su día al abrir la app.
+  if (partes.hoy) programarEnvio();
 }
 
 /** Tras cerrar sesión: el reloj borra misiones, racha y todo lo demás. */
@@ -180,4 +199,82 @@ export function atenderReloj(tipo: 'completar' | 'focus', fn: Atencion): () => v
   return () => {
     if (atenciones.get(tipo) === fn) atenciones.delete(tipo);
   };
+}
+
+// ── Entrenos medidos en el reloj ──────────────────────────────────────
+
+/**
+ * Drena el buzón nativo ahora y cada vez que llegue un entreno. Si `fn` devuelve
+ * true se confirma (el reloj borra su copia); si no, queda para la próxima.
+ * Solo hay un drenaje a la vez: los ficheros siguen en disco hasta confirmar.
+ */
+export function alRecibirEntrenoReloj(fn: (id: string, json: string) => Promise<boolean>): () => void {
+  const modulo = nativo;
+  if (!modulo || !disponible() || typeof modulo.tomarEntrenos !== 'function') return () => {};
+
+  let activo = true;
+  let enCurso = false;
+  let otraVez = false;
+
+  const drenar = async () => {
+    if (enCurso) {
+      otraVez = true;
+      return;
+    }
+    enCurso = true;
+    try {
+      do {
+        otraVez = false;
+        let lote: EntregaEntreno[] = [];
+        try {
+          lote = modulo.tomarEntrenos?.() ?? [];
+        } catch {
+          return;
+        }
+        for (const { id, json } of lote) {
+          if (!activo) return;
+          let confirmar = false;
+          try {
+            confirmar = await fn(id, json);
+          } catch {
+            confirmar = false;
+          }
+          if (!confirmar) continue;
+          try {
+            modulo.confirmarEntreno?.(id);
+          } catch {
+            // Sin confirmar se reintenta, y guardar es idempotente.
+          }
+        }
+      } while (otraVez && activo);
+    } finally {
+      enCurso = false;
+    }
+  };
+
+  let sub: { remove: () => void } | null = null;
+  try {
+    sub = modulo.addListener('onEntreno', () => void drenar());
+  } catch {
+    sub = null;
+  }
+  void drenar();
+  return () => {
+    activo = false;
+    sub?.remove();
+  };
+}
+
+/** Borrado de datos: fuera lo de esa cuenta en el buzón, también la copia del reloj. */
+export function vaciarEntrenosReloj(dueno: string): void {
+  const modulo = nativo;
+  if (!modulo || !disponible() || typeof modulo.tomarEntrenos !== 'function') return;
+  try {
+    for (const { id, json } of modulo.tomarEntrenos()) {
+      const suyo = duenoEntreno(json);
+      if (suyo === null || suyo === dueno) modulo.confirmarEntreno?.(id);
+    }
+  } catch {
+    // Sin módulo operativo no hay nada que vaciar.
+  }
 }

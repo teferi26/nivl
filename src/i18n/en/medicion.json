@@ -1,0 +1,156 @@
+{
+  "sello": {
+    "medido": "Measured",
+    "coherente": "Consistent"
+  },
+  "contraste": {
+    "medido": "Measured: a saved workout that day matches what you logged.",
+    "introducidoAMano": "Consistent: Health has that workout, entered by hand.",
+    "cifrasAproximadas": "Consistent: there is a saved workout that day, with somewhat different figures.",
+    "actividad": "Consistent: that day's activity is compatible with what you logged.",
+    "sinDatos": "No data to compare with."
+  },
+  "entrada": {
+    "seccion": "Measurement",
+    "titulo": "Health connection",
+    "detalle": "What NIVL reads from Apple Health and what reaches the coach.",
+    "gps": "Measure with iPhone GPS"
+  },
+  "categoria": {
+    "entrenos": {
+      "titulo": "Workouts and routes",
+      "para": "Workouts saved by your watch or other apps, with their route if they have one. So you do not log them twice."
+    },
+    "fc": {
+      "titulo": "Heart rate",
+      "para": "Your resting and daytime pulse. To see averages and peaks."
+    },
+    "energia": {
+      "titulo": "Active energy",
+      "para": "Active calories for each day. To see your real activity."
+    },
+    "pasos": {
+      "titulo": "Steps",
+      "para": "Steps for each day. To see how much you move outside workouts."
+    },
+    "sueno": {
+      "titulo": "Sleep",
+      "para": "Hours slept each night. To see how you rest."
+    },
+    "peso": {
+      "titulo": "Weight",
+      "para": "Your weight. To follow your progress without logging it by hand."
+    }
+  },
+  "conexion": {
+    "eyebrow": "Body",
+    "titulo": "Health",
+    "sub": "You choose what NIVL reads. The final decision is in Apple's dialog.",
+    "cargando": "Checking the Health connection",
+    "noDisponibleRotulo": "Not available here",
+    "noDisponible": {
+      "web": "Apple Health only exists on iPhone. There is nothing to connect from the web.",
+      "android": "Apple Health is iPhone only. This connection does not exist on Android yet.",
+      "sin_modulo": "This version of NIVL does not include the Health connection. You need the updated app from the store.",
+      "sin_salud": "This device does not have Apple Health."
+    },
+    "noDisponiblePie": "The rest of NIVL stays the same. You can log your sessions by hand.",
+    "queLee": "What it can read",
+    "preguntada": "Asked",
+    "categoriaA11y": "Include {{categoria}} when asking Health for permission",
+    "escribirTitulo": "Save my workouts to Health",
+    "escribirDetalle": "What you measure with NIVL is also written to Health, so other apps can see it.",
+    "antesDelDialogo": "Continuing opens the Apple Health dialog. What you choose there is what counts. Apple does not tell NIVL what you answered: here it only shows that you were asked.",
+    "continuar": "Continue to Health",
+    "errorDialogo": "The Health dialog could not be opened. Try again.",
+    "dialogoHecho": "Done. If you did not see the dialog, it had already been answered.",
+    "todoPreguntado": "All categories have already been asked.",
+    "cambiarDespues": "To change it later: Health app, your profile, Apps, NIVL.",
+    "coachSeccion": "Coach",
+    "coachTitulo": "Share with the coach",
+    "coachDetalle": "Each day's summary: steps, energy, pulse, sleep and weight.",
+    "coachNota": "Connecting Health does not turn this on. It is a separate acceptance, off by default, and your permission to send data to the AI is also required. Without both, the summary stays in your NIVL account and the coach does not receive it.",
+    "traerSeccion": "Bring from Health",
+    "traerCuerpo": "Checks the Health workouts NIVL does not have yet. Those from past days stay saved: they add no points and do not recover streaks.",
+    "traer": "Bring workouts",
+    "traerNada": "Nothing new in Health.",
+    "traerFallo": "Health could not be read. Try again.",
+    "traerIncompleto": "Part of it could not be saved. NIVL will retry on its own.",
+    "traerHecho_one": "{{count}} workout checked.",
+    "traerHecho_other": "{{count}} workouts checked.",
+    "hoySeccion": "Today in Health",
+    "hoyFc": "Average pulse",
+    "filaHoyA11y": "{{titulo}}: {{valor}}",
+    "hoyNota": "No figure means Health does not have that data or does not share it with NIVL. It changes nothing in your progress."
+  },
+  "gps": {
+    "eyebrow": "Cardio",
+    "titulo": "Measure with GPS",
+    "sub": "Running or cycling, with your iPhone on you.",
+    "noDisponibleRotulo": "Not available here",
+    "noDisponible": {
+      "web": "Measuring with GPS only works in the iPhone app.",
+      "android": "Measuring with GPS does not exist on Android yet.",
+      "sin_modulo": "This version of NIVL does not include GPS measurement. You need the updated app from the store.",
+      "sin_salud": "This device cannot measure with GPS."
+    },
+    "noDisponiblePie": "You can log the session by hand in Cardio.",
+    "permisoRotulo": "Location",
+    "permisoCuerpo": "To measure distance and pace, NIVL needs your location. It is only used during a session you start, also with the screen off. When you finish, the route is saved to your NIVL account.",
+    "permisoDenegado": "NIVL has no access to your location. To measure with GPS, turn it on in Settings.",
+    "permisoContinuar": "Continue",
+    "abrirAjustes": "Open Settings",
+    "deporte": "Sport",
+    "carrera": "Run",
+    "bici": "Bike",
+    "autoPausa": "Auto pause",
+    "autoPausaDetalle": "Time stops when you stop.",
+    "empezar": "Start",
+    "errorEmpezar": "The session did not start. Try again.",
+    "errorParar": "The session could not be closed. Try again.",
+    "errorLeer": "The session could not be read and was not saved.",
+    "notaReloj": "If you wear an Apple Watch, start from the watch: each session is measured in one place only.",
+    "fase": {
+      "midiendo": "Measuring",
+      "pausa_auto": "Auto pause",
+      "pausa": "Paused"
+    },
+    "tiempo": "Time",
+    "tiempoA11y": "Time: {{tiempo}}",
+    "km": "Km",
+    "ritmo": "Min/km",
+    "velocidad": "Km/h",
+    "precision": "Signal",
+    "precisionA11y": "{{calidad}} signal, margin of {{metros}} meters",
+    "calidad": {
+      "buena": "Good",
+      "media": "Fair",
+      "debil": "Weak"
+    },
+    "pausar": "Pause",
+    "reanudar": "Resume",
+    "fin": "Finish",
+    "descartar": "Discard session",
+    "confirmarFinTitulo": "Finish the session",
+    "confirmarFinMensaje": "What has been measured so far will be saved.",
+    "confirmarDescartarTitulo": "Discard the session",
+    "confirmarDescartarMensaje": "What was measured will be lost. This cannot be undone.",
+    "parciales": "Splits",
+    "parcial": "Split {{n}}",
+    "interrumpidaRotulo": "Session interrupted",
+    "interrumpidaCuerpo": "NIVL closed with the session running. What was measured until then is still here. Nothing was measured while it was closed.",
+    "terminarGuardar": "Finish and save",
+    "guardando": "Saving the session",
+    "cortaRotulo": "No session to save",
+    "cortaCuerpo": "It lasted under 30 seconds or the GPS gave no points. Nothing was saved.",
+    "nueva": "New session",
+    "guardadaRotulo": "Session saved",
+    "guardadaCuerpo": "The session is now in your history.",
+    "duplicadaRotulo": "Already recorded",
+    "duplicadaCuerpo": "This session was already recorded from another device. It has not been added again.",
+    "deOtroDia": "It ended on another day. It stays saved, but does not count for that day.",
+    "pendienteRotulo": "Not uploaded yet",
+    "pendienteCuerpo": "The session is safe on this phone. NIVL will try again when it is next opened.",
+    "volverCardio": "Back"
+  }
+}

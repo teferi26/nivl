@@ -43,7 +43,10 @@ final class Almacen: NSObject, ObservableObject {
   }
 
   func activar() {
-    guard !modoDemo, WCSession.isSupported() else { return }
+    guard !modoDemo else { return }
+    // Va antes de WatchConnectivity: un entreno se recupera aunque no haya iPhone.
+    ServicioEntreno.compartido.alArrancar()
+    guard WCSession.isSupported() else { return }
     let s = WCSession.default
     s.delegate = self
     s.activate()
@@ -165,6 +168,7 @@ extension Almacen: WCSessionDelegate {
       self.alcanzable = alcanzable
       if let json { self.recibir(json) }
       self.pedirEstado()
+      BuzonEntrenos.compartido.enviarPendientes()
     }
   }
 
@@ -177,7 +181,23 @@ extension Almacen: WCSessionDelegate {
     let alcanzable = session.isReachable
     Task { @MainActor in
       self.alcanzable = alcanzable
-      if alcanzable { self.pedirEstado() }
+      if alcanzable {
+        self.pedirEstado()
+        BuzonEntrenos.compartido.enviarPendientes()
+      }
     }
+  }
+
+  // Los entrenos van por fichero y el iPhone confirma por userInfo: de ambos
+  // se ocupa el buzón.
+  nonisolated func session(_ session: WCSession, didFinish fileTransfer: WCSessionFileTransfer, error: Error?) {
+    guard let id = fileTransfer.file.metadata?[BuzonEntrenos.claveId] as? String else { return }
+    let fallo = error != nil
+    Task { @MainActor in BuzonEntrenos.compartido.transferenciaTerminada(id: id, fallo: fallo) }
+  }
+
+  nonisolated func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any]) {
+    guard let id = userInfo[BuzonEntrenos.claveAck] as? String else { return }
+    Task { @MainActor in BuzonEntrenos.compartido.confirmar(id: id) }
   }
 }

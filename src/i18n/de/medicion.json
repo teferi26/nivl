@@ -1,0 +1,156 @@
+{
+  "sello": {
+    "medido": "Gemessen",
+    "coherente": "Stimmig"
+  },
+  "contraste": {
+    "medido": "Gemessen: An diesem Tag gibt es ein gespeichertes Training, das zu deinem Eintrag passt.",
+    "introducidoAMano": "Stimmig: Health hat dieses Training, von Hand eingetragen.",
+    "cifrasAproximadas": "Stimmig: An diesem Tag gibt es ein gespeichertes Training mit etwas anderen Werten.",
+    "actividad": "Stimmig: Die Aktivität dieses Tages passt zu deinem Eintrag.",
+    "sinDatos": "Keine Daten zum Vergleichen."
+  },
+  "entrada": {
+    "seccion": "Messung",
+    "titulo": "Verbindung mit Health",
+    "detalle": "Was NIVL aus Apple Health liest und was beim Coach ankommt.",
+    "gps": "Mit dem iPhone-GPS messen"
+  },
+  "categoria": {
+    "entrenos": {
+      "titulo": "Trainings und Routen",
+      "para": "Trainings, die deine Uhr oder andere Apps speichern, mit Route, falls vorhanden. Damit du sie nicht doppelt einträgst."
+    },
+    "fc": {
+      "titulo": "Herzfrequenz",
+      "para": "Dein Puls in Ruhe und über den Tag. Für Durchschnitt und Maximum."
+    },
+    "energia": {
+      "titulo": "Aktive Energie",
+      "para": "Die aktiven Kilokalorien jedes Tages. Für deine tatsächliche Aktivität."
+    },
+    "pasos": {
+      "titulo": "Schritte",
+      "para": "Die Schritte jedes Tages. Damit du siehst, wie viel du dich außerhalb des Trainings bewegst."
+    },
+    "sueno": {
+      "titulo": "Schlaf",
+      "para": "Die geschlafenen Stunden jeder Nacht. Damit du siehst, wie du dich erholst."
+    },
+    "peso": {
+      "titulo": "Gewicht",
+      "para": "Dein Gewicht. Um deinen Verlauf zu sehen, ohne es einzutragen."
+    }
+  },
+  "conexion": {
+    "eyebrow": "Körper",
+    "titulo": "Health",
+    "sub": "Du wählst, was NIVL liest. Die endgültige Entscheidung fällt im Dialog von Apple.",
+    "cargando": "Verbindung mit Health wird geprüft",
+    "noDisponibleRotulo": "Hier nicht verfügbar",
+    "noDisponible": {
+      "web": "Apple Health gibt es nur auf dem iPhone. Im Web gibt es nichts zu verbinden.",
+      "android": "Apple Health gibt es nur für das iPhone. Auf Android existiert diese Verbindung noch nicht.",
+      "sin_modulo": "Diese NIVL-Version enthält die Verbindung mit Health nicht. Du brauchst die aktuelle App aus dem Store.",
+      "sin_salud": "Dieses Gerät hat kein Apple Health."
+    },
+    "noDisponiblePie": "Der Rest von NIVL bleibt gleich. Du kannst deine Einheiten von Hand eintragen.",
+    "queLee": "Was gelesen werden kann",
+    "preguntada": "Gefragt",
+    "categoriaA11y": "{{categoria}} in die Anfrage an Health aufnehmen",
+    "escribirTitulo": "Meine Trainings in Health speichern",
+    "escribirDetalle": "Was du mit NIVL misst, wird auch in Health geschrieben, damit andere Apps es sehen.",
+    "antesDelDialogo": "Beim Fortfahren öffnet sich der Dialog von Apple Health. Was du dort auswählst, gilt. Apple teilt NIVL nicht mit, was du geantwortet hast: Hier steht nur, dass bereits gefragt wurde.",
+    "continuar": "Weiter zu Health",
+    "errorDialogo": "Der Health-Dialog konnte nicht geöffnet werden. Versuche es noch einmal.",
+    "dialogoHecho": "Erledigt. Falls du den Dialog nicht gesehen hast, war er bereits beantwortet.",
+    "todoPreguntado": "Alle Kategorien wurden bereits abgefragt.",
+    "cambiarDespues": "Später ändern: Health-App, dein Profil, Apps, NIVL.",
+    "coachSeccion": "Coach",
+    "coachTitulo": "Mit dem Coach teilen",
+    "coachDetalle": "Die Zusammenfassung jedes Tages: Schritte, Energie, Puls, Schlaf und Gewicht.",
+    "coachNota": "Die Verbindung mit Health schaltet das nicht ein. Es ist eine eigene Zustimmung, anfangs aus, und zusätzlich braucht es deine Erlaubnis, Daten an die KI zu senden. Ohne beide bleibt die Zusammenfassung in deinem NIVL-Konto und der Coach erhält sie nicht.",
+    "traerSeccion": "Aus Health holen",
+    "traerCuerpo": "Prüft die Trainings aus Health, die NIVL noch nicht hat. Die vergangener Tage bleiben gespeichert: Sie bringen keine Punkte und stellen keine Serien wieder her.",
+    "traer": "Trainings holen",
+    "traerNada": "Nichts Neues in Health.",
+    "traerFallo": "Health konnte nicht gelesen werden. Versuch es noch einmal.",
+    "traerIncompleto": "Ein Teil konnte nicht gespeichert werden. NIVL versucht es von selbst erneut.",
+    "traerHecho_one": "{{count}} Training geprüft.",
+    "traerHecho_other": "{{count}} Trainings geprüft.",
+    "hoySeccion": "Heute in Health",
+    "hoyFc": "Durchschnittspuls",
+    "filaHoyA11y": "{{titulo}}: {{valor}}",
+    "hoyNota": "Ohne Zahl hat Health diesen Wert nicht oder teilt ihn nicht mit NIVL. An deinem Fortschritt ändert das nichts."
+  },
+  "gps": {
+    "eyebrow": "Cardio",
+    "titulo": "Mit GPS messen",
+    "sub": "Laufen oder Rad, mit dem iPhone dabei.",
+    "noDisponibleRotulo": "Hier nicht verfügbar",
+    "noDisponible": {
+      "web": "Messen mit GPS funktioniert nur in der iPhone-App.",
+      "android": "Messen mit GPS gibt es auf Android noch nicht.",
+      "sin_modulo": "Diese NIVL-Version enthält die GPS-Messung nicht. Du brauchst die aktuelle App aus dem Store.",
+      "sin_salud": "Dieses Gerät kann nicht mit GPS messen."
+    },
+    "noDisponiblePie": "Du kannst die Einheit in Cardio von Hand eintragen.",
+    "permisoRotulo": "Standort",
+    "permisoCuerpo": "Um Distanz und Tempo zu messen, braucht NIVL deinen Standort. Er wird nur während der von dir gestarteten Einheit genutzt, auch bei ausgeschaltetem Bildschirm. Am Ende wird die Route in deinem NIVL-Konto gespeichert.",
+    "permisoDenegado": "NIVL hat keinen Zugriff auf deinen Standort. Aktiviere ihn in den Einstellungen, um mit GPS zu messen.",
+    "permisoContinuar": "Weiter",
+    "abrirAjustes": "Einstellungen öffnen",
+    "deporte": "Sportart",
+    "carrera": "Laufen",
+    "bici": "Rad",
+    "autoPausa": "Automatische Pause",
+    "autoPausaDetalle": "Die Zeit stoppt, wenn du stehen bleibst.",
+    "empezar": "Starten",
+    "errorEmpezar": "Die Einheit ist nicht gestartet. Versuche es noch einmal.",
+    "errorParar": "Die Einheit konnte nicht beendet werden. Versuch es noch einmal.",
+    "errorLeer": "Die Einheit konnte nicht gelesen werden und wurde nicht gespeichert.",
+    "notaReloj": "Wenn du eine Apple Watch trägst, starte auf der Uhr: Jede Einheit wird nur an einem Ort gemessen.",
+    "fase": {
+      "midiendo": "Messung läuft",
+      "pausa_auto": "Automatische Pause",
+      "pausa": "Pausiert"
+    },
+    "tiempo": "Zeit",
+    "tiempoA11y": "Zeit: {{tiempo}}",
+    "km": "Km",
+    "ritmo": "Min/km",
+    "velocidad": "Km/h",
+    "precision": "Signal",
+    "precisionA11y": "Signal {{calidad}}, Spielraum {{metros}} Meter",
+    "calidad": {
+      "buena": "Gut",
+      "media": "Mittel",
+      "debil": "Schwach"
+    },
+    "pausar": "Pausieren",
+    "reanudar": "Fortsetzen",
+    "fin": "Beenden",
+    "descartar": "Einheit verwerfen",
+    "confirmarFinTitulo": "Einheit beenden",
+    "confirmarFinMensaje": "Das bisher Gemessene wird gespeichert.",
+    "confirmarDescartarTitulo": "Einheit verwerfen",
+    "confirmarDescartarMensaje": "Das Gemessene geht verloren. Das lässt sich nicht rückgängig machen.",
+    "parciales": "Zwischenzeiten",
+    "parcial": "Abschnitt {{n}}",
+    "interrumpidaRotulo": "Einheit unterbrochen",
+    "interrumpidaCuerpo": "NIVL wurde während der Einheit geschlossen. Das bis dahin Gemessene ist noch da. Solange NIVL geschlossen war, wurde nichts gemessen.",
+    "terminarGuardar": "Beenden und speichern",
+    "guardando": "Einheit wird gespeichert",
+    "cortaRotulo": "Keine Einheit zu speichern",
+    "cortaCuerpo": "Sie dauerte unter 30 Sekunden oder das GPS lieferte keine Punkte. Es wurde nichts gespeichert.",
+    "nueva": "Neue Einheit",
+    "guardadaRotulo": "Einheit gespeichert",
+    "guardadaCuerpo": "Die Einheit ist jetzt in deinem Verlauf.",
+    "duplicadaRotulo": "Bereits erfasst",
+    "duplicadaCuerpo": "Diese Einheit war schon von einem anderen Gerät erfasst. Sie wurde nicht erneut hinzugefügt.",
+    "deOtroDia": "Sie endete an einem anderen Tag. Sie bleibt gespeichert, zählt aber nicht für jenen Tag.",
+    "pendienteRotulo": "Noch nicht hochgeladen",
+    "pendienteCuerpo": "Die Einheit ist auf diesem Telefon sicher. NIVL versucht es beim nächsten Öffnen erneut.",
+    "volverCardio": "Zurück"
+  }
+}

@@ -9,6 +9,10 @@
 //   el iPhone despertado en segundo plano por el reloj).
 // · Las peticiones en directo esperan respuesta: JS contesta con
 //   `responder(id, json)`. Si JS no contesta en 8 s, se responde «sin respuesta».
+// · Los entrenos medidos en el reloj llegan como fichero (transferFile) a un
+//   buzón en disco: JS los recoge con `tomarEntrenos()` y, cuando los ha
+//   guardado, `confirmarEntreno(id)` borra la copia y avisa al reloj para que
+//   borre la suya. Hasta entonces, nada se pierde.
 //
 // El contrato (las claves y el JSON) está en src/watch/contrato.ts.
 
@@ -19,11 +23,14 @@ public class NivlWatchModule: Module {
   public func definition() -> ModuleDefinition {
     Name("NivlWatch")
 
-    Events("onMensaje")
+    Events("onMensaje", "onEntreno")
 
     OnCreate {
       PuenteReloj.compartido.alLlegar = { [weak self] in
         self?.sendEvent("onMensaje", [:])
+      }
+      PuenteReloj.compartido.alLlegarEntreno = { [weak self] in
+        self?.sendEvent("onEntreno", [:])
       }
       PuenteReloj.compartido.activar()
     }
@@ -47,6 +54,103 @@ public class NivlWatchModule: Module {
     Function("responder") { (id: String, json: String) in
       PuenteReloj.compartido.responder(id: id, json: json)
     }
+
+    Function("tomarEntrenos") { () -> [[String: String]] in
+      BuzonEntrenosReloj.compartido.tomar()
+    }
+
+    Function("confirmarEntreno") { (id: String) in
+      PuenteReloj.compartido.confirmarEntreno(id)
+    }
+  }
+}
+
+/// Los entrenos del reloj esperando a que JS los guarde. Application Support:
+/// no se purga solo, a diferencia de Caches.
+final class BuzonEntrenosReloj {
+  static let compartido = BuzonEntrenosReloj()
+
+  private let tope = 200
+  private let fm = FileManager.default
+
+  private var carpeta: URL {
+    fm.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+      .appendingPathComponent("nivl-reloj-entrenos", isDirectory: true)
+  }
+
+  /// El id acaba siendo un nombre de fichero: solo letras, números y guiones.
+  static func idValido(_ id: String) -> Bool {
+    !id.isEmpty && id.count <= 100
+      && id.unicodeScalars.allSatisfy { CharacterSet.alphanumerics.contains($0) || $0 == "-" || $0 == "_" }
+  }
+
+  private func fichero(_ id: String) -> URL {
+    carpeta.appendingPathComponent(id).appendingPathExtension("json")
+  }
+
+  private func prepararCarpeta() {
+    var url = carpeta
+    try? fm.createDirectory(at: url, withIntermediateDirectories: true)
+    // Llevan pulso y ruta: no viajan en la copia de seguridad.
+    var valores = URLResourceValues()
+    valores.isExcludedFromBackup = true
+    try? url.setResourceValues(valores)
+  }
+
+  /// Los ficheros, del más antiguo al más nuevo.
+  private func ficheros() -> [(url: URL, fecha: Date)] {
+    let urls = (try? fm.contentsOfDirectory(
+      at: carpeta,
+      includingPropertiesForKeys: [.contentModificationDateKey],
+      options: [.skipsHiddenFiles]
+    )) ?? []
+    return urls
+      .filter { $0.pathExtension == "json" }
+      .map { url in
+        let fecha = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
+        return (url, fecha ?? .distantPast)
+      }
+      .sorted { $0.fecha < $1.fecha }
+  }
+
+  /// Síncrono a propósito: WatchConnectivity borra el fichero al volver del delegado.
+  func guardar(desde origen: URL, id: String) -> Bool {
+    guard Self.idValido(id) else { return false }
+    prepararCarpeta()
+    let destino = fichero(id)
+    // Si el reloj lo reenvía porque se perdió el aviso, gana el último.
+    try? fm.removeItem(at: destino)
+    do {
+      try fm.moveItem(at: origen, to: destino)
+    } catch {
+      return false
+    }
+    // Mover conserva la fecha del reloj; el orden del tope es el de llegada.
+    try? fm.setAttributes([.modificationDate: Date()], ofItemAtPath: destino.path)
+
+    let todos = ficheros()
+    if todos.count > tope {
+      for viejo in todos.prefix(todos.count - tope) { try? fm.removeItem(at: viejo.url) }
+    }
+    return true
+  }
+
+  func tomar() -> [[String: String]] {
+    ficheros().compactMap { entrada in
+      guard let datos = try? Data(contentsOf: entrada.url),
+        let json = String(data: datos, encoding: .utf8)
+      else {
+        // Ilegible no se arregla reintentando.
+        try? fm.removeItem(at: entrada.url)
+        return nil
+      }
+      return ["id": entrada.url.deletingPathExtension().lastPathComponent, "json": json]
+    }
+  }
+
+  func borrar(_ id: String) {
+    guard Self.idValido(id) else { return }
+    try? fm.removeItem(at: fichero(id))
   }
 }
 
@@ -56,11 +160,14 @@ final class PuenteReloj: NSObject, WCSessionDelegate {
 
   /// Avisa a JS de que hay peticiones en la cola.
   var alLlegar: (() -> Void)?
+  /// Avisa a JS de que hay entrenos en el buzón.
+  var alLlegarEntreno: (() -> Void)?
 
   private let cola = DispatchQueue(label: "app.nivl.reloj")
   private var contextoPendiente: String?
   private var pendientes: [[String: String]] = []
   private var respuestas: [String: ([String: Any]) -> Void] = [:]
+  private var avisosPendientes: [String] = []
 
   func activar() {
     guard WCSession.isSupported() else { return }
@@ -116,6 +223,28 @@ final class PuenteReloj: NSObject, WCSessionDelegate {
     }
   }
 
+  /// JS ya lo ha guardado: se borra aquí y se avisa al reloj para que borre
+  /// el suyo. Si el aviso se pierde, el reloj lo reenvía y externo_id lo frena.
+  func confirmarEntreno(_ id: String) {
+    BuzonEntrenosReloj.compartido.borrar(id)
+    cola.async {
+      self.avisosPendientes.append(id)
+      self.enviarAvisos()
+    }
+  }
+
+  /// En `cola`.
+  private func enviarAvisos() {
+    guard WCSession.isSupported() else { return }
+    let s = WCSession.default
+    guard s.activationState == .activated else {
+      activar()
+      return
+    }
+    for id in avisosPendientes { s.transferUserInfo(["entrenoRecibido": id]) }
+    avisosPendientes.removeAll()
+  }
+
   private func encolar(_ json: String, respuesta: (([String: Any]) -> Void)?) {
     cola.async {
       var id = ""
@@ -144,7 +273,10 @@ final class PuenteReloj: NSObject, WCSessionDelegate {
   // MARK: WCSessionDelegate
 
   func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
-    cola.async { self.enviarContexto() }
+    cola.async {
+      self.enviarContexto()
+      self.enviarAvisos()
+    }
   }
 
   func sessionDidBecomeInactive(_ session: WCSession) {}
@@ -174,5 +306,12 @@ final class PuenteReloj: NSObject, WCSessionDelegate {
   func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
     guard let json = userInfo["peticion"] as? String else { return }
     encolar(json, respuesta: nil)
+  }
+
+  func session(_ session: WCSession, didReceive file: WCSessionFile) {
+    guard let id = file.metadata?["entrenoId"] as? String,
+      BuzonEntrenosReloj.compartido.guardar(desde: file.fileURL, id: id)
+    else { return }
+    DispatchQueue.main.async { self.alLlegarEntreno?() }
   }
 }

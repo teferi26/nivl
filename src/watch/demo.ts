@@ -27,4 +27,6 @@ export const ESTADO_DEMO: EstadoReloj = {
   piedrasMax: 3,
   focus: { fase: 'foco', situacion: 'en_marcha', finEn: null, restanteMs: 14 * 60_000 + 32_000, totalMs: 25 * 60_000, bloque: 2, cadaLargo: 4 },
   iron: { ejercicio: 'Sentadilla', serie: 3, series: 4, reps: '5', carga: 100, descansoS: 180, siguiente: 'Sentadilla' },
+  saludAceptada: null,
+  dueno: null,
 };

@@ -1,0 +1,156 @@
+{
+  "sello": {
+    "medido": "Mesuré",
+    "coherente": "Cohérent"
+  },
+  "contraste": {
+    "medido": "Mesuré : un entraînement enregistré ce jour-là correspond à ce que tu as noté.",
+    "introducidoAMano": "Cohérent : Santé a cet entraînement, saisi à la main.",
+    "cifrasAproximadas": "Cohérent : un entraînement est enregistré ce jour-là, avec des chiffres un peu différents.",
+    "actividad": "Cohérent : l'activité de ce jour-là est compatible avec ce que tu as noté.",
+    "sinDatos": "Aucune donnée à comparer."
+  },
+  "entrada": {
+    "seccion": "Mesure",
+    "titulo": "Connexion à Santé",
+    "detalle": "Ce que NIVL lit dans Santé d'Apple et ce qui arrive au coach.",
+    "gps": "Mesurer avec le GPS de l'iPhone"
+  },
+  "categoria": {
+    "entrenos": {
+      "titulo": "Entraînements et parcours",
+      "para": "Les entraînements enregistrés par la montre ou d'autres apps, avec leur parcours s'il existe. Pour ne pas les noter deux fois."
+    },
+    "fc": {
+      "titulo": "Fréquence cardiaque",
+      "para": "Ton pouls au repos et pendant la journée. Pour voir moyennes et maximums."
+    },
+    "energia": {
+      "titulo": "Énergie active",
+      "para": "Les kilocalories actives de chaque jour. Pour voir ton activité réelle."
+    },
+    "pasos": {
+      "titulo": "Pas",
+      "para": "Les pas de chaque jour. Pour voir combien tu bouges hors entraînement."
+    },
+    "sueno": {
+      "titulo": "Sommeil",
+      "para": "Les heures dormies chaque nuit. Pour voir comment tu récupères."
+    },
+    "peso": {
+      "titulo": "Poids",
+      "para": "Ton poids. Pour suivre ton évolution sans le noter à la main."
+    }
+  },
+  "conexion": {
+    "eyebrow": "Corps",
+    "titulo": "Santé",
+    "sub": "Tu choisis ce que NIVL lit. La décision finale est celle de la fenêtre d'Apple.",
+    "cargando": "Vérification de la connexion à Santé",
+    "noDisponibleRotulo": "Indisponible ici",
+    "noDisponible": {
+      "web": "Santé d'Apple n'existe que sur iPhone. Il n'y a rien à connecter depuis le web.",
+      "android": "Santé d'Apple est réservé à l'iPhone. Cette connexion n'existe pas encore sur Android.",
+      "sin_modulo": "Cette version de NIVL n'inclut pas la connexion à Santé. Il faut l'app de la boutique, à jour.",
+      "sin_salud": "Cet appareil n'a pas Santé d'Apple."
+    },
+    "noDisponiblePie": "Le reste de NIVL ne change pas. Tu peux noter tes séances à la main.",
+    "queLee": "Ce qu'il peut lire",
+    "preguntada": "Demandé",
+    "categoriaA11y": "Inclure {{categoria}} dans la demande à Santé",
+    "escribirTitulo": "Enregistrer mes entraînements dans Santé",
+    "escribirDetalle": "Ce que tu mesures avec NIVL est aussi écrit dans Santé, pour que d'autres apps le voient.",
+    "antesDelDialogo": "En continuant, la fenêtre de Santé d'Apple s'ouvre. Ce que tu y coches est ce qui compte. Apple ne dit pas à NIVL ce que tu as répondu : ici, on sait seulement que la question a été posée.",
+    "continuar": "Continuer vers Santé",
+    "errorDialogo": "La fenêtre de Santé n'a pas pu s'ouvrir. Réessaie.",
+    "dialogoHecho": "C'est fait. Si tu n'as pas vu la fenêtre, c'est qu'elle avait déjà reçu une réponse.",
+    "todoPreguntado": "Toutes les catégories ont déjà été demandées.",
+    "cambiarDespues": "Pour changer plus tard : app Santé, ton profil, Apps, NIVL.",
+    "coachSeccion": "Coach",
+    "coachTitulo": "Partager avec le coach",
+    "coachDetalle": "Le résumé de chaque jour : pas, énergie, pouls, sommeil et poids.",
+    "coachNota": "Connecter Santé n'active pas ceci. C'est une autre acceptation, désactivée au départ, et ton autorisation d'envoi de données à l'IA est aussi nécessaire. Sans les deux, le résumé reste dans ton compte NIVL et le coach ne le reçoit pas.",
+    "traerSeccion": "Importer de Santé",
+    "traerCuerpo": "Vérifie les entraînements de Santé que NIVL n'a pas encore. Ceux des jours passés restent enregistrés : ils n'ajoutent pas de points et ne récupèrent pas de séries.",
+    "traer": "Importer les entraînements",
+    "traerNada": "Rien de nouveau dans Santé.",
+    "traerFallo": "Impossible de lire Santé. Réessaie.",
+    "traerIncompleto": "Une partie n'a pas pu être enregistrée. NIVL réessaiera tout seul.",
+    "traerHecho_one": "{{count}} entraînement vérifié.",
+    "traerHecho_other": "{{count}} entraînements vérifiés.",
+    "hoySeccion": "Aujourd'hui dans Santé",
+    "hoyFc": "Pouls moyen",
+    "filaHoyA11y": "{{titulo}} : {{valor}}",
+    "hoyNota": "Sans chiffre, Santé n'a pas cette donnée ou ne la partage pas avec NIVL. Cela ne change rien à ta progression."
+  },
+  "gps": {
+    "eyebrow": "Cardio",
+    "titulo": "Mesurer avec le GPS",
+    "sub": "Course ou vélo, avec ton iPhone sur toi.",
+    "noDisponibleRotulo": "Indisponible ici",
+    "noDisponible": {
+      "web": "La mesure GPS ne fonctionne que dans l'app iPhone.",
+      "android": "La mesure GPS n'existe pas encore sur Android.",
+      "sin_modulo": "Cette version de NIVL n'inclut pas la mesure GPS. Il faut l'app de la boutique, à jour.",
+      "sin_salud": "Cet appareil ne peut pas mesurer avec le GPS."
+    },
+    "noDisponiblePie": "Tu peux noter la séance à la main dans Cardio.",
+    "permisoRotulo": "Position",
+    "permisoCuerpo": "Pour mesurer distance et allure, NIVL a besoin de ta position. Elle n'est utilisée que pendant la séance que tu lances, y compris écran éteint. À la fin, le parcours est enregistré sur ton compte NIVL.",
+    "permisoDenegado": "NIVL n'a pas accès à ta position. Pour mesurer avec le GPS, active-la dans Réglages.",
+    "permisoContinuar": "Continuer",
+    "abrirAjustes": "Ouvrir Réglages",
+    "deporte": "Sport",
+    "carrera": "Course",
+    "bici": "Vélo",
+    "autoPausa": "Pause automatique",
+    "autoPausaDetalle": "Le temps s'arrête quand tu t'arrêtes.",
+    "empezar": "Commencer",
+    "errorEmpezar": "La séance n'a pas démarré. Réessaie.",
+    "errorParar": "La séance n'a pas pu être clôturée. Réessaie.",
+    "errorLeer": "La séance n'a pas pu être lue et n'a pas été enregistrée.",
+    "notaReloj": "Si tu portes une Apple Watch, commence depuis la montre : chaque séance se mesure à un seul endroit.",
+    "fase": {
+      "midiendo": "Mesure en cours",
+      "pausa_auto": "Pause automatique",
+      "pausa": "En pause"
+    },
+    "tiempo": "Temps",
+    "tiempoA11y": "Temps : {{tiempo}}",
+    "km": "Km",
+    "ritmo": "Min/km",
+    "velocidad": "Km/h",
+    "precision": "Signal",
+    "precisionA11y": "Signal {{calidad}}, marge de {{metros}} mètres",
+    "calidad": {
+      "buena": "Bon",
+      "media": "Moyen",
+      "debil": "Faible"
+    },
+    "pausar": "Pause",
+    "reanudar": "Reprendre",
+    "fin": "Terminer",
+    "descartar": "Supprimer la séance",
+    "confirmarFinTitulo": "Terminer la séance",
+    "confirmarFinMensaje": "Ce qui a été mesuré jusqu'ici sera enregistré.",
+    "confirmarDescartarTitulo": "Supprimer la séance",
+    "confirmarDescartarMensaje": "Ce qui a été mesuré sera perdu. Cette action est irréversible.",
+    "parciales": "Intermédiaires",
+    "parcial": "Intermédiaire {{n}}",
+    "interrumpidaRotulo": "Séance interrompue",
+    "interrumpidaCuerpo": "NIVL s'est fermé pendant la séance. Ce qui a été mesuré jusque-là est toujours là. Rien n'a été mesuré pendant la fermeture.",
+    "terminarGuardar": "Terminer et enregistrer",
+    "guardando": "Enregistrement de la séance",
+    "cortaRotulo": "Aucune séance à enregistrer",
+    "cortaCuerpo": "Elle a duré moins de 30 secondes ou le GPS n'a donné aucun point. Rien n'a été enregistré.",
+    "nueva": "Nouvelle séance",
+    "guardadaRotulo": "Séance enregistrée",
+    "guardadaCuerpo": "La séance est dans ton historique.",
+    "duplicadaRotulo": "Déjà enregistrée",
+    "duplicadaCuerpo": "Cette séance était déjà enregistrée depuis un autre appareil. Elle n'a pas été ajoutée de nouveau.",
+    "deOtroDia": "Elle s'est terminée un autre jour. Elle reste enregistrée, mais ne compte pas pour ce jour-là.",
+    "pendienteRotulo": "Pas encore envoyée",
+    "pendienteCuerpo": "La séance est en sécurité sur ce téléphone. NIVL réessaiera à la prochaine ouverture.",
+    "volverCardio": "Retour"
+  }
+}
