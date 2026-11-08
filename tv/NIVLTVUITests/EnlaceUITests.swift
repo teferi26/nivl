@@ -45,7 +45,8 @@ final class EnlaceUITests: XCTestCase {
         continueAfterFailure = false
         _ = try await control("revocar")
         let app = XCUIApplication()
-        app.launchArguments = ["-nivlServidor", servidor, "-nivlClave", clave, "-pestana", "cuenta"]
+        // Sin la sesión de otra vuelta: con token viejo saldría «Sesión caducada», no el código.
+        app.launchArguments = ["-nivlServidor", servidor, "-nivlClave", clave, "-pestana", "cuenta", "-nivlLimpiar", "1"]
         app.launch()
 
         let codigo = app.staticTexts["codigoEnlace"]

@@ -53,6 +53,8 @@ struct Lanzamiento: Equatable {
     var variante: String?
     var servidor: String?
     var clave: String?
+    /// Solo recorridos de UI: arranca sin sesión ni caché de una vuelta anterior.
+    var limpiar = false
 
     static let actual = Lanzamiento.leer(ProcessInfo.processInfo.arguments)
 
@@ -74,6 +76,7 @@ struct Lanzamiento: Equatable {
             case "-variante": r.variante = valor
             case "-nivlServidor": r.servidor = valor
             case "-nivlClave": r.clave = valor
+            case "-nivlLimpiar": r.limpiar = valor == "1"
             default: break
             }
             i += 1

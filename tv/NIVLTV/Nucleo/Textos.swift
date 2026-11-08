@@ -38,7 +38,9 @@ enum Textos {
 
     static let confirmarCierre = "¿Cerrar sesión en esta TV?"
     static let confirmarCierreTexto = "Para volver a entrar necesitarás tu iPhone."
+    #if DEBUG || targetEnvironment(simulator)
     static let demoCuenta = "Modo demostración. Sin cuenta y sin red."
+    #endif
 
     static let entrenoCeja = "IRON · hoy"
     static let entrenoAyuda = "Clic del mando al terminar cada serie. El descanso corre solo."
@@ -81,14 +83,18 @@ enum Textos {
     static var todos: [String] {
         let motivos: [MotivoSinEnlazar] = [.pidiendo, .sinRed, .servidor, .saturado, .denegado, .almacen]
         let redes: [EstadoRed] = [.alDia, .sincronizando, .sinRed, .errorServidor]
-        return [
+        var todos = [
             enlaceCeja, enlaceTitulo, pasoUno, pasoDos, pasoTres, renovando, sinConexionEnlace, caducaEn("9:59"),
             noDisponibleTitulo, noDisponibleTexto, sinRedTitulo, sinRedTexto, errorTitulo, errorTexto,
-            caducadaTitulo, caducadaTexto, confirmarCierre, confirmarCierreTexto, demoCuenta,
+            caducadaTitulo, caducadaTexto, confirmarCierre, confirmarCierreTexto,
             entrenoCeja, entrenoAyuda, entrenoNoRegistra, sinSaludTitulo, sinSaludEntreno, rutinaVacia, hoyNoToca,
             descansoConProxima, sinRutinaTitulo, sinRutinaTexto, proximaRotulo, sesionTerminada, sesionTerminadaTexto,
             salirTitulo, salirTexto, salirSeguir, salirConfirmar, numeroEjercicios(1), numeroEjercicios(4), yMas(1), yMas(3),
             arenaTitulo, arenaSinAmigos, arenaVacia, semanaVaciaTitulo, semanaVaciaTexto,
         ] + motivos.map(motivo) + redes.compactMap { frescura($0, hace: "hace 3 h") }
+        #if DEBUG || targetEnvironment(simulator)
+        todos.append(demoCuenta)
+        #endif
+        return todos
     }
 }

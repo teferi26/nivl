@@ -142,7 +142,7 @@ struct EntrenoPantalla: View {
                 Button(r.hecha ? "Repetir sesión" : "Empezar") {
                     abrirSesion(SesionAbierta(rutina: r, estadoInicial: nil))
                 }
-                .buttonStyle(EstiloFoco(invertido: true))
+                .buttonStyle(EstiloFoco(invertido: true, ancla: .leading))
                 .prefersDefaultFocus(in: espacioFoco)
                 .accessibilityIdentifier("empezarSesion")
                 Text(Textos.entrenoNoRegistra)

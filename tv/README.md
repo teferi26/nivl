@@ -48,7 +48,7 @@ xcodebuild -project NIVLTV.xcodeproj -scheme NIVLTV \
   -derivedDataPath .build CODE_SIGNING_ALLOWED=NO test
 ```
 
-Los tests de `NIVLTVTests` cubren la máquina de la sesión de entreno, la curva de nivel copiada de `game.ts`, los formatos, lo que enseña cada pestaña (`SalonTests`: sin salud, sin historial, peso que desaparece, ventana de la lista), el contrato (`SesionTests.swift`: decodificación, fechas de Postgres, transiciones, formato del código y QR) y que ninguna cadena lleve guion largo. El foco y el botón Menú se prueban con el mando en `NIVLTVUITests/SalonUITests` (scheme `NIVLTVPuntaAPunta`).
+Los tests de `NIVLTVTests` cubren la máquina de la sesión de entreno, la curva de nivel copiada de `game.ts`, los formatos, lo que enseña cada pestaña (`SalonTests`: sin salud, sin historial, peso que desaparece, ventana de la lista), el contrato (`SesionTests.swift`: decodificación, fechas de Postgres, transiciones, formato del código y QR) y que ninguna cadena lleve guion largo. El foco, el botón Menú y los recorridos de punta a punta se prueban con el mando en `NIVLTVUITests/` (scheme `NIVLTVPuntaAPunta`, `herramientas/README.md`).
 
 **Con el simulador hay que firmar ad hoc para que funcione el Llavero.** Con `CODE_SIGNING_ALLOWED=NO` compila y pasan los tests, pero `SecItemAdd` falla y la app se queda en «no ha podido guardar la sesión»:
 
@@ -63,7 +63,7 @@ En Release para aparato este camino no se compila. La demo no usa red, Llavero n
 ```bash
 xcrun simctl launch <udid> com.teferi.nivl.tv -nivlDemo 1 -pestana arena     # entreno | arena | semana | cuenta
 xcrun simctl launch <udid> com.teferi.nivl.tv -nivlDemo 1 -estado descanso   # descanso | serie | fin | carga | sinred
-xcrun simctl launch <udid> com.teferi.nivl.tv -nivlDemo 1 -variante larga     # vacia | sinsalud | descanso | real | larga (200 filas y nombres imposibles)
+xcrun simctl launch <udid> com.teferi.nivl.tv -nivlDemo 1 -variante larga     # vacia | sinsalud | descanso | real | sinfilas | larga (200 filas y nombres imposibles)
 xcrun simctl launch <udid> com.teferi.nivl.tv -nivlServidor http://127.0.0.1:54399 -nivlClave clave-publica-local
 ```
 

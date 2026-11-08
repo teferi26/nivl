@@ -53,6 +53,12 @@ final class ModeloApp {
     func arrancar() {
         guard !arrancado else { return }
         arrancado = true
+        #if DEBUG || targetEnvironment(simulator)
+        if Lanzamiento.actual.limpiar {
+            tokens.borrar()
+            cache.borrar()
+        }
+        #endif
         var hayToken = false
         var guardado: CacheTV?
         if servicio != nil {

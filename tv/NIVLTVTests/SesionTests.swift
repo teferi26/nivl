@@ -480,6 +480,40 @@ final class MaquinaAppTests: XCTestCase {
         XCTAssertEqual(MaquinaApp.reducir(&v, .sincronizarAhora, ahora: t0), [], "sin dos cargas a la vez")
     }
 
+    func testSincronizarTrasUnFalloReintentaSinEsperarAlMinuto() throws {
+        var s = try listo(10)
+        guard case .listo(var c) = s.fase else { return XCTFail() }
+        c.red = .sinRed
+        s.fase = .listo(c)
+        XCTAssertEqual(MaquinaApp.reducir(&s, .sincronizarAhora, ahora: t0), [.cancelarEspera, .cargarDatos])
+        XCTAssertNil(s.aviso, "sin red no se puede decir que está al día")
+    }
+
+    func testDemasiadoRapidoReintentaProntoYSinRotuloDeFallo() throws {
+        var s = try listo(10)
+        guard case .listo(var c) = s.fase else { return XCTFail() }
+        c.red = .sincronizando
+        s.fase = .listo(c)
+        s.cargaEnCurso = true
+        XCTAssertEqual(MaquinaApp.reducir(&s, .datos(.failure(.servidor(429))), ahora: t0), [.esperar(Politica.reintentoFrenoSeg)])
+        guard case .listo(let despues) = s.fase else { return XCTFail() }
+        XCTAssertEqual(despues.red, .sincronizando)
+        // Si insiste, ya es un fallo como los demás.
+        s.cargaEnCurso = true
+        _ = MaquinaApp.reducir(&s, .datos(.failure(.servidor(429))), ahora: t0)
+        guard case .listo(let segundo) = s.fase else { return XCTFail() }
+        XCTAssertEqual(segundo.red, .errorServidor)
+    }
+
+    func testDemasiadoRapidoEnLaPrimeraCargaVuelveALeer() {
+        var s = EstadoApp()
+        s.fase = .cargando
+        s.cargaEnCurso = true
+        XCTAssertEqual(MaquinaApp.reducir(&s, .datos(.failure(.servidor(429))), ahora: t0), [.esperar(Politica.reintentoFrenoSeg)])
+        XCTAssertEqual(s.fase, .cargando)
+        XCTAssertEqual(MaquinaApp.reducir(&s, .temporizador, ahora: t0), [.cancelarEspera, .cargarDatos])
+    }
+
     func testElTemporizadorRespetaElMinuto() throws {
         var s = try listo(10)
         XCTAssertEqual(MaquinaApp.reducir(&s, .temporizador, ahora: t0), [.esperar(50)])

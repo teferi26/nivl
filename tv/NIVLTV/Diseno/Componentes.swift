@@ -11,9 +11,11 @@ import SwiftUI
 struct EstiloFoco: ButtonStyle {
     var invertido = false
     var relleno = EdgeInsets(top: 22, leading: 44, bottom: 22, trailing: 44)
+    /// Pegado al borde del área segura, va `.leading`: si creciera por el centro, se saldría de ella.
+    var ancla: UnitPoint = .center
 
     func makeBody(configuration: Configuration) -> some View {
-        CuerpoFoco(configuration: configuration, invertido: invertido, relleno: relleno)
+        CuerpoFoco(configuration: configuration, invertido: invertido, relleno: relleno, ancla: ancla)
     }
 }
 
@@ -21,6 +23,7 @@ private struct CuerpoFoco: View {
     let configuration: ButtonStyle.Configuration
     let invertido: Bool
     let relleno: EdgeInsets
+    let ancla: UnitPoint
     @Environment(\.isFocused) private var enfocado
 
     var body: some View {
@@ -37,7 +40,7 @@ private struct CuerpoFoco: View {
             // sobre la superficie blanca que sobre la piedra.
             .padding(8)
             .overlay(Rectangle().strokeBorder(enfocado ? Tinta.i10 : .clear, lineWidth: Trazo.rule))
-            .scaleEffect(configuration.isPressed ? 1.04 : (enfocado ? Foco.escala : 1))
+            .scaleEffect(configuration.isPressed ? 1.04 : (enfocado ? Foco.escala : 1), anchor: ancla)
             .animation(.easeOut(duration: Foco.duracion), value: enfocado)
             .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
     }

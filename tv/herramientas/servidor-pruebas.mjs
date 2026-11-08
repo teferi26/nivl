@@ -9,6 +9,10 @@
 //   node tv/herramientas/servidor-pruebas.mjs rechazar [CODIGO]
 //   node tv/herramientas/servidor-pruebas.mjs caducar-codigo | revocar | estado
 //   node tv/herramientas/servidor-pruebas.mjs fallo 503      (0 corta la conexión; «no» lo quita)
+//   node tv/herramientas/servidor-pruebas.mjs apagar | encender | apagar-tras-canje | codigos-cortos 8
+//
+// El servidor escucha en dos puertos: la API en --puerto y el control en --puerto + 1. Así «apagar» cierra
+// de verdad la API (conexión rechazada) y se puede volver a encender.
 //
 // Ver tv/herramientas/README.md.
 import { createServer } from 'node:http';
@@ -28,14 +32,16 @@ const PUERTO = Number(opcion('puerto', process.env.NIVL_PUERTO || 54399));
 const CLAVE = opcion('clave', 'clave-publica-local');
 const CUENTA = opcion('cuenta', 'llena');
 const [orden, ...resto] = argv;
+const PUERTO_CONTROL = PUERTO + 1;
 
 // ── Comandos: simulan el iPhone hablando con el servidor ya arrancado ──
 if (orden) {
-  const ruta = { aprobar: 'aprobar', rechazar: 'rechazar', 'caducar-codigo': 'caducar-codigo', revocar: 'revocar', estado: 'estado', fallo: 'fallo' }[orden];
-  if (!ruta) { console.error('Orden desconocida: ' + orden); process.exit(2); }
-  const cuerpo = orden === 'fallo' ? { http: resto[0] } : { codigo: resto[0], cuenta: CUENTA };
+  const conocidas = ['aprobar', 'rechazar', 'caducar-codigo', 'revocar', 'estado', 'fallo', 'apagar', 'encender', 'apagar-tras-canje', 'codigos-cortos'];
+  if (!conocidas.includes(orden)) { console.error('Orden desconocida: ' + orden); process.exit(2); }
+  const ruta = orden;
+  const cuerpo = orden === 'fallo' ? { http: resto[0] } : orden === 'codigos-cortos' ? { segundos: resto[0] } : { codigo: resto[0], cuenta: CUENTA };
   try {
-    const r = await fetch(`http://127.0.0.1:${PUERTO}/_pruebas/${ruta}`, {
+    const r = await fetch(`http://127.0.0.1:${PUERTO_CONTROL}/_pruebas/${ruta}`, {
       method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo),
     });
     console.log(JSON.stringify(await r.json()));
@@ -102,7 +108,7 @@ const uno = async (q, a = []) => Object.values((await db.query(q, a)).rows[0])[0
 
 // ── Semillas ficticias ──
 const uid = (n) => `${String(n).padStart(8, '0')}-0000-4000-8000-000000000000`;
-const CUENTAS = { llena: uid(1), vacia: uid(2), sinsalud: uid(3), descanso: uid(4) };
+const CUENTAS = { llena: uid(1), vacia: uid(2), sinsalud: uid(3), descanso: uid(4), larga: uid(5) };
 const AMIGOS = [
   [uid(11), 'Cassio Valerio', 'B', 18400, 34],
   [uid(12), 'Drusila Faro', 'C', 12100, 21],
@@ -113,7 +119,7 @@ const AMIGOS = [
 const fecha = (delta = 0) => new Date(Date.now() + delta * 86400000).toISOString().slice(0, 10);
 
 await como('postgres');
-const todos = [[CUENTAS.llena, 'Livia Tessari'], [CUENTAS.vacia, 'Tito Novel'], [CUENTAS.sinsalud, 'Sabina Roca'], [CUENTAS.descanso, 'Rufo Ansa'], ...AMIGOS.map((a) => [a[0], a[1]])];
+const todos = [[CUENTAS.llena, 'Livia Tessari'], [CUENTAS.vacia, 'Tito Novel'], [CUENTAS.sinsalud, 'Sabina Roca'], [CUENTAS.descanso, 'Rufo Ansa'], [CUENTAS.larga, 'Numa Serrano'], ...AMIGOS.map((a) => [a[0], a[1]])];
 for (const [id, nombre] of todos) {
   await db.query('insert into auth.users(id,email) values($1,$2)', [id, id.slice(0, 8) + '@correo.invalid']);
   await db.query("insert into profiles(id,name,timezone) values($1,$2,'UTC') on conflict (id) do update set name=excluded.name,timezone='UTC'", [id, nombre]);
@@ -130,9 +136,27 @@ for (const [id, , rango, xp, racha] of AMIGOS) {
   if (rango !== 'E') await db.query('insert into achievements(user_id,code) values($1,$2)', [id, 'rango_' + rango]);
   await db.query("insert into friendships(requester,addressee,status) values($1,$2,'accepted')", [A, id]);
 }
+// Cuenta larga: 199 amigos, la tabla de 200 filas. Tu fila cae hacia la mitad.
+const L = CUENTAS.larga;
+await db.query('update profiles set xp_total=5000,streak_days=3 where id=$1', [L]);
+const anchoL = 199;
+await db.query(`insert into auth.users(id,email) select ('5' || lpad(n::text, 7, '0') || '-0000-4000-8000-000000000000')::uuid, n || '@correo.invalid' from generate_series(1, $1::int) n`, [anchoL]);
+await db.query(`insert into profiles(id,name,timezone) select ('5' || lpad(n::text, 7, '0') || '-0000-4000-8000-000000000000')::uuid, 'Gladiador ' || n, 'UTC' from generate_series(1, $1::int) n
+  on conflict (id) do update set name=excluded.name,timezone='UTC'`, [anchoL]);
+await db.query(`update profiles set xp_total = 10000 - (substr(id::text,2,7)::int * 50) where id::text like '5%-0000-4000-8000-000000000000' and id <> $1`, [L]);
+await db.query(`insert into friendships(requester,addressee,status) select $1::uuid, ('5' || lpad(n::text, 7, '0') || '-0000-4000-8000-000000000000')::uuid, 'accepted' from generate_series(1, $2::int) n`, [L, anchoL]);
+const questL = await uno("insert into quests(user_id,title,stat,difficulty,created_at) values($1,'Leer diez páginas','INT','media',now()-interval '100 days') returning id", [L]);
+// 250 XP: cae hacia el puesto 150, con filas por encima y por debajo.
+await db.query('insert into completions(user_id,quest_id,date,xp_awarded) values($1,$2,$3,250)', [L, questL, fecha(-1)]);
+for (let n = 1; n <= anchoL; n++) {
+  const amigo = `5${String(n).padStart(7, '0')}-0000-4000-8000-000000000000`;
+  const q = await uno("insert into quests(user_id,title,stat,difficulty,created_at) values($1,'Caminar treinta minutos','VIT','media',now()-interval '100 days') returning id", [amigo]);
+  await db.query('insert into completions(user_id,quest_id,date,xp_awarded) values($1,$2,$3,$4)', [amigo, q, fecha(-1), 1000 - n * 5]);
+}
+
 await como('authenticated', A);
 const version = await uno('select health_consent_version()');
-for (const id of [A, CUENTAS.vacia, CUENTAS.descanso]) { await como('authenticated', id); await uno('select accept_health_consent($1)', [version]); }
+for (const id of [A, CUENTAS.vacia, CUENTAS.descanso, L]) { await como('authenticated', id); await uno('select accept_health_consent($1)', [version]); }
 
 // Consentimiento dado, sin rutina ni amigos: vacia. Sin consentimiento: sinsalud.
 const hoy = fecha();
@@ -181,6 +205,8 @@ const RPC = {
   tv_cerrar_sesion: [['p_token', 'text']],
 };
 let fallo = null;
+let codigosCortos = null;
+let apagarTrasCanje = false;
 let cola = Promise.resolve();
 const enCola = (fn) => { const r = cola.then(fn, fn); cola = r.catch(() => {}); return r; };
 
@@ -222,11 +248,25 @@ const CONTROL = {
       dispositivos: await uno('select count(*)::int from tv_dispositivos'),
       codigos_pendientes: await uno("select count(*)::int from tv_enlaces where estado='pendiente'"),
       fallo,
+      encendido,
+      // La sesión de TV es de solo lectura: esto no puede moverse desde la TV.
+      economia_llena: await uno('select jsonb_build_object($$xp$$, xp_total, $$racha$$, streak_days, $$piedras$$, protection_stones) from profiles where id=$1', [A]),
+      completions_llena: await uno('select count(*)::int from completions where user_id=$1', [A]),
     };
   },
   async fallo({ http }) {
     fallo = http === 'no' || http === undefined ? null : Number(http);
     return { ok: true, fallo };
+  },
+  /** Cierra de verdad la API: la TV ve conexión rechazada. El control sigue vivo. */
+  async apagar() { await apagarApi(); return { ok: true, encendido }; },
+  async encender() { await encenderApi(); return { ok: true, encendido }; },
+  /** Se apaga justo tras entregar el token: sesión guardada y sin caché. */
+  async 'apagar-tras-canje'() { apagarTrasCanje = true; return { ok: true }; },
+  /** Los códigos que se emitan a partir de ahora caducan en N segundos; «no» lo quita. */
+  async 'codigos-cortos'({ segundos }) {
+    codigosCortos = segundos === 'no' || segundos === undefined ? null : Number(segundos);
+    return { ok: true, codigosCortos };
   },
 };
 
@@ -237,14 +277,16 @@ const enviar = (res, status, cuerpo) => {
   res.end(texto);
 };
 
+async function atenderControl(req, res, cuerpo) {
+  const fn = CONTROL[req.url.slice('/_pruebas/'.length)];
+  if (!fn) return enviar(res, 404, { error: 'no existe' });
+  return enviar(res, 200, await enCola(() => fn(cuerpo)));
+}
+
 const servidor = createServer(async (req, res) => {
   try {
     const cuerpo = JSON.parse((await leer(req)) || '{}');
-    if (req.url?.startsWith('/_pruebas/')) {
-      const fn = CONTROL[req.url.slice('/_pruebas/'.length)];
-      if (!fn) return enviar(res, 404, { error: 'no existe' });
-      return enviar(res, 200, await enCola(() => fn(cuerpo)));
-    }
+    if (req.url?.startsWith('/_pruebas/')) return atenderControl(req, res, cuerpo);
     const m = /^\/rest\/v1\/rpc\/([a-z_]+)$/.exec(req.url || '');
     if (!m || req.method !== 'POST') return enviar(res, 404, { message: 'no existe' });
     if (req.headers.apikey !== CLAVE || req.headers.authorization !== `Bearer ${CLAVE}`) return enviar(res, 401, { message: 'clave inválida' });
@@ -255,9 +297,20 @@ const servidor = createServer(async (req, res) => {
     const lista = params.map(([p, t], i) => `${p} => $${i + 1}::${t}`).join(', ');
     const valor = await enCola(async () => {
       await como('anon');
-      return uno(`select public.${m[1]}(${lista})`, params.map(([p]) => cuerpo[p] ?? null));
+      const v = await uno(`select public.${m[1]}(${lista})`, params.map(([p]) => cuerpo[p] ?? null));
+      if (m[1] === 'tv_emitir_codigo' && v?.estado === 'ok' && codigosCortos) {
+        await como('postgres');
+        const caduca = new Date(Date.now() + codigosCortos * 1000).toISOString();
+        await db.query('update tv_enlaces set caduca_en=$1 where codigo=$2', [caduca, v.codigo]);
+        return { ...v, caduca_en: caduca };
+      }
+      return v;
     });
     enviar(res, 200, valor);
+    if (m[1] === 'tv_canjear' && valor?.estado === 'aprobado' && apagarTrasCanje) {
+      apagarTrasCanje = false;
+      res.once('finish', () => { apagarApi(); });
+    }
     console.log(`${new Date().toISOString()} ${m[1]} -> ${valor?.estado ?? (valor?.ok ? 'ok' : '?')}`);
   } catch (e) {
     console.error('Fallo:', e.message);
@@ -265,8 +318,35 @@ const servidor = createServer(async (req, res) => {
   }
 });
 
-servidor.listen(PUERTO, '127.0.0.1', () => {
-  console.log(`Servidor de pruebas listo en http://127.0.0.1:${PUERTO} (${migraciones.length} migraciones)`);
-  console.log(`Clave pública local: ${CLAVE}`);
-  console.log('Cuentas: llena, vacia, sinsalud, descanso');
+const sockets = new Set();
+servidor.on('connection', (s) => { sockets.add(s); s.once('close', () => sockets.delete(s)); });
+let encendido = false;
+const encenderApi = () => new Promise((ok, mal) => {
+  if (encendido) return ok();
+  servidor.once('error', mal);
+  servidor.listen(PUERTO, '127.0.0.1', () => { servidor.off('error', mal); encendido = true; ok(); });
 });
+const apagarApi = () => new Promise((ok) => {
+  if (!encendido) return ok();
+  encendido = false;
+  servidor.close(() => ok());
+  for (const s of sockets) s.destroy();
+});
+
+// El control va aparte: sobrevive a «apagar».
+createServer(async (req, res) => {
+  try {
+    const cuerpo = JSON.parse((await leer(req)) || '{}');
+    if (!req.url?.startsWith('/_pruebas/')) return enviar(res, 404, { error: 'no existe' });
+    return await atenderControl(req, res, cuerpo);
+  } catch (e) {
+    console.error('Fallo de control:', e.message);
+    enviar(res, 500, { message: 'error interno' });
+  }
+}).listen(PUERTO_CONTROL, '127.0.0.1');
+
+await encenderApi();
+console.log(`Servidor de pruebas listo en http://127.0.0.1:${PUERTO} (${migraciones.length} migraciones)`);
+console.log(`Control en http://127.0.0.1:${PUERTO_CONTROL}`);
+console.log(`Clave pública local: ${CLAVE}`);
+console.log('Cuentas: llena, vacia, sinsalud, descanso, larga');

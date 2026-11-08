@@ -18,6 +18,8 @@ enum Politica {
     static let refrescoSeg: Double = 300
     /// El contrato: como mucho una vez por minuto.
     static let refrescoMinimoSeg: Double = 60
+    /// Tras un `demasiado_rapido`: el servidor frena 5 s por token.
+    static let reintentoFrenoSeg: Double = 6
 
     static func reintentoDatos(fallos: Int) -> Double {
         min(300, 60 * pow(2, Double(max(0, fallos - 1))))
@@ -175,7 +177,9 @@ enum MaquinaApp {
 
         case .sincronizarAhora:
             guard case .listo(var c) = s.fase, c.red != .sincronizando, !s.cargaEnCurso else { return [] }
-            guard ahora.timeIntervalSince(c.sincronizado) >= Politica.refrescoMinimoSeg else {
+            // El tope es para no releer datos buenos. Si la última vuelta falló, la
+            // persona puede reintentar: decirle «ya está al día» sin red sería mentira.
+            guard c.red != .alDia || ahora.timeIntervalSince(c.sincronizado) >= Politica.refrescoMinimoSeg else {
                 s.aviso = "Ya está al día. Prueba en un minuto."
                 return []
             }
@@ -274,7 +278,7 @@ enum MaquinaApp {
         case .sinEnlazar(let motivo):
             guard motivo != .denegado, motivo != .almacen else { return [] }
             return pedirCodigo(&s)
-        case .sinRed, .errorServidor:
+        case .cargando, .sinRed, .errorServidor:
             return cargar(&s)
         case .listo(var c):
             let edad = ahora.timeIntervalSince(c.sincronizado)
@@ -287,7 +291,7 @@ enum MaquinaApp {
                 s.fase = .listo(c)
             }
             return cargar(&s)
-        case .arrancando, .noDisponible, .cargando, .sesionCaducada:
+        case .arrancando, .noDisponible, .sesionCaducada:
             return []
         }
     }
@@ -360,6 +364,11 @@ enum MaquinaApp {
             s.aviso = nil
             s.fase = .sesionCaducada
             return [.cancelarEspera, .borrarSesionLocal]
+        case .failure(.servidor(429)) where s.fallos == 0:
+            // `demasiado_rapido` (reabrir la app en menos de 5 s): el servidor está bien.
+            // Una vez y sin rótulo de fallo; si insiste, ya es un fallo como los demás.
+            s.fallos = 1
+            return s.enPrimerPlano ? [.esperar(Politica.reintentoFrenoSeg)] : []
         case .failure(let fallo):
             s.fallos += 1
             if case .listo(var c) = s.fase {

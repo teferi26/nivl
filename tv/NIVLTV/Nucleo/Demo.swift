@@ -23,6 +23,9 @@ enum Demo {
     static func datos(variante: String?) -> DatosTV {
         let d = datos
         switch variante {
+        case "sinfilas":
+            // friends_board da siempre tu fila; esto prueba la red de seguridad de la vista.
+            return DatosTV(perfil: d.perfil, saludActiva: true, rutina: nil, arena: [], ludus: nil, semana: d.semana)
         case "vacia":
             return DatosTV(
                 perfil: PerfilTV(nombre: "Tito N.", titulo: "Tiro", rango: "E", xpTotal: 0, elite: false),

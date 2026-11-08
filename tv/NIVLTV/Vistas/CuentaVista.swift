@@ -46,7 +46,9 @@ struct CuentaVista: View {
                         .buttonStyle(EstiloFoco())
                         .accessibilityIdentifier("cerrarSesion")
                 } else {
+                    #if DEBUG || targetEnvironment(simulator)
                     Text(Textos.demoCuenta).font(Tipo.cuerpo).foregroundStyle(Tinta.i8)
+                    #endif
                 }
             }
             .padding(Hueco.s6)

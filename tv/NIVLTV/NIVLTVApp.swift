@@ -179,8 +179,10 @@ struct RaizVista: View {
         HStack(spacing: Hueco.s8) {
             Button("Reintentar") { modelo.enviar(.reintentar) }
                 .buttonStyle(EstiloFoco(invertido: true))
+                .accessibilityIdentifier("reintentarCarga")
             Button("Cerrar sesión") { confirmandoCierre = true }
                 .buttonStyle(EstiloFoco())
+                .accessibilityIdentifier("cerrarSesionAviso")
         }
         .alert(Textos.confirmarCierre, isPresented: $confirmandoCierre) {
             Button("Cerrar sesión") { modelo.enviar(.cerrarSesion) }

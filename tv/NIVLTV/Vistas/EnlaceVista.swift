@@ -28,7 +28,7 @@ struct EnlaceVista: View {
                 // está escaneando: el iPhone diría «enlazado» y la TV seguiría esperando.
                 if muestraPedir {
                     Button("Pedir código", action: pedirOtro)
-                        .buttonStyle(EstiloFoco(invertido: true))
+                        .buttonStyle(EstiloFoco(invertido: true, ancla: .leading))
                         .focused($enfocado)
                         .onAppear { enfocado = true }
                         .accessibilityIdentifier("pedirCodigo")
