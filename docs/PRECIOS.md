@@ -111,6 +111,8 @@ Reglas (0141):
 4. **Retención de 30 días** por reembolsos: si Apple o Google devuelven el
    dinero (webhook de RevenueCat), los tramos se anulan y lo ya pagado se descuenta.
    Mensual: su % del beneficio de cada mes cobrado, hasta el tope por cuenta.
+   **Se paga en múltiplos de 5 €, redondeando hacia abajo** (0142): lo que sobra
+   queda como resto para la siguiente liquidación y el creador lo ve como disponible.
 5. El rango se gana por resultados. Un fijo mensual para los creadores Élite o un premio
    al primero del ranking son palancas posibles, del presupuesto de marketing y
    no de esta tabla; **hoy no hay ninguno activo** (las condiciones publicadas

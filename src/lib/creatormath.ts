@@ -386,10 +386,18 @@ export function comisionTramo(args: {
   return Math.max(0, Math.min(importe, args.capCents - args.acumuladoCents));
 }
 
-/** Lo que se transfiere al liquidar: disponible menos clawbacks. null = no hay nada que pagar. */
-export function liquidacionCents(disponibleCents: number, clawbackCents: number): number | null {
-  const neto = disponibleCents - clawbackCents;
-  return neto > 0 ? neto : null;
+/** A los creadores se les paga en múltiplos de 5 € (0142). */
+export const MULTIPLO_PAGO_CENTS = 500;
+
+/**
+ * Lo que se transfiere al liquidar: disponible más el resto anterior menos
+ * clawbacks, redondeado hacia abajo a múltiplos de 5 €. Lo que sobra queda en
+ * `creators.resto_cents`. null = no llega a 5 €.
+ */
+export function liquidacionCents(disponibleCents: number, clawbackCents: number, restoCents = 0): number | null {
+  const saldo = disponibleCents + restoCents - clawbackCents;
+  const pago = saldo - (saldo % MULTIPLO_PAGO_CENTS);
+  return saldo > 0 && pago > 0 ? pago : null;
 }
 
 // ── El panel ────────────────────────────────────────────────────────

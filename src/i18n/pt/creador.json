@@ -75,7 +75,7 @@
     "fijo": "Fixo mensal",
     "descontar": "A descontar",
     "descontarDetalle": "Reembolsos de comissões já recebidas",
-    "retencionNota": "Cada comissão espera {{dias}} dias para o caso de haver um reembolso; depois passa a disponível e é paga na liquidação seguinte. Se a loja devolver o dinheiro, a comissão é anulada."
+    "retencionNota": "Cada comissão espera {{dias}} dias para o caso de haver um reembolso; depois passa a disponível e é paga na liquidação seguinte. Se a loja devolver o dinheiro, a comissão é anulada. Paga-se em múltiplos de 5 €; o que sobrar passa para a liquidação seguinte."
   },
   "pagos": {
     "titulo": "Pagamentos recebidos",

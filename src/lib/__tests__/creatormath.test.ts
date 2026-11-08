@@ -301,7 +301,7 @@ describe('oferta rebajada: comisión proporcional (propuesta 1.0.9)', () => {
 
 describe('liquidación', () => {
   it('disponible menos clawbacks; si no queda nada, no hay pago', () => {
-    expect(liquidacionCents(5000, 1200)).toBe(3800);
+    expect(liquidacionCents(5000, 1200)).toBe(3500);
     expect(liquidacionCents(1000, 1000)).toBeNull();
     expect(liquidacionCents(0, 0)).toBeNull();
   });
@@ -422,5 +422,21 @@ describe('comisión sobre beneficio (espejo de devengar_comisiones, 0141)', () =
 
   it('la renovación no tiene tope', () => {
     expect(comisionTramo({ pct: 10, netoCents: 351, iaCents: 51, capCents: null, acumuladoCents: 99999 })).toBe(30);
+  });
+});
+
+describe('el pago va en múltiplos de 5 € (0142)', () => {
+  it('redondea hacia abajo', () => {
+    expect(liquidacionCents(1876, 0)).toBe(1500);
+    expect(liquidacionCents(2000, 0)).toBe(2000);
+    expect(liquidacionCents(499, 0)).toBeNull();
+  });
+
+  it('el resto anterior cuenta en la siguiente', () => {
+    expect(liquidacionCents(176, 0, 376)).toBe(500);
+  });
+
+  it('un descuento mayor que el saldo no paga nada', () => {
+    expect(liquidacionCents(100, 900, 300)).toBeNull();
   });
 });
