@@ -9,8 +9,8 @@
 import SwiftUI
 
 struct ArenaVista: View {
-    var filas: [FilaArena] = Demo.arena
-    var ludus: LudusTV? = Demo.ludus
+    let filas: [FilaArena]
+    let ludus: LudusTV?
 
     @FocusState private var enfocada: String?
 
@@ -29,6 +29,13 @@ struct ArenaVista: View {
                             Button {} label: { FilaRanking(puesto: i + 1, fila: fila) }
                                 .buttonStyle(EstiloFila(marco: i < 3 ? Trazo.rule : Trazo.hairline))
                                 .focused($enfocada, equals: fila.id)
+                        }
+                        if filas.count <= 1 {
+                            Text("Aún no tienes amigos en la tabla. Añádelos desde el iPhone.")
+                                .font(Tipo.cuerpoSm)
+                                .foregroundStyle(Tinta.i8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, Hueco.s4)
                         }
                     }
                     // Holgura para la escala de foco (×1,03): así la lista
@@ -115,8 +122,9 @@ private struct FilaRanking: View {
             Text("\(fila.racha)")
                 .font(Tipo.numero).foregroundStyle(Tinta.i9).monospacedDigit()
                 .frame(width: 110, alignment: .trailing)
-            Text("\(fila.cumplimientoPct) %")
-                .font(Tipo.cuerpo).foregroundStyle(Tinta.i8).monospacedDigit()
+            Text(Formato.cumple(fila.cumplimientoPct))
+                .font(fila.cumplimientoPct == nil ? Tipo.rotulo : Tipo.cuerpo).foregroundStyle(Tinta.i8).monospacedDigit()
+                .lineLimit(1).minimumScaleFactor(0.8)
                 .frame(width: 120, alignment: .trailing)
         }
         .padding(.horizontal, Hueco.s8)
@@ -173,7 +181,7 @@ private struct FichaGladiador: View {
                     .foregroundStyle(Tinta.i8)
                 HStack(spacing: Hueco.s8) {
                     Cifra(rotulo: "Racha", valor: "\(fila.racha)", unidad: "días")
-                    Cifra(rotulo: "Cumple", valor: "\(fila.cumplimientoPct)", unidad: "%")
+                    Cifra(rotulo: "Cumple", valor: fila.cumplimientoPct.map(String.init) ?? "Sin medir", unidad: fila.cumplimientoPct == nil ? nil : "%")
                 }
             }
         }
@@ -206,8 +214,9 @@ private struct TablaLudus: View {
                             .underline(m.soyYo, color: Tinta.i10)
                         Spacer()
                         Text(Formato.miles(m.xpVentana)).font(Tipo.cuerpo).foregroundStyle(Tinta.i10).monospacedDigit()
-                        Text("\(m.cumplimientoPct) %")
-                            .font(Tipo.cuerpoSm).foregroundStyle(Tinta.i6).monospacedDigit()
+                        Text(Formato.cumple(m.cumplimientoPct))
+                            .font(m.cumplimientoPct == nil ? Tipo.rotulo : Tipo.cuerpoSm).foregroundStyle(Tinta.i6).monospacedDigit()
+                            .lineLimit(1).minimumScaleFactor(0.7)
                             .frame(width: 100, alignment: .trailing)
                     }
                     .accessibilityElement(children: .combine)

@@ -1,12 +1,7 @@
-// NIVL TV · Modelos de solo lectura.
+// NIVL TV · Modelos de solo lectura que pintan las vistas.
 //
-// Cada uno calca lo que la app ya lee del servidor, para que la v2 cambie la
-// demo por Supabase sin rehacer las vistas:
-// - RutinaTV / EjercicioTV: la prescripción del día de IRON (sesión de gym).
-// - FilaArena: una fila de la RPC `friends_board` (0021); `elite` sale de
-//   `fetchEliteBadges` (0026). FilaLudus: `elite_group_board`.
-// - SemanaTV: los estudios ya calculados (analytics.ts) y el cierre de días.
-//   Aquí no se calcula nada: los números llegan hechos.
+// Llegan de `tv_datos` (Contrato.swift) o, solo en la demo, de Demo.swift.
+// Aquí no se calcula nada: los números llegan hechos.
 
 import Foundation
 
@@ -21,6 +16,7 @@ struct EjercicioTV: Identifiable, Equatable {
     let descansoSeg: Int
     /// Símbolo del sistema para la figura de técnica (monocromo).
     let figura: String
+    /// El servidor no los da: quedan vacíos con datos reales y la vista los omite.
     let musculos: [String]
     let tecnica: [String]
 }
@@ -31,6 +27,9 @@ struct RutinaTV: Equatable {
     let ejercicios: [EjercicioTV]
 
     var seriesTotales: Int { ejercicios.reduce(0) { $0 + $1.series } }
+
+    /// Cambia solo si cambia el entreno: un refresco del mismo día no reinicia la sesión en curso.
+    var clave: String { nombre + "|" + ejercicios.map(\.id).joined(separator: ",") }
 }
 
 struct FilaArena: Identifiable, Equatable {
@@ -43,7 +42,8 @@ struct FilaArena: Identifiable, Equatable {
     let xpTotal: Int
     let xpVentana: Int
     let racha: Int
-    let cumplimientoPct: Int
+    /// nil = sin medir, que no es lo mismo que 0.
+    let cumplimientoPct: Int?
     let elite: Bool
 }
 
@@ -51,7 +51,7 @@ struct FilaLudus: Identifiable, Equatable {
     let id: String
     let nombre: String
     let xpVentana: Int
-    let cumplimientoPct: Int
+    let cumplimientoPct: Int?
     let soyYo: Bool
 }
 
@@ -78,6 +78,7 @@ struct PuntoPeso: Identifiable, Equatable {
 struct SemanaTV: Equatable {
     let racha: Int
     let piedras: Int
+    let piedrasMax: Int
     let xpGanado: Int
     let hechas: Int
     let falladas: Int
@@ -86,10 +87,29 @@ struct SemanaTV: Equatable {
     /// antigua a la actual, 7 valores por semana.
     let mapa: [[Double]]
     let pesos: [PuntoPeso]
-    /// Del estudio de peso (mínimos cuadrados, analytics.ts): kg por semana.
-    let tendenciaKgSemana: Double
+    /// Del estudio de peso (mínimos cuadrados, en el servidor): kg por semana.
+    /// nil con menos de 3 pesajes o sin consentimiento de salud.
+    let tendenciaKgSemana: Double?
     /// Recta del estudio: valor al principio y al final de la ventana.
-    let tendenciaInicio: Double
-    let tendenciaFin: Double
-    let lectura: String
+    let tendenciaInicio: Double?
+    let tendenciaFin: Double?
+    let lectura: String?
+}
+
+struct PerfilTV: Equatable {
+    let nombre: String
+    let titulo: String
+    let rango: String
+    let xpTotal: Int
+    let elite: Bool
+}
+
+/// Todo lo que pinta la TV, en una sola lectura.
+struct DatosTV: Equatable {
+    let perfil: PerfilTV
+    let saludActiva: Bool
+    let rutina: RutinaTV?
+    let arena: [FilaArena]
+    let ludus: LudusTV?
+    let semana: SemanaTV
 }

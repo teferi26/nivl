@@ -1,0 +1,10 @@
+// NIVL TV · Con qué servidor habla la app.
+//
+// Aquí no hay valores: la URL y la clave pública van en Servidor.local.xcconfig,
+// que está gitignorado. Copia Servidor.ejemplo.xcconfig y rellénalo.
+// Release sin ellos no compila (fase «Comprobar servidor» del proyecto).
+
+NIVL_SUPABASE_URL =
+NIVL_SUPABASE_CLAVE =
+
+#include? "Servidor.local.xcconfig"

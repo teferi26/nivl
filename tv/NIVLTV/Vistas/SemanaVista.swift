@@ -9,7 +9,8 @@ import Charts
 import SwiftUI
 
 struct SemanaVista: View {
-    var semana: SemanaTV = Demo.semana
+    let semana: SemanaTV
+    let saludActiva: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: Hueco.s6) {
@@ -21,7 +22,7 @@ struct SemanaVista: View {
                 Spacer()
                 HStack(spacing: Hueco.s8) {
                     Cifra(rotulo: "Racha", valor: "\(semana.racha)", unidad: "días")
-                    Cifra(rotulo: "Piedras", valor: "\(semana.piedras)", unidad: "de 3")
+                    Cifra(rotulo: "Piedras", valor: "\(semana.piedras)", unidad: "de \(semana.piedrasMax)")
                     Cifra(rotulo: "XP ganado", valor: Formato.miles(semana.xpGanado))
                     Cifra(rotulo: "Hechas", valor: "\(semana.hechas)")
                     Cifra(rotulo: "Falladas", valor: "\(semana.falladas)")
@@ -48,23 +49,36 @@ struct SemanaVista: View {
 
             // Relleno más corto: con s8 la tarjeta bajaba del área segura.
             Tarjeta(marco: Trazo.hairline, relleno: Hueco.s6) {
-                HStack(alignment: .top, spacing: Hueco.s10) {
+                if let tendencia = semana.tendenciaKgSemana,
+                   let inicio = semana.tendenciaInicio, let fin = semana.tendenciaFin, !semana.pesos.isEmpty {
+                    HStack(alignment: .top, spacing: Hueco.s10) {
+                        VStack(alignment: .leading, spacing: Hueco.s4) {
+                            Rotulo(texto: "Peso · 4 semanas")
+                            HStack(alignment: .firstTextBaseline, spacing: Hueco.s2) {
+                                Text(Formato.tendencia(tendencia))
+                                    .font(Tipo.cifra)
+                                    .foregroundStyle(Tinta.i10)
+                                Text("kg por semana").font(Tipo.cuerpoSm).foregroundStyle(Tinta.i6)
+                            }
+                            Text(semana.lectura ?? "")
+                                .font(Tipo.cuerpoSm)
+                                .foregroundStyle(Tinta.i8)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .frame(width: 520, alignment: .leading)
+                        GraficoPeso(pesos: semana.pesos, inicio: inicio, fin: fin)
+                            .frame(height: 150)
+                    }
+                } else {
                     VStack(alignment: .leading, spacing: Hueco.s4) {
                         Rotulo(texto: "Peso · 4 semanas")
-                        HStack(alignment: .firstTextBaseline, spacing: Hueco.s2) {
-                            Text(Formato.tendencia(semana.tendenciaKgSemana))
-                                .font(Tipo.cifra)
-                                .foregroundStyle(Tinta.i10)
-                            Text("kg por semana").font(Tipo.cuerpoSm).foregroundStyle(Tinta.i6)
-                        }
-                        Text(semana.lectura)
+                        Text(saludActiva
+                             ? (semana.lectura ?? "Pésate al menos tres veces para leer la tendencia.")
+                             : "Activa los datos de salud en tu iPhone para ver tu peso aquí.")
                             .font(Tipo.cuerpoSm)
                             .foregroundStyle(Tinta.i8)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    .frame(width: 520, alignment: .leading)
-                    GraficoPeso(semana: semana)
-                        .frame(height: 150)
                 }
             }
         }
@@ -185,23 +199,26 @@ private struct MapaCalor: View {
 // MARK: Peso
 
 private struct GraficoPeso: View {
-    let semana: SemanaTV
+    let pesos: [PuntoPeso]
+    let inicio: Double
+    let fin: Double
 
     var body: some View {
-        let ultimo = semana.pesos.last?.dia ?? 0
-        let minimo = (semana.pesos.map(\.kg).min() ?? 0) - 0.5
-        let maximo = (semana.pesos.map(\.kg).max() ?? 0) + 0.5
+        let ultimo = pesos.last?.dia ?? 0
+        let valores = pesos.map(\.kg) + [inicio, fin]
+        let minimo = (valores.min() ?? 0) - 0.5
+        let maximo = (valores.max() ?? 0) + 0.5
         Chart {
-            ForEach(semana.pesos) { p in
+            ForEach(pesos) { p in
                 PointMark(x: .value("Día", p.dia), y: .value("Kg", p.kg))
                     .foregroundStyle(Tinta.i8)
                     .symbolSize(140)
             }
             // La recta del estudio (mínimos cuadrados en el servidor).
-            LineMark(x: .value("Día", 0), y: .value("Kg", semana.tendenciaInicio), series: .value("Serie", "tendencia"))
+            LineMark(x: .value("Día", 0), y: .value("Kg", inicio), series: .value("Serie", "tendencia"))
                 .foregroundStyle(Tinta.i10)
                 .lineStyle(StrokeStyle(lineWidth: 5))
-            LineMark(x: .value("Día", ultimo), y: .value("Kg", semana.tendenciaFin), series: .value("Serie", "tendencia"))
+            LineMark(x: .value("Día", ultimo), y: .value("Kg", fin), series: .value("Serie", "tendencia"))
                 .foregroundStyle(Tinta.i10)
                 .lineStyle(StrokeStyle(lineWidth: 5))
         }
@@ -217,6 +234,6 @@ private struct GraficoPeso: View {
                 }
             }
         }
-        .accessibilityLabel("Tendencia de peso de \(Formato.kg(semana.tendenciaInicio)) a \(Formato.kg(semana.tendenciaFin)) kilos")
+        .accessibilityLabel("Tendencia de peso de \(Formato.kg(inicio)) a \(Formato.kg(fin)) kilos")
     }
 }

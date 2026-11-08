@@ -14,11 +14,20 @@
 			remoteGlobalIDString = A1C0DE000000000000000010;
 			remoteInfo = NIVLTV;
 		};
+		A1C0DE000000000000000060 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1C0DE000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1C0DE000000000000000010;
+			remoteInfo = NIVLTV;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		A1C0DE000000000000000011 /* NIVLTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NIVLTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1C0DE000000000000000031 /* NIVLTVTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NIVLTVTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1C0DE000000000000000041 /* Servidor.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Servidor.xcconfig; sourceTree = "<group>"; };
+		A1C0DE000000000000000051 /* NIVLTVUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NIVLTVUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -30,6 +39,11 @@
 		A1C0DE000000000000000032 /* NIVLTVTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = NIVLTVTests;
+			sourceTree = "<group>";
+		};
+		A1C0DE000000000000000052 /* NIVLTVUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = NIVLTVUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -49,6 +63,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1C0DE000000000000000053 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -57,6 +78,8 @@
 			children = (
 				A1C0DE000000000000000012 /* NIVLTV */,
 				A1C0DE000000000000000032 /* NIVLTVTests */,
+				A1C0DE000000000000000052 /* NIVLTVUITests */,
+				A1C0DE000000000000000042 /* Config */,
 				A1C0DE000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -66,8 +89,17 @@
 			children = (
 				A1C0DE000000000000000011 /* NIVLTV.app */,
 				A1C0DE000000000000000031 /* NIVLTVTests.xctest */,
+				A1C0DE000000000000000051 /* NIVLTVUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A1C0DE000000000000000042 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				A1C0DE000000000000000041 /* Servidor.xcconfig */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -77,6 +109,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A1C0DE000000000000000016 /* Build configuration list for PBXNativeTarget "NIVLTV" */;
 			buildPhases = (
+				A1C0DE000000000000000040 /* Comprobar servidor */,
 				A1C0DE000000000000000014 /* Sources */,
 				A1C0DE000000000000000013 /* Frameworks */,
 				A1C0DE000000000000000015 /* Resources */,
@@ -118,6 +151,29 @@
 			productReference = A1C0DE000000000000000031 /* NIVLTVTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		A1C0DE000000000000000050 /* NIVLTVUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1C0DE000000000000000056 /* Build configuration list for PBXNativeTarget "NIVLTVUITests" */;
+			buildPhases = (
+				A1C0DE000000000000000054 /* Sources */,
+				A1C0DE000000000000000053 /* Frameworks */,
+				A1C0DE000000000000000055 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A1C0DE000000000000000061 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A1C0DE000000000000000052 /* NIVLTVUITests */,
+			);
+			name = NIVLTVUITests;
+			packageProductDependencies = (
+			);
+			productName = NIVLTVUITests;
+			productReference = A1C0DE000000000000000051 /* NIVLTVUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -132,6 +188,10 @@
 						CreatedOnToolsVersion = 27.2;
 					};
 					A1C0DE000000000000000030 = {
+						CreatedOnToolsVersion = 27.2;
+						TestTargetID = A1C0DE000000000000000010;
+					};
+					A1C0DE000000000000000050 = {
 						CreatedOnToolsVersion = 27.2;
 						TestTargetID = A1C0DE000000000000000010;
 					};
@@ -153,6 +213,7 @@
 			targets = (
 				A1C0DE000000000000000010 /* NIVLTV */,
 				A1C0DE000000000000000030 /* NIVLTVTests */,
+				A1C0DE000000000000000050 /* NIVLTVUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -172,7 +233,37 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1C0DE000000000000000055 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A1C0DE000000000000000040 /* Comprobar servidor */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Comprobar servidor";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"$CONFIGURATION\" != \"Release\" ]; then exit 0; fi\nmensaje=\"NIVL TV: falta el servidor. Copia tv/Config/Servidor.ejemplo.xcconfig a tv/Config/Servidor.local.xcconfig y rellena la URL (https) y la clave publica de Supabase.\"\ncase \"$NIVL_SUPABASE_URL\" in\n  https://?*) ;;\n  *) echo \"error: $mensaje\"; exit 1 ;;\nesac\nif [ -z \"$NIVL_SUPABASE_CLAVE\" ]; then echo \"error: $mensaje\"; exit 1; fi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A1C0DE000000000000000014 /* Sources */ = {
@@ -189,6 +280,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1C0DE000000000000000054 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -196,6 +294,11 @@
 			isa = PBXTargetDependency;
 			target = A1C0DE000000000000000010 /* NIVLTV */;
 			targetProxy = A1C0DE000000000000000020 /* PBXContainerItemProxy */;
+		};
+		A1C0DE000000000000000061 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1C0DE000000000000000010 /* NIVLTV */;
+			targetProxy = A1C0DE000000000000000060 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -244,7 +347,9 @@
 		};
 		A1C0DE000000000000000017 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1C0DE000000000000000041 /* Servidor.xcconfig */;
 			buildSettings = {
+				INFOPLIST_FILE = "Config/Info-Debug.plist";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -266,7 +371,9 @@
 		};
 		A1C0DE000000000000000018 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1C0DE000000000000000041 /* Servidor.xcconfig */;
 			buildSettings = {
+				INFOPLIST_FILE = "Config/Info-Release.plist";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -318,6 +425,36 @@
 			};
 			name = Release;
 		};
+		A1C0DE000000000000000057 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.teferi.nivl.tv.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 3;
+				TEST_TARGET_NAME = NIVLTV;
+			};
+			name = Debug;
+		};
+		A1C0DE000000000000000058 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.teferi.nivl.tv.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 3;
+				TEST_TARGET_NAME = NIVLTV;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -344,6 +481,15 @@
 			buildConfigurations = (
 				A1C0DE000000000000000037 /* Debug */,
 				A1C0DE000000000000000038 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1C0DE000000000000000056 /* Build configuration list for PBXNativeTarget "NIVLTVUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1C0DE000000000000000057 /* Debug */,
+				A1C0DE000000000000000058 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

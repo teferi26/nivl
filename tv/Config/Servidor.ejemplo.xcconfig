@@ -1,0 +1,8 @@
+// Copia este archivo a Servidor.local.xcconfig (gitignorado) y rellénalo.
+//
+// En un xcconfig «//» empieza un comentario: por eso la URL se escribe con
+// $() en medio. Sin ese truco se queda en «https:» y la compilación falla.
+// Solo la clave PÚBLICA (anon). Nunca la service_role.
+
+NIVL_SUPABASE_URL = https:/$()/TU-PROYECTO.supabase.co
+NIVL_SUPABASE_CLAVE = TU-CLAVE-PUBLICA

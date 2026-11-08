@@ -131,6 +131,7 @@ struct Cifra: View {
             Rotulo(texto: rotulo)
             HStack(alignment: .firstTextBaseline, spacing: Hueco.s2) {
                 Text(valor).font(Tipo.cifra).foregroundStyle(Tinta.i10).monospacedDigit()
+                    .lineLimit(1).minimumScaleFactor(0.4)
                 if let unidad {
                     Text(unidad).font(Tipo.cuerpoSm).foregroundStyle(Tinta.i6)
                 }

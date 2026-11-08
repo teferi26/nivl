@@ -1,12 +1,24 @@
 // NIVL TV · Datos de demostración (como los demo.tsx de la app).
 //
-// El prototipo es de solo lectura y no habla con el servidor: así se valida
-// en el simulador sin cuenta ni red. Los nombres son inventados. Ninguna
-// cadena lleva guion largo (lo comprueba DemoTests).
+// Solo existe en Debug o en simulador y solo se enseña con `-nivlDemo 1`: en
+// Release para aparato este código no se compila. No usa red, Llavero ni
+// caché. Los nombres son inventados. Ninguna cadena lleva guion largo (lo
+// comprueba DemoTests).
+
+#if DEBUG || targetEnvironment(simulator)
 
 import Foundation
 
 enum Demo {
+    static let datos = DatosTV(
+        perfil: PerfilTV(nombre: "Ana V.", titulo: "Campeón", rango: "B", xpTotal: 38_450, elite: true),
+        saludActiva: true,
+        rutina: rutina,
+        arena: arena,
+        ludus: ludus,
+        semana: semana
+    )
+
     static let rutina = RutinaTV(
         nombre: "TORSO · FUERZA",
         dia: "Martes · semana 3 de la campaña",
@@ -116,6 +128,7 @@ enum Demo {
         return SemanaTV(
             racha: 23,
             piedras: 2,
+            piedrasMax: 3,
             xpGanado: 1_840,
             hechas: hechas.reduce(0, +),
             falladas: falladas.reduce(0, +),
@@ -131,10 +144,12 @@ enum Demo {
 
     /// Todas las cadenas visibles de la demo, para el test de guiones.
     static var textos: [String] {
-        var t: [String] = [rutina.nombre, rutina.dia, ludus.nombre, semana.lectura]
+        var t: [String] = [rutina.nombre, rutina.dia, ludus.nombre, semana.lectura ?? ""]
         for e in rutina.ejercicios { t += [e.nombre, e.reps] + e.musculos + e.tecnica }
         for f in arena { t += [f.nombre, f.titulo] }
         for m in ludus.miembros { t.append(m.nombre) }
         return t
     }
 }
+
+#endif

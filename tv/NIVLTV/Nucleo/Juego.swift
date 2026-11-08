@@ -72,6 +72,39 @@ enum Formato {
         return (kgSemana < 0 ? "\u{2212}" : "+") + cifra
     }
 
+    /// Porcentaje de cumplimiento; nil es «sin medir», que no es 0.
+    static func cumple(_ pct: Int?) -> String {
+        pct.map { "\($0) %" } ?? "Sin medir"
+    }
+
+    /// «8-10» se lee «8 a 10». Lo demás («8», «AMRAP») va tal cual.
+    static func reps(_ texto: String) -> String {
+        let partes = texto.split(separator: "-", omittingEmptySubsequences: false)
+        guard partes.count == 2, partes.allSatisfy({ !$0.isEmpty && $0.allSatisfy(\.isNumber) }) else { return texto }
+        return "\(partes[0]) a \(partes[1])"
+    }
+
+    /// Lo que se pinta junto a «Última sincronización».
+    static func hace(_ desde: Date, ahora: Date) -> String {
+        let s = Int(ahora.timeIntervalSince(desde))
+        if s < 60 { return "hace un momento" }
+        if s < 3600 { return "hace \(s / 60) min" }
+        if s < 86400 { return "hace \(s / 3600) h" }
+        let dias = s / 86400
+        return dias == 1 ? "hace 1 día" : "hace \(dias) días"
+    }
+
+    /// Fecha corta en español, sin depender de la región del aparato.
+    static func fechaCorta(_ fecha: Date, zona: TimeZone = .current) -> String {
+        var calendario = Calendar(identifier: .gregorian)
+        calendario.timeZone = zona
+        let c = calendario.dateComponents([.year, .month, .day], from: fecha)
+        let meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
+                     "septiembre", "octubre", "noviembre", "diciembre"]
+        let mes = meses[max(0, min(11, (c.month ?? 1) - 1))]
+        return "\(c.day ?? 1) de \(mes) de \(c.year ?? 0)"
+    }
+
     /// Sin guion largo (regla del proyecto): ni U+2014 ni U+2013 en lo que se pinta.
     static func sinGuiones(_ texto: String) -> Bool {
         !texto.contains("\u{2014}") && !texto.contains("\u{2013}")
