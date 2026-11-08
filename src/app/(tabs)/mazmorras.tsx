@@ -2,22 +2,43 @@
 // datos y los efectos viven en useCampanas; lo que se ve, en
 // CampanasGeneralVista (la piel de NIVL, lámina 4; también en /kit/general).
 // Aquí queda la hoja de abrir una campaña, con la piel de NIVL (oro).
+//
+// Con dos paneles (iPad, Mac, Vision Pro, iPhone Duo abierto) es un
+// maestro-detalle: la lista a la izquierda y la campaña abierta a la derecha
+// (CampanaDetalle, el mismo de /dungeon/[id]). En el iPhone, abrir navega.
 import { StyleSheet, Text, View } from 'react-native';
 import { Campo } from '@/components/arena';
+import { CampanaDetalle } from '@/components/campanas/CampanaDetalle';
 import { CampanasGeneralVista } from '@/components/general/CampanasGeneralVista';
+import { PantallaGeneral, TarjetaGeneral, textoGeneral } from '@/components/general/piezas';
 import { PielGeneral } from '@/components/general/piel';
 import { useCampanas } from '@/components/campanas/useCampanas';
-import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
+import { Button, Chip, ChipWrap, MaestroDetalle, Sheet, useMaestroDetalle } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 import { DUNGEON_CLEAR_XP, DUNGEON_RANKS, STATS } from '@/lib/game';
 
 export default function Campañas() {
-  const { vista, hojas } = useCampanas();
+  const reparto = useMaestroDetalle();
+  const { vista, hojas, elegida, elegir, recargar } = useCampanas({ enPanel: reparto != null });
   const h = hojas.nueva;
   return (
     <PielGeneral>
-      <CampanasGeneralVista {...vista} />
+      <MaestroDetalle
+        reparto={reparto}
+        lista={<CampanasGeneralVista {...vista} />}
+        detalle={elegida ? <CampanaDetalle key={elegida} id={elegida} onCerrar={() => elegir(null)} onCambio={recargar} /> : null}
+        vacio={
+          <PantallaGeneral>
+            <TarjetaGeneral>
+              <Text style={textoGeneral.titulo} accessibilityRole="header">
+                {t('general:campanas.panelTitulo')}
+              </Text>
+              <Text style={[textoGeneral.cuerpo, styles.arriba]}>{t('general:campanas.panelCuerpo')}</Text>
+            </TarjetaGeneral>
+          </PantallaGeneral>
+        }
+      />
       <Sheet
         visible={h.visible}
         onClose={h.onClose}
@@ -85,6 +106,7 @@ export default function Campañas() {
 }
 
 const styles = StyleSheet.create({
+  arriba: { marginTop: space.s2 },
   pila: { gap: space.s5 },
   grupo: { gap: space.s2 },
   etiqueta: {

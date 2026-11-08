@@ -120,7 +120,9 @@
     "sinTareas": "nessun compito",
     "botinXp": "{{xp}} XP di bottino",
     "abrir": "Apri",
-    "a11y": "{{titulo}}, rango {{rango}}: {{hechas}} di {{total}} compiti, {{xp}} XP di bottino. Apri."
+    "a11y": "{{titulo}}, rango {{rango}}: {{hechas}} di {{total}} compiti, {{xp}} XP di bottino. Apri.",
+    "panelTitulo": "Scegli una campagna",
+    "panelCuerpo": "I suoi compiti e il suo bottino si aprono qui, accanto all'elenco."
   },
   "prestado": {
     "volverA11y": "Torna a NIVL"

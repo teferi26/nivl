@@ -15,8 +15,10 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { Entrada, formatoMiles } from '@/components/arena';
+import { cabenDosPaneles } from '@/design/responsive';
+import { useAnchoUtil } from '@/design/useSizeClass';
 import { codigoLegible, LARGO_CODIGO, type Metrica, type Ventana } from '@/lib/socialmath';
 import type { Duelo } from '@/lib/competicionData';
 import type { FriendRequest } from '@/lib/social';
@@ -92,6 +94,8 @@ export function ArenaGeneralVista(p: ArenaGeneralVistaProps) {
   const resto = p.ranking.slice(3);
   const dv = p.duelos.vista;
   const enCurso = dv.activos.length;
+  const { fontScale } = useWindowDimensions();
+  const dos = cabenDosPaneles(useAnchoUtil(), fontScale);
 
   const fija =
     yo && total > 1 && !p.cargando ? (
@@ -144,221 +148,230 @@ export function ArenaGeneralVista(p: ArenaGeneralVistaProps) {
             </FilaCifras>
           </Entrada>
 
-          {/* Ranking */}
-          <Entrada indice={2}>
-            <RotuloGeneral texto={t('general:arena.ranking')} em={t(`general:arena.ventana.${p.ventana}`)} seccion />
-            <Segmentos
-              opciones={[
-                { id: 'semana', texto: t('general:arena.ventana.semana') },
-                { id: 'mes', texto: t('general:arena.ventana.mes') },
-              ]}
-              valor={p.ventana}
-              alCambiar={p.elegirVentana}
-            />
-            <View style={styles.chips}>
-              {METRICAS.map((m) => (
-                <ChipGeneral key={m} texto={t(`general:arena.metrica.${m}`)} activo={p.metrica === m} onPress={() => p.elegirMetrica(m)} />
-              ))}
-            </View>
-          </Entrada>
-
-          {p.numAmigos === 0 ? (
-            <TarjetaGeneral heroe>
-              <Text style={textoGeneral.titulo}>{t('general:arena.vacioTitulo')}</Text>
-              <Text style={[textoGeneral.cuerpo, styles.arriba]}>{t('general:arena.vacioCuerpo')}</Text>
-              <BotonGeneral titulo={t('amigos:codigo.invitar')} icono="paper-plane-outline" onPress={p.invitar} />
-            </TarjetaGeneral>
-          ) : (
-            <Entrada indice={3}>
-              <TarjetaGeneral heroe>
-                <View style={styles.podio}>
-                  {[1, 0, 2].map((i) => {
-                    const f = podio[i];
-                    if (!f) return <View key={i} style={styles.podioCol} />;
-                    const alto = i === 0 ? px(84) : i === 1 ? px(60) : px(44);
-                    return (
-                      <View key={f.competidor.userId} style={styles.podioCol} accessible accessibilityLabel={t('general:arena.filaA11y', { puesto: f.posicion, nombre: f.competidor.name, valor: valorTexto(f.valor, p.metrica) })}>
-                        <Inicial nombre={f.competidor.name} grande={i === 0} mia={f.competidor.isMe} />
-                        <Text style={[styles.podioNombre, f.competidor.isMe && styles.oro]} numberOfLines={1}>
-                          {f.competidor.isMe ? t('amigos:comun.tu') : f.competidor.name}
-                        </Text>
-                        <Text style={styles.podioValor} numberOfLines={1}>
-                          {valorTexto(f.valor, p.metrica)}
-                        </Text>
-                        <View style={[styles.peana, { height: alto }, i === 0 && styles.peanaOro]}>
-                          <Text style={[styles.peanaNum, i === 0 && styles.peanaNumOro]}>{f.posicion}</Text>
-                        </View>
-                      </View>
-                    );
-                  })}
+          {/* Con dos paneles (iPad, Mac, iPhone Duo abierto): el ranking a la
+              izquierda; duelos, solicitudes y añadir a la derecha. El árbol es
+              el mismo en una y dos columnas: plegar no reinicia el campo. */}
+          <View style={dos ? styles.columnas : styles.pila}>
+            <View style={dos ? styles.columna : styles.pila}>
+              {/* Ranking */}
+              <Entrada indice={2}>
+                <RotuloGeneral texto={t('general:arena.ranking')} em={t(`general:arena.ventana.${p.ventana}`)} seccion />
+                <Segmentos
+                  opciones={[
+                    { id: 'semana', texto: t('general:arena.ventana.semana') },
+                    { id: 'mes', texto: t('general:arena.ventana.mes') },
+                  ]}
+                  valor={p.ventana}
+                  alCambiar={p.elegirVentana}
+                />
+                <View style={styles.chips}>
+                  {METRICAS.map((m) => (
+                    <ChipGeneral key={m} texto={t(`general:arena.metrica.${m}`)} activo={p.metrica === m} onPress={() => p.elegirMetrica(m)} />
+                  ))}
                 </View>
-              </TarjetaGeneral>
-              {resto.length > 0 ? (
-                <TarjetaGeneral style={styles.lista}>
-                  {resto.map((f, i) => (
-                    <FilaGeneral
-                      key={f.competidor.userId}
-                      primera={i === 0}
-                      style={f.competidor.isMe ? styles.filaMia : undefined}
-                      onPress={f.competidor.isMe ? undefined : () => p.abrirSeguridad(f.competidor)}
-                      accessibilityLabel={t('general:arena.filaA11y', { puesto: f.posicion, nombre: f.competidor.name, valor: valorTexto(f.valor, p.metrica) })}
-                    >
-                      <Text style={[styles.puesto, f.competidor.isMe && styles.oro]}>{f.posicion}</Text>
-                      <Inicial nombre={f.competidor.name} mia={f.competidor.isMe} />
-                      <View style={styles.flex}>
-                        <Text style={[textoGeneral.fila, f.competidor.isMe && styles.oro]} numberOfLines={1}>
-                          {f.competidor.isMe ? t('amigos:comun.tu') : f.competidor.name}
-                        </Text>
-                        {f.titulo ? <Text style={textoGeneral.detalle} numberOfLines={1}>{f.titulo}</Text> : null}
-                      </View>
-                      <Text style={styles.valor}>{valorTexto(f.valor, p.metrica)}</Text>
-                    </FilaGeneral>
-                  ))}
-                </TarjetaGeneral>
-              ) : null}
-            </Entrada>
-          )}
+              </Entrada>
 
-          {/* Duelos */}
-          {p.duelos.disponible ? (
-            <Entrada indice={4}>
-              <RotuloGeneral texto={t('general:arena.duelosRotulo')} em={enCurso > 0 ? t('general:arena.enCursoN', { n: enCurso }) : undefined} seccion />
-              {!p.duelos.listo ? (
-                <HuecoGeneral alto={px(110)} />
+              {p.numAmigos === 0 ? (
+                <TarjetaGeneral heroe>
+                  <Text style={textoGeneral.titulo}>{t('general:arena.vacioTitulo')}</Text>
+                  <Text style={[textoGeneral.cuerpo, styles.arriba]}>{t('general:arena.vacioCuerpo')}</Text>
+                  <BotonGeneral titulo={t('amigos:codigo.invitar')} icono="paper-plane-outline" onPress={p.invitar} />
+                </TarjetaGeneral>
               ) : (
-                <>
-                  {p.duelos.fallo ? <Text style={[textoGeneral.detalle, styles.arriba]}>{p.duelos.fallo}</Text> : null}
-                  {dv.porResponder.map((d) => (
-                    <TarjetaGeneral key={d.id} heroe style={styles.separado}>
-                      <RotuloGeneral texto={t('general:arena.teReta')} em={textoQuedan(diasRestantes(d.week_start, p.duelos.hoy))} />
-                      <Text style={[textoGeneral.titulo, styles.arriba]}>{nombreRival(d)}</Text>
-                      <Text style={textoGeneral.detalle}>{t('amigos:competicion.regla')}</Text>
-                      <View style={styles.botones}>
-                        <BotonGeneral titulo={t('amigos:comun.aceptar')} icono="flash" onPress={() => p.duelos.responder(d, true)} ocupado={p.duelos.ocupado === d.id} style={styles.flex} />
-                        <BotonGeneral titulo={t('general:arena.rechazar')} fantasma onPress={() => p.duelos.responder(d, false)} desactivado={p.duelos.ocupado === d.id} style={styles.flex} />
-                      </View>
-                    </TarjetaGeneral>
-                  ))}
-                  {dv.activos.map((d) => (
-                    <Marcador key={d.id} d={d} hoy={p.duelos.hoy} />
-                  ))}
-                  {dv.enviados.length + dv.cerrados.length + dv.resueltos.length > 0 ? (
-                    <TarjetaGeneral style={[styles.lista, styles.separado]}>
-                      {dv.enviados.map((d, i) => (
-                        <FilaGeneral key={d.id} primera={i === 0}>
-                          <Ionicons name="hourglass-outline" size={px(15)} color={C.mudo} />
-                          <Text style={[textoGeneral.fila, styles.flex]} numberOfLines={1}>{nombreRival(d)}</Text>
-                          <Text style={textoGeneral.detalle}>{t('general:arena.enviado')}</Text>
-                        </FilaGeneral>
-                      ))}
-                      {dv.cerrados.map((d, i) => (
-                        <FilaGeneral key={d.id} primera={dv.enviados.length === 0 && i === 0}>
-                          <Ionicons name="hourglass-outline" size={px(15)} color={C.mudo} />
-                          <Text style={[textoGeneral.fila, styles.flex]} numberOfLines={1}>{nombreRival(d)}</Text>
-                          <Text style={textoGeneral.detalle}>{t('amigos:competicion.semanaCerrada')}</Text>
-                        </FilaGeneral>
-                      ))}
-                      {dv.resueltos.map((d, i) => {
-                        const mismos = d.resultado === 'pierdo' && d.rival ? p.amigos.filter((a) => a.name === d.rival) : [];
-                        const rival = mismos.length === 1 ? mismos[0]! : null;
-                        const gano = d.resultado === 'gano';
+                <Entrada indice={3}>
+                  <TarjetaGeneral heroe>
+                    <View style={styles.podio}>
+                      {[1, 0, 2].map((i) => {
+                        const f = podio[i];
+                        if (!f) return <View key={i} style={styles.podioCol} />;
+                        const alto = i === 0 ? px(84) : i === 1 ? px(60) : px(44);
                         return (
-                          <FilaGeneral key={d.id} primera={dv.enviados.length + dv.cerrados.length === 0 && i === 0}>
-                            <Ionicons name={gano ? 'trophy' : 'flag-outline'} size={px(15)} color={gano ? G : C.mudo} />
-                            <View style={styles.flex}>
-                              <Text style={textoGeneral.fila} numberOfLines={1}>{nombreRival(d)}</Text>
-                              <Text style={textoGeneral.detalle} numberOfLines={1}>{detalleResuelto(d, false)}</Text>
+                          <View key={f.competidor.userId} style={styles.podioCol} accessible accessibilityLabel={t('general:arena.filaA11y', { puesto: f.posicion, nombre: f.competidor.name, valor: valorTexto(f.valor, p.metrica) })}>
+                            <Inicial nombre={f.competidor.name} grande={i === 0} mia={f.competidor.isMe} />
+                            <Text style={[styles.podioNombre, f.competidor.isMe && styles.oro]} numberOfLines={1}>
+                              {f.competidor.isMe ? t('amigos:comun.tu') : f.competidor.name}
+                            </Text>
+                            <Text style={styles.podioValor} numberOfLines={1}>
+                              {valorTexto(f.valor, p.metrica)}
+                            </Text>
+                            <View style={[styles.peana, { height: alto }, i === 0 && styles.peanaOro]}>
+                              <Text style={[styles.peanaNum, i === 0 && styles.peanaNumOro]}>{f.posicion}</Text>
                             </View>
-                            {rival ? (
-                              <ChipGeneral texto={t('amigos:competicion.revancha')} onPress={() => p.onRetar(rival)} />
-                            ) : (
-                              <Text style={[styles.resultado, gano && styles.oro]}>{textoResultado(d.resultado!)}</Text>
-                            )}
-                          </FilaGeneral>
+                          </View>
                         );
                       })}
+                    </View>
+                  </TarjetaGeneral>
+                  {resto.length > 0 ? (
+                    <TarjetaGeneral style={styles.lista}>
+                      {resto.map((f, i) => (
+                        <FilaGeneral
+                          key={f.competidor.userId}
+                          primera={i === 0}
+                          style={f.competidor.isMe ? styles.filaMia : undefined}
+                          onPress={f.competidor.isMe ? undefined : () => p.abrirSeguridad(f.competidor)}
+                          accessibilityLabel={t('general:arena.filaA11y', { puesto: f.posicion, nombre: f.competidor.name, valor: valorTexto(f.valor, p.metrica) })}
+                        >
+                          <Text style={[styles.puesto, f.competidor.isMe && styles.oro]}>{f.posicion}</Text>
+                          <Inicial nombre={f.competidor.name} mia={f.competidor.isMe} />
+                          <View style={styles.flex}>
+                            <Text style={[textoGeneral.fila, f.competidor.isMe && styles.oro]} numberOfLines={1}>
+                              {f.competidor.isMe ? t('amigos:comun.tu') : f.competidor.name}
+                            </Text>
+                            {f.titulo ? <Text style={textoGeneral.detalle} numberOfLines={1}>{f.titulo}</Text> : null}
+                          </View>
+                          <Text style={styles.valor}>{valorTexto(f.valor, p.metrica)}</Text>
+                        </FilaGeneral>
+                      ))}
                     </TarjetaGeneral>
                   ) : null}
-                  {dv.porResponder.length + dv.activos.length + dv.enviados.length + dv.cerrados.length + dv.resueltos.length === 0 ? (
-                    <Text style={[textoGeneral.cuerpo, styles.arriba]}>{t('amigos:competicion.vacio')}</Text>
-                  ) : null}
-                  <BotonGeneral titulo={t('general:arena.retar')} icono="flash-outline" onPress={() => p.onRetar(null)} desactivado={p.amigos.length === 0} />
-                </>
+                </Entrada>
               )}
-            </Entrada>
-          ) : null}
 
-          {/* Solicitudes */}
-          {p.entrantes.length + p.salientes.length > 0 ? (
-            <Entrada indice={5}>
-              <RotuloGeneral texto={t('amigos:solicitudes.titulo')} em={p.entrantes.length > 0 ? String(p.entrantes.length) : undefined} seccion />
-              <TarjetaGeneral style={styles.lista}>
-                {p.entrantes.map((r, i) => (
-                  <FilaGeneral key={r.friendshipId} primera={i === 0}>
-                    <Inicial nombre={r.name} />
-                    <View style={styles.flex}>
-                      <Text style={textoGeneral.fila} numberOfLines={1}>{r.name}</Text>
-                      <Text style={textoGeneral.detalle} numberOfLines={1}>{t('amigos:solicitudes.entrante', { nivel: r.level })}</Text>
-                    </View>
-                    {p.ocupada === r.friendshipId ? (
-                      <ActivityIndicator size="small" color={G} />
-                    ) : (
-                      <View style={styles.respuestas}>
-                        <ChipGeneral texto={t('amigos:comun.aceptar')} activo onPress={() => p.responder(r, true)} />
-                        <Pressable onPress={() => p.responder(r, false)} hitSlop={10} accessibilityRole="button" accessibilityLabel={t('amigos:solicitudes.rechazarA11y', { nombre: r.name })} style={styles.x}>
-                          <Ionicons name="close" size={16} color={C.suave} />
-                        </Pressable>
-                      </View>
-                    )}
-                  </FilaGeneral>
-                ))}
-                {p.salientes.map((r, i) => (
-                  <FilaGeneral key={r.friendshipId} primera={p.entrantes.length === 0 && i === 0}>
-                    <Inicial nombre={r.name} />
-                    <View style={styles.flex}>
-                      <Text style={textoGeneral.fila} numberOfLines={1}>{r.name}</Text>
-                      <Text style={textoGeneral.detalle} numberOfLines={1}>{t('amigos:solicitudes.saliente', { nivel: r.level })}</Text>
-                    </View>
-                    <ChipGeneral texto={t('amigos:solicitudes.retirar')} onPress={() => p.retirar(r)} accessibilityLabel={t('amigos:solicitudes.retirarA11y', { nombre: r.name })} />
-                  </FilaGeneral>
-                ))}
-              </TarjetaGeneral>
-            </Entrada>
-          ) : null}
+            </View>
+            <View style={dos ? styles.columna : styles.pila}>
+              {/* Duelos */}
+              {p.duelos.disponible ? (
+                <Entrada indice={4}>
+                  <RotuloGeneral texto={t('general:arena.duelosRotulo')} em={enCurso > 0 ? t('general:arena.enCursoN', { n: enCurso }) : undefined} seccion />
+                  {!p.duelos.listo ? (
+                    <HuecoGeneral alto={px(110)} />
+                  ) : (
+                    <>
+                      {p.duelos.fallo ? <Text style={[textoGeneral.detalle, styles.arriba]}>{p.duelos.fallo}</Text> : null}
+                      {dv.porResponder.map((d) => (
+                        <TarjetaGeneral key={d.id} heroe style={styles.separado}>
+                          <RotuloGeneral texto={t('general:arena.teReta')} em={textoQuedan(diasRestantes(d.week_start, p.duelos.hoy))} />
+                          <Text style={[textoGeneral.titulo, styles.arriba]}>{nombreRival(d)}</Text>
+                          <Text style={textoGeneral.detalle}>{t('amigos:competicion.regla')}</Text>
+                          <View style={styles.botones}>
+                            <BotonGeneral titulo={t('amigos:comun.aceptar')} icono="flash" onPress={() => p.duelos.responder(d, true)} ocupado={p.duelos.ocupado === d.id} style={styles.flex} />
+                            <BotonGeneral titulo={t('general:arena.rechazar')} fantasma onPress={() => p.duelos.responder(d, false)} desactivado={p.duelos.ocupado === d.id} style={styles.flex} />
+                          </View>
+                        </TarjetaGeneral>
+                      ))}
+                      {dv.activos.map((d) => (
+                        <Marcador key={d.id} d={d} hoy={p.duelos.hoy} />
+                      ))}
+                      {dv.enviados.length + dv.cerrados.length + dv.resueltos.length > 0 ? (
+                        <TarjetaGeneral style={[styles.lista, styles.separado]}>
+                          {dv.enviados.map((d, i) => (
+                            <FilaGeneral key={d.id} primera={i === 0}>
+                              <Ionicons name="hourglass-outline" size={px(15)} color={C.mudo} />
+                              <Text style={[textoGeneral.fila, styles.flex]} numberOfLines={1}>{nombreRival(d)}</Text>
+                              <Text style={textoGeneral.detalle}>{t('general:arena.enviado')}</Text>
+                            </FilaGeneral>
+                          ))}
+                          {dv.cerrados.map((d, i) => (
+                            <FilaGeneral key={d.id} primera={dv.enviados.length === 0 && i === 0}>
+                              <Ionicons name="hourglass-outline" size={px(15)} color={C.mudo} />
+                              <Text style={[textoGeneral.fila, styles.flex]} numberOfLines={1}>{nombreRival(d)}</Text>
+                              <Text style={textoGeneral.detalle}>{t('amigos:competicion.semanaCerrada')}</Text>
+                            </FilaGeneral>
+                          ))}
+                          {dv.resueltos.map((d, i) => {
+                            const mismos = d.resultado === 'pierdo' && d.rival ? p.amigos.filter((a) => a.name === d.rival) : [];
+                            const rival = mismos.length === 1 ? mismos[0]! : null;
+                            const gano = d.resultado === 'gano';
+                            return (
+                              <FilaGeneral key={d.id} primera={dv.enviados.length + dv.cerrados.length === 0 && i === 0}>
+                                <Ionicons name={gano ? 'trophy' : 'flag-outline'} size={px(15)} color={gano ? G : C.mudo} />
+                                <View style={styles.flex}>
+                                  <Text style={textoGeneral.fila} numberOfLines={1}>{nombreRival(d)}</Text>
+                                  <Text style={textoGeneral.detalle} numberOfLines={1}>{detalleResuelto(d, false)}</Text>
+                                </View>
+                                {rival ? (
+                                  <ChipGeneral texto={t('amigos:competicion.revancha')} onPress={() => p.onRetar(rival)} />
+                                ) : (
+                                  <Text style={[styles.resultado, gano && styles.oro]}>{textoResultado(d.resultado!)}</Text>
+                                )}
+                              </FilaGeneral>
+                            );
+                          })}
+                        </TarjetaGeneral>
+                      ) : null}
+                      {dv.porResponder.length + dv.activos.length + dv.enviados.length + dv.cerrados.length + dv.resueltos.length === 0 ? (
+                        <Text style={[textoGeneral.cuerpo, styles.arriba]}>{t('amigos:competicion.vacio')}</Text>
+                      ) : null}
+                      <BotonGeneral titulo={t('general:arena.retar')} icono="flash-outline" onPress={() => p.onRetar(null)} desactivado={p.amigos.length === 0} />
+                    </>
+                  )}
+                </Entrada>
+              ) : null}
 
-          {/* Añadir amigos */}
-          <Entrada indice={6}>
-            <RotuloGeneral texto={t('general:arena.anadir')} seccion />
-            <TarjetaGeneral>
-              <RotuloGeneral texto={t('amigos:codigo.tuCodigo')} em={p.copiado ? t('amigos:codigo.copiado') : undefined} />
-              <Text style={styles.codigo} accessibilityLabel={p.miCodigo ? t('amigos:codigo.tuCodigoA11y', { codigo: p.miCodigo }) : undefined} selectable>
-                {p.miCodigo ? codigoLegible(p.miCodigo) : '-'}
-              </Text>
-              <View style={styles.botones}>
-                <BotonGeneral titulo={t('amigos:codigo.copiar')} icono="copy-outline" fantasma fino onPress={p.copiar} style={styles.flex} desactivado={!p.miCodigo} />
-                <BotonGeneral titulo={t('amigos:codigo.invitar')} icono="paper-plane-outline" fino onPress={p.invitar} style={styles.flex} />
-              </View>
-              <View style={styles.separador} />
-              <RotuloGeneral texto={t('amigos:codigo.anadir')} />
-              <View style={styles.campoFila}>
-                <TextInput
-                  value={p.codigo}
-                  onChangeText={p.setCodigo}
-                  placeholder={t('amigos:codigo.campo')}
-                  placeholderTextColor={C.tenue}
-                  autoCapitalize="characters"
-                  autoCorrect={false}
-                  maxLength={LARGO_CODIGO + 2}
-                  onSubmitEditing={p.enviar}
-                  accessibilityLabel={t('amigos:codigo.campoA11y')}
-                  style={styles.campo}
-                />
-                <BotonGeneral titulo={t('amigos:codigo.enviar')} onPress={p.enviar} ocupado={p.enviando} desactivado={p.codigo.length === 0} style={styles.enviar} />
-              </View>
-              {p.avisoCodigo ? <Text style={[textoGeneral.detalle, styles.arriba, !p.avisoCodigo.error && styles.oro]}>{p.avisoCodigo.texto}</Text> : null}
-            </TarjetaGeneral>
-          </Entrada>
+              {/* Solicitudes */}
+              {p.entrantes.length + p.salientes.length > 0 ? (
+                <Entrada indice={5}>
+                  <RotuloGeneral texto={t('amigos:solicitudes.titulo')} em={p.entrantes.length > 0 ? String(p.entrantes.length) : undefined} seccion />
+                  <TarjetaGeneral style={styles.lista}>
+                    {p.entrantes.map((r, i) => (
+                      <FilaGeneral key={r.friendshipId} primera={i === 0}>
+                        <Inicial nombre={r.name} />
+                        <View style={styles.flex}>
+                          <Text style={textoGeneral.fila} numberOfLines={1}>{r.name}</Text>
+                          <Text style={textoGeneral.detalle} numberOfLines={1}>{t('amigos:solicitudes.entrante', { nivel: r.level })}</Text>
+                        </View>
+                        {p.ocupada === r.friendshipId ? (
+                          <ActivityIndicator size="small" color={G} />
+                        ) : (
+                          <View style={styles.respuestas}>
+                            <ChipGeneral texto={t('amigos:comun.aceptar')} activo onPress={() => p.responder(r, true)} />
+                            <Pressable onPress={() => p.responder(r, false)} hitSlop={10} accessibilityRole="button" accessibilityLabel={t('amigos:solicitudes.rechazarA11y', { nombre: r.name })} style={styles.x}>
+                              <Ionicons name="close" size={16} color={C.suave} />
+                            </Pressable>
+                          </View>
+                        )}
+                      </FilaGeneral>
+                    ))}
+                    {p.salientes.map((r, i) => (
+                      <FilaGeneral key={r.friendshipId} primera={p.entrantes.length === 0 && i === 0}>
+                        <Inicial nombre={r.name} />
+                        <View style={styles.flex}>
+                          <Text style={textoGeneral.fila} numberOfLines={1}>{r.name}</Text>
+                          <Text style={textoGeneral.detalle} numberOfLines={1}>{t('amigos:solicitudes.saliente', { nivel: r.level })}</Text>
+                        </View>
+                        <ChipGeneral texto={t('amigos:solicitudes.retirar')} onPress={() => p.retirar(r)} accessibilityLabel={t('amigos:solicitudes.retirarA11y', { nombre: r.name })} />
+                      </FilaGeneral>
+                    ))}
+                  </TarjetaGeneral>
+                </Entrada>
+              ) : null}
 
+              {/* Añadir amigos */}
+              <Entrada indice={6}>
+                <RotuloGeneral texto={t('general:arena.anadir')} seccion />
+                <TarjetaGeneral>
+                  <RotuloGeneral texto={t('amigos:codigo.tuCodigo')} em={p.copiado ? t('amigos:codigo.copiado') : undefined} />
+                  <Text style={styles.codigo} accessibilityLabel={p.miCodigo ? t('amigos:codigo.tuCodigoA11y', { codigo: p.miCodigo }) : undefined} selectable>
+                    {p.miCodigo ? codigoLegible(p.miCodigo) : '-'}
+                  </Text>
+                  <View style={styles.botones}>
+                    <BotonGeneral titulo={t('amigos:codigo.copiar')} icono="copy-outline" fantasma fino onPress={p.copiar} style={styles.flex} desactivado={!p.miCodigo} />
+                    <BotonGeneral titulo={t('amigos:codigo.invitar')} icono="paper-plane-outline" fino onPress={p.invitar} style={styles.flex} />
+                  </View>
+                  <View style={styles.separador} />
+                  <RotuloGeneral texto={t('amigos:codigo.anadir')} />
+                  <View style={styles.campoFila}>
+                    <TextInput
+                      value={p.codigo}
+                      onChangeText={p.setCodigo}
+                      placeholder={t('amigos:codigo.campo')}
+                      placeholderTextColor={C.tenue}
+                      autoCapitalize="characters"
+                      autoCorrect={false}
+                      maxLength={LARGO_CODIGO + 2}
+                      onSubmitEditing={p.enviar}
+                      accessibilityLabel={t('amigos:codigo.campoA11y')}
+                      style={styles.campo}
+                    />
+                    <BotonGeneral titulo={t('amigos:codigo.enviar')} onPress={p.enviar} ocupado={p.enviando} desactivado={p.codigo.length === 0} style={styles.enviar} />
+                  </View>
+                  {p.avisoCodigo ? <Text style={[textoGeneral.detalle, styles.arriba, !p.avisoCodigo.error && styles.oro]}>{p.avisoCodigo.texto}</Text> : null}
+                </TarjetaGeneral>
+              </Entrada>
+
+            </View>
+          </View>
           <BotonGeneral titulo={t('general:arena.ajustes')} icono="settings-outline" fantasma fino onPress={p.onAjustes} />
           {fija ? <View style={styles.huecoFija} /> : null}
         </>
@@ -405,6 +418,9 @@ function Inicial({ nombre, grande, mia }: { nombre: string; grande?: boolean; mi
 }
 
 const styles = StyleSheet.create({
+  pila: { gap: px(9) },
+  columnas: { flexDirection: 'row', alignItems: 'flex-start', gap: px(14) },
+  columna: { flex: 1, minWidth: 0, gap: px(9) },
   flex: { flex: 1, minWidth: 0 },
   arriba: { marginTop: px(6) },
   arribaPoco: { marginTop: px(3) },

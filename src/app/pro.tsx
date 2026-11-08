@@ -20,6 +20,7 @@ import { Platform, StyleSheet, Text, View } from 'react-native';
 import { OfertaModosVista } from '@/components/modos/pago/OfertaModosVista';
 import { useOfertaModos } from '@/components/modos/pago/useOfertaModos';
 import { UsoIa } from '@/components/UsoIa';
+import { PlanesWeb } from '@/components/web/PlanesWeb';
 import { Barra, CargaArena, EncabezadoArena, Entrada, ErrorSistema, TarjetaArena } from '@/components/arena';
 import { Button, Row, Screen, Section } from '@/components/ui';
 import { vibrar } from '@/design/haptics';
@@ -233,8 +234,9 @@ export default function Pro() {
     const parcial = !!derechos && !derechos.todos;
     const mejorable = purchasesAvailable() && parcial && provider !== 'stripe';
     const nombreModos = derechos ? (derechos.todos ? 'Los cuatro' : derechos.modos.map((m) => NOMBRE_MODO[m]).join(', ')) : null; // i18n-ok: marca
-    // Se gestiona en la tienda solo lo que se pagó en una tienda.
-    const deTienda = dePago && (provider === 'apple' || provider === 'google');
+    // Se gestiona en la tienda solo lo que se pagó en una tienda. En la web no
+    // hay tienda que abrir: queda la nota de dónde se gestiona.
+    const deTienda = Platform.OS !== 'web' && dePago && (provider === 'apple' || provider === 'google');
     const gestionar = async () => {
       setAvisoGestion(null);
       try {
@@ -371,6 +373,13 @@ export default function Pro() {
         </>
       </Screen>
     );
+  }
+
+  // En la web no se compra ni se enlaza a ninguna compra (ni Apple, ni Google,
+  // ni Stripe todavía): «Planes» explica que la suscripción va por la app de
+  // iPhone y enseña los planes en solo lectura (src/components/web/PlanesWeb).
+  if (Platform.OS === 'web') {
+    return <PlanesWeb kind={kind} onVolver={salir} refrescando={refreshing} onRefrescar={refrescar} />;
   }
 
   // Con motivo, la cabecera es la del momento; sin él, la de siempre. La prueba

@@ -93,5 +93,13 @@
     "falloRotulo": "Impossibile confermare",
     "confirmando": "Conferma della tua email in corso",
     "sinEnlace": "Questo link non contiene nulla da confermare. Apri l'ultima email che ti abbiamo inviato o entra con la tua password."
+  },
+  "web": {
+    "eyebrow": "NIVL nel browser",
+    "titulo": "La tua arena, anche qui.",
+    "cuerpo": "Lo stesso account e gli stessi dati del telefono. Quello che fai qui conta anche lì.",
+    "punto1": "Missioni, serie e chiusura del giorno",
+    "punto2": "I tuoi mondi: IRON, FOCUS, WORK e FOUNDER",
+    "punto3": "Il coach, con una tastiera vera"
   }
 }

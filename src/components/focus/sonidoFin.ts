@@ -9,8 +9,11 @@
 //   con la música del usuario sin pararla.
 // - expo-audio se carga al primer sonido, no al importar; sin módulo, silencio.
 // - No lanza nunca: un sonido que falla no rompe el fin del bloque.
+// - En la web, Web Audio con el mismo m4a (src/lib/web/sonido.ts).
 
 import type { AudioPlayer } from 'expo-audio';
+import { Platform } from 'react-native';
+import { prepararSonidoWeb, sonarWeb } from '@/lib/web/sonido';
 
 const FUENTE: number = require('../../../assets/sonidos/focus/fin.m4a');
 const VOLUMEN = 0.8;
@@ -39,8 +42,20 @@ function preparar(): Promise<void> {
   return sesion;
 }
 
+/**
+ * Desde el gesto de empezar un bloque: en la web el navegador solo deja sonar
+ * tras un gesto, y el fin del bloque no lo es. En el móvil no hace nada.
+ */
+export function prepararFin(): void {
+  if (Platform.OS === 'web') prepararSonidoWeb([FUENTE]);
+}
+
 /** Suena la campana de fin de bloque. No lanza nunca. */
 export function sonarFin(): void {
+  if (Platform.OS === 'web') {
+    sonarWeb(FUENTE, VOLUMEN);
+    return;
+  }
   try {
     void preparar().then(() => {
       const a = moduloAudio();

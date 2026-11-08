@@ -1,5 +1,11 @@
 import {
   ANCHO_ASIDE,
+  ANCHO_MIN_RAIL,
+  cabenDosPaneles,
+  columnasRejilla,
+  ladoCelda,
+  repartoPaneles,
+  UMBRAL_DOS_PANELES,
   ANCHO_RAIL,
   ANCHO_SIDEBAR,
   anchoNavegacion,
@@ -91,25 +97,105 @@ describe('cabeAside', () => {
 describe('navDeVentana: la navegación sale de la ventana, no del hueco', () => {
   it.each([
     [375, 'tabs'],
+    [466, 'tabs'],
     [599, 'tabs'],
-    [600, 'rail'],
-    [640, 'rail'],
-    [671, 'rail'],
+    [600, 'tabs'],
+    [669, 'tabs'],
+    [719, 'tabs'],
+    [720, 'rail'],
+    [744, 'rail'],
     [1023, 'rail'],
     [1024, 'sidebar'],
+    [1366, 'sidebar'],
   ] as const)('%i → %s', (w, nav) => {
     expect(navDeVentana(w)).toBe(nav);
   });
 
-  it('entre 600 y 671 hay raíl aunque el hueco sea compact', () => {
-    for (const w of [600, 640, 671]) {
-      expect(huecoContenido(w).sizeClass).toBe('compact');
-      expect(navDeVentana(w)).toBe('rail');
+  it('«medium estrecho» (600–719) lleva barra inferior y el hueco es la ventana entera', () => {
+    expect(ANCHO_MIN_RAIL).toBe(720);
+    for (const w of [600, 640, 669, 694]) {
+      expect(navDeVentana(w)).toBe('tabs');
+      expect(huecoContenido(w)).toEqual({ ancho: w, sizeClass: 'medium', cabeAside: false });
     }
   });
 
   it('un ancho no válido es la barra inferior', () => {
     expect(navDeVentana(0)).toBe('tabs');
     expect(navDeVentana(Number.NaN)).toBe('tabs');
+  });
+});
+
+describe('marco por dispositivo: iPhone Duo, iPad y Mac', () => {
+  // [ventana, nav, hueco, clase del hueco, ¿dos paneles?]
+  it.each([
+    [466, 'tabs', 466, 'compact', false], // Duo plegado: como un iPhone
+    [669, 'tabs', 669, 'medium', true], // Duo abierto: barra inferior y dos paneles
+    [744, 'rail', 672, 'medium', true], // iPad mini vertical
+    [1024, 'sidebar', 784, 'medium', true], // iPad 13" vertical
+    [1366, 'sidebar', 1126, 'expanded', true], // iPad Pro 13" apaisado / Mac
+  ] as const)('%i → %s, hueco %i (%s), dos paneles: %s', (w, nav, hueco, clase, dos) => {
+    expect(navDeVentana(w)).toBe(nav);
+    const h = huecoContenido(w);
+    expect(h.ancho).toBe(hueco);
+    expect(h.sizeClass).toBe(clase);
+    expect(cabenDosPaneles(h.ancho)).toBe(dos);
+  });
+
+  it('plegar y desplegar el Duo no cambia de clase a medias: 466 compact, 669 medium', () => {
+    expect(marcoDe(466)).toEqual({ sizeClass: 'compact', gutter: 20, maxContent: 560, nav: 'tabs' });
+    expect(marcoDe(669)).toEqual({ sizeClass: 'medium', gutter: 32, maxContent: 640, nav: 'tabs' });
+  });
+});
+
+describe('repartoPaneles', () => {
+  it('el umbral es 640 de hueco', () => {
+    expect(UMBRAL_DOS_PANELES).toBe(640);
+    expect(repartoPaneles(639)).toBeNull();
+    expect(repartoPaneles(640)).not.toBeNull();
+    expect(repartoPaneles(466)).toBeNull();
+  });
+
+  it('Duo abierto (669): mitades, el filete fuera', () => {
+    expect(repartoPaneles(669)).toEqual({ izquierda: 334, derecha: 334 });
+    expect(repartoPaneles(669, 'mitad')).toEqual({ izquierda: 334, derecha: 334 });
+  });
+
+  it('iPad mini (672) y 13" vertical (784): mitades', () => {
+    expect(repartoPaneles(672)).toEqual({ izquierda: 335, derecha: 336 });
+    expect(repartoPaneles(784)).toEqual({ izquierda: 391, derecha: 392 });
+  });
+
+  it('desde 900 la lista se acota a 320–400 y el detalle se lleva el resto', () => {
+    expect(repartoPaneles(900)).toEqual({ izquierda: 324, derecha: 575 });
+    expect(repartoPaneles(1126)).toEqual({ izquierda: 400, derecha: 725 });
+    expect(repartoPaneles(1126, 'mitad')).toEqual({ izquierda: 562, derecha: 563 });
+  });
+
+  it('con texto muy grande, un solo panel', () => {
+    expect(repartoPaneles(1126, 'lista', 1.5)).toBeNull();
+    expect(cabenDosPaneles(1126, 1.35)).toBe(true);
+  });
+
+  it('un hueco no finito no parte', () => {
+    expect(repartoPaneles(Number.NaN)).toBeNull();
+  });
+});
+
+describe('columnasRejilla y ladoCelda', () => {
+  it('cuenta las celdas que caben con su separación', () => {
+    expect(columnasRejilla(335, 96, 12, 3, 6)).toBe(3);
+    expect(columnasRejilla(560, 96, 12, 3, 6)).toBe(5);
+    expect(columnasRejilla(725, 96, 12, 3, 6)).toBe(6);
+    expect(columnasRejilla(2000, 96, 12, 3, 6)).toBe(6);
+  });
+
+  it('nunca baja del mínimo, ni con ancho 0', () => {
+    expect(columnasRejilla(0, 96, 12, 3)).toBe(3);
+    expect(columnasRejilla(100, 96, 12, 3)).toBe(3);
+  });
+
+  it('el lado reparte el ancho menos las separaciones', () => {
+    expect(ladoCelda(560, 5, 12)).toBe(102);
+    expect(ladoCelda(0, 5, 12)).toBe(0);
   });
 });

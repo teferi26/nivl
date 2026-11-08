@@ -47,6 +47,12 @@ export interface CatalogoIronVistaProps {
   onVolver: () => void;
   /** Galería: el maniquí quieto en este instante. */
   ms?: number;
+  /**
+   * Dos paneles (iPad, Mac, iPhone Duo abierto): la técnica va a la derecha,
+   * así que la tarjeta no repite maniquí ni consignas y el elegido se marca
+   * en la lista.
+   */
+  conDetalle?: boolean;
 }
 
 /** «Cuádriceps y glúteo · Barra · Intermedio». */
@@ -116,17 +122,19 @@ export function CatalogoIronVista(p: CatalogoIronVistaProps) {
 
       <TarjetaIron heroe style={styles.heroe}>
         <RotuloIron texto={t('ironmundo:catalogo.tecnica')} em={t('ironmundo:catalogo.fases', { count: 3 })} />
-        <View style={styles.escena}>
-          <FiguraTecnica ejercicio={ej} alto={px(150)} ancho={px(178)} ms={p.ms} accessibilityLabel={t('iron:demo.animacion', { nombre })} />
-          <MapaMini musculos={ej.musculos} alto={px(104)} etiqueta={t('ironmundo:catalogo.mapaA11y', { nombre })} />
-        </View>
+        {p.conDetalle ? null : (
+          <View style={styles.escena}>
+            <FiguraTecnica ejercicio={ej} alto={px(150)} ancho={px(178)} ms={p.ms} accessibilityLabel={t('iron:demo.animacion', { nombre })} />
+            <MapaMini musculos={ej.musculos} alto={px(104)} etiqueta={t('ironmundo:catalogo.mapaA11y', { nombre })} />
+          </View>
+        )}
         <Text style={[estilosIron.titulo, styles.nombre]} maxFontSizeMultiplier={1.35}>
           {nombre}
         </Text>
         <Text style={estilosIron.meta} maxFontSizeMultiplier={1.35}>
           {metaEjercicio(ej)}
         </Text>
-        <View style={styles.pasos}>
+        <View style={[styles.pasos, p.conDetalle && styles.oculto]}>
           {ej.cues.slice(0, 3).map((c, i) => (
             <View key={c} style={styles.paso}>
               <View style={styles.pasoNumero}>
@@ -147,10 +155,10 @@ export function CatalogoIronVista(p: CatalogoIronVistaProps) {
         ) : null}
         {p.onAnadir && p.diaNombre ? (
           <BotonIron titulo={t('ironmundo:catalogo.anadirBoton', { dia: p.diaNombre })} onPress={p.onAnadir} ocupado={p.anadiendo} />
-        ) : (
+        ) : p.conDetalle ? null : (
           <BotonIron titulo={t('ironmundo:catalogo.verTecnica')} onPress={p.onTecnica} />
         )}
-        {p.onAnadir && p.diaNombre ? (
+        {p.onAnadir && p.diaNombre && !p.conDetalle ? (
           <Pressable onPress={p.onTecnica} hitSlop={10} accessibilityRole="link" style={styles.enlace}>
             <Text style={styles.enlaceTexto} maxFontSizeMultiplier={1.35}>
               {t('ironmundo:catalogo.verTecnica')}
@@ -174,7 +182,8 @@ export function CatalogoIronVista(p: CatalogoIronVistaProps) {
               key={e.id}
               primera={i === 0}
               onPress={() => p.onElegir(e.id)}
-              style={styles.fila}
+              seleccionada={p.conDetalle && e.id === ej.id}
+              style={[styles.fila, p.conDetalle && e.id === ej.id && styles.filaElegida]}
               accessibilityLabel={t('ironmundo:catalogo.filaA11y', { nombre: e.nombre, meta: metaCorta(e.ejercicio) })}
             >
               <View style={styles.filaIzq}>
@@ -254,6 +263,9 @@ const styles = StyleSheet.create({
   enlace: { alignSelf: 'center', marginTop: px(8) },
   enlaceTexto: { fontFamily: F.b, fontSize: fs(9), letterSpacing: fs(9) * 0.12, color: A, textTransform: 'uppercase' },
   fila: { paddingVertical: px(7), paddingHorizontal: px(2) },
+  // El elegido, con la técnica abierta a la derecha: filete del acento a la izquierda.
+  filaElegida: { borderLeftWidth: 2, borderLeftColor: A, paddingLeft: px(8), backgroundColor: mezcla(0.08, C.fondo) },
+  oculto: { display: 'none' },
   filaIzq: { flexDirection: 'row', alignItems: 'center', gap: px(9), flex: 1, minWidth: 0 },
   mas: { fontFamily: F.xb, fontSize: fs(15), color: A },
 });

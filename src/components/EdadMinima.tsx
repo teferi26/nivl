@@ -1,5 +1,6 @@
 // Se aplica a cada pantalla del Stack sin desmontar el navegador. Las pantallas
 // protegidas ni se montan hasta comprobar la confirmación guardada en el servidor.
+import { GALERIA } from '@/lib/galeria';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type PropsWithChildren } from 'react';
 import { EdadVista } from '@/components/puertas/EdadVista';
 import { confirmarEdad, fetchEdadConfirmada } from '@/lib/age';
@@ -91,7 +92,7 @@ export function EdadMinimaGuard({ children, routeName }: PropsWithChildren<{ rou
   const edad = useEdadMinima();
   // Estas rutas son públicas también con sesión: el enlace de creador debe
   // poder guardar el código antes de enviar a la persona a la raíz.
-  if (routeName === 'login' || routeName === 'c' || routeName.startsWith('c/') || routeName.startsWith('auth/') || (__DEV__ && (routeName === 'kit' || routeName.startsWith('kit/')))) return <>{children}</>;
+  if (routeName === 'login' || routeName === 'c' || routeName.startsWith('c/') || routeName.startsWith('auth/') || (GALERIA && (routeName === 'kit' || routeName.startsWith('kit/')))) return <>{children}</>;
   if (!loading && session && edad.estado === 'confirmada') return <>{children}</>;
   return <ConfirmacionEdad key={session?.user.id ?? 'sin-sesion'} autenticado={!loading && !!session} />;
 }

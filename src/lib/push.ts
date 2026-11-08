@@ -15,6 +15,9 @@ import { supabase } from './supabase';
  * tampoco hay nada que reprocharle.
  */
 export async function registrarDispositivo(): Promise<string | null> {
+  // En la web no hay push (ni servidor de push ni service worker): el coach
+  // te alcanza al abrir la pestaña. Nada que registrar.
+  if (Platform.OS === 'web') return null;
   try {
     // En emulador no hay token real: pedirlo lanza y ensucia los registros.
     if (!Device.isDevice) return null;

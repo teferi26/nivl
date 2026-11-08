@@ -120,7 +120,9 @@
     "sinTareas": "no tasks",
     "botinXp": "{{xp}} XP loot",
     "abrir": "Open",
-    "a11y": "{{titulo}}, rank {{rango}}: {{hechas}} of {{total}} tasks, {{xp}} XP loot. Open."
+    "a11y": "{{titulo}}, rank {{rango}}: {{hechas}} of {{total}} tasks, {{xp}} XP loot. Open.",
+    "panelTitulo": "Choose a campaign",
+    "panelCuerpo": "Its tasks and its loot open here, next to the list."
   },
   "prestado": {
     "volverA11y": "Back to NIVL"

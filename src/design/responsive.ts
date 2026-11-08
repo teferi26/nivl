@@ -24,13 +24,29 @@ export const ANCHO_RAIL = 72;
 /** Ancho de la barra lateral en `expanded`. */
 export const ANCHO_SIDEBAR = 240;
 
+/**
+ * «Medium estrecho»: por debajo de este ancho de VENTANA el raíl de 72 no
+ * compensa y se queda la barra inferior. Es el iPhone Duo abierto (669), el
+ * Split View de un iPad a dos tercios (678, 694) y Stage Manager estrecho:
+ * con raíl el hueco caía a 597 (compact) y el contenido se quedaba en la
+ * columna del móvil con un raíl al lado. Con la barra inferior el contenido
+ * tiene la ventana entera y entra en `medium` (dos columnas, dos paneles).
+ * El iPad mini en vertical (744) conserva el raíl (hueco 672, medium).
+ */
+export const ANCHO_MIN_RAIL = 720;
+
+function navPara(w: number, clase: SizeClass): NavKind {
+  if (clase === 'medium' && w < ANCHO_MIN_RAIL) return 'tabs';
+  return layout[clase].nav;
+}
+
 export function marcoDe(width: number): Marco {
   // Un ancho no finito (0 en el primer render de la web, NaN) se trata como
   // móvil: es el caso más estrecho y el que no rompe nada.
   const w = Number.isFinite(width) && width > 0 ? width : 0;
   const clase = sizeClass(w);
   const l = layout[clase];
-  return { sizeClass: clase, gutter: l.gutter, maxContent: l.maxContent, nav: l.nav };
+  return { sizeClass: clase, gutter: l.gutter, maxContent: l.maxContent, nav: navPara(w, clase) };
 }
 
 /** Ancho que ocupa la navegación principal de cada tipo (sin la safe area). */
@@ -75,11 +91,88 @@ export function huecoContenido(ventana: number, insetIzquierdo = 0): Hueco {
 }
 
 /**
- * Navegación que pinta (tabs)/_layout.tsx para una ventana de este ancho. Se
- * decide con la VENTANA, no con el hueco: entre 600 y 671 la ventana es
- * `medium` (raíl) pero el hueco que queda tras el raíl de 72 es `compact`, así
- * que `marcoDe(hueco).nav` diría 'tabs' cuando lo que hay en pantalla es el raíl.
+ * Navegación que pintan (tabs)/_layout.tsx y LayoutMundo para una ventana de
+ * este ancho. Se decide con la VENTANA, no con el hueco: el hueco es lo que
+ * queda tras la navegación y no sabe qué navegación hay. Por debajo de
+ * `ANCHO_MIN_RAIL` (720) es la barra inferior aunque la ventana sea `medium`.
  */
 export function navDeVentana(ventana: number): NavKind {
   return marcoDe(ventana).nav;
+}
+
+// ── Dos paneles (iPhone Duo abierto, iPad, Mac, Vision Pro) ────────────
+
+/**
+ * Hueco mínimo para partir una pantalla en dos paneles (lista | detalle, chat
+ * | plan). 640: el iPhone Duo abierto (669) entra; el plegado (466) y
+ * cualquier iPhone, no. Es el mismo número para `MaestroDetalle` y `Paneles`.
+ */
+export const UMBRAL_DOS_PANELES = 640;
+/**
+ * Por debajo de este hueco el reparto `lista` es a mitades (como un libro: el
+ * Duo abierto, el iPad mini en vertical). Por encima, la lista va con ancho
+ * acotado y el detalle se lleva el resto.
+ */
+export const HUECO_REPARTO_FIJO = 900;
+/** La lista de un maestro-detalle ancho: el 36 % del hueco, entre 320 y 400. */
+export const LISTA_MIN = 320;
+export const LISTA_MAX = 400;
+/** El filete que separa los dos paneles. */
+export const FILETE_PANELES = 1;
+/** Por encima de esta escala de texto no caben dos paneles: uno solo. */
+export const ESCALA_MAX_DOS_PANELES = 1.35;
+
+/** `mitad`: 50/50 siempre. `lista`: 50/50 hasta 900, luego lista acotada. */
+export type Proporcion = 'mitad' | 'lista';
+
+export interface Reparto {
+  /** Ancho del panel izquierdo (lista, conversación). */
+  izquierda: number;
+  /** Ancho del panel derecho (detalle, plan), ya sin el filete. */
+  derecha: number;
+}
+
+function finito(n: number): number {
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+/** ¿Cabe la pantalla partida en dos? Por ancho y por escala de texto. */
+export function cabenDosPaneles(hueco: number, fontScale = 1): boolean {
+  const escala = Number.isFinite(fontScale) ? fontScale : 1;
+  return finito(hueco) >= UMBRAL_DOS_PANELES && escala <= ESCALA_MAX_DOS_PANELES;
+}
+
+/**
+ * Reparto de un hueco en dos paneles, o null si no caben (entonces se apila o
+ * se navega, como en el iPhone). No depende del modelo: el Duo abierto y un
+ * iPad en Split View con el mismo ancho se reparten igual.
+ */
+export function repartoPaneles(hueco: number, proporcion: Proporcion = 'lista', fontScale = 1): Reparto | null {
+  if (!cabenDosPaneles(hueco, fontScale)) return null;
+  const w = Math.floor(finito(hueco));
+  const util = w - FILETE_PANELES;
+  const izquierda =
+    proporcion === 'mitad' || w < HUECO_REPARTO_FIJO
+      ? Math.floor(util / 2)
+      : Math.min(LISTA_MAX, Math.max(LISTA_MIN, Math.round(w * 0.36)));
+  return { izquierda, derecha: util - izquierda };
+}
+
+/**
+ * Columnas de una rejilla: tantas celdas de al menos `ladoMin` como quepan con
+ * `separacion` entre ellas, acotadas a [min, max]. Es la cuenta de los módulos
+ * de Hoy, aquí para el catálogo de IRON, la vitrina de logros y las fotos.
+ */
+export function columnasRejilla(ancho: number, ladoMin: number, separacion: number, min = 1, max = 8): number {
+  const w = finito(ancho);
+  if (w === 0 || ladoMin <= 0) return Math.max(1, min);
+  const cuantas = Math.floor((w + separacion) / (ladoMin + separacion));
+  return Math.max(min, Math.min(max, cuantas));
+}
+
+/** Lado de cada celda con `columnas` columnas en `ancho` y `separacion` entre ellas. */
+export function ladoCelda(ancho: number, columnas: number, separacion: number): number {
+  const w = finito(ancho);
+  if (w === 0 || columnas <= 0) return 0;
+  return Math.floor((w - separacion * (columnas - 1)) / columnas);
 }

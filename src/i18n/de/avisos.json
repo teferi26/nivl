@@ -30,5 +30,9 @@
     "avisosDelDia": "Die Benachrichtigungen für heute konnten nicht geplant werden.",
     "aviso": "Die Benachrichtigung konnte nicht geplant werden.",
     "avisosDelSistema": "Die Systembenachrichtigungen konnten nicht geplant werden."
+  },
+  "web": {
+    "regionA11y": "Hinweise des Systems",
+    "cerrarA11y": "Hinweis schließen: {{titulo}}"
   }
 }

@@ -20,7 +20,12 @@ const ORDEN: readonly GrupoMuscular[] = ['pierna', 'pecho', 'espalda', 'hombro',
 /** Filas de «Más de…» y de la búsqueda. */
 const TOPE = 40;
 
-export function useCatalogoIron(diaId: string | null): CatalogoIronVistaProps {
+/**
+ * `enPanel`: el catálogo va en dos paneles (iPad, Mac, iPhone Duo abierto) con
+ * la técnica a la derecha. Entonces el elegido sigue en la lista (marcado) en
+ * vez de subir a la tarjeta, que ya no repite el maniquí.
+ */
+export function useCatalogoIron(diaId: string | null, { enPanel = false }: { enPanel?: boolean } = {}): CatalogoIronVistaProps {
   const { session } = useAuth();
   const userId = session?.user.id;
   const todas = entradasIron();
@@ -53,7 +58,7 @@ export function useCatalogoIron(diaId: string | null): CatalogoIronVistaProps {
   const delGrupo = todas.filter((e) => e.grupo === grupo);
   const elegido = (elegidoId ? ejercicioPorId(elegidoId) : undefined) ?? delGrupo[0]?.ejercicio ?? todas[0]!.ejercicio;
   const buscando = consulta.trim().length > 0;
-  const lista = (buscando ? buscarIron(consulta) : delGrupo).filter((e) => e.id !== elegido.id).slice(0, TOPE);
+  const lista = (buscando ? buscarIron(consulta) : delGrupo).filter((e) => enPanel || e.id !== elegido.id).slice(0, TOPE);
 
   const anadir = async () => {
     if (!userId || !diaId || cerrojo.current) return;
@@ -93,6 +98,7 @@ export function useCatalogoIron(diaId: string | null): CatalogoIronVistaProps {
     anadiendo,
     error,
     onTecnica: () => router.push({ pathname: '/iron/[id]', params: { id: elegido.id } }),
+    conDetalle: enPanel,
     onVolver: () => volver(router),
   };
 }

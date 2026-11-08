@@ -93,5 +93,13 @@
     "falloRotulo": "Couldn't confirm",
     "confirmando": "Confirming your email",
     "sinEnlace": "This link has nothing to confirm. Open the latest email we sent you or sign in with your password."
+  },
+  "web": {
+    "eyebrow": "NIVL in the browser",
+    "titulo": "Your arena, here too.",
+    "cuerpo": "The same account and the same data as on your phone. What you do here counts there.",
+    "punto1": "Quests, streak and day close",
+    "punto2": "Your worlds: IRON, FOCUS, WORK and FOUNDER",
+    "punto3": "The coach, with a real keyboard"
   }
 }

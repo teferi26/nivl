@@ -8,6 +8,7 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
+import { GALERIA } from '@/lib/galeria';
 import { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -56,7 +57,7 @@ export default function KitWork() {
   const ancho = Number(p.ancho) || 390;
   fijarQuieto(p.quieto === '1');
   useEffect(() => () => fijarQuieto(false), []);
-  if (!__DEV__) return <Redirect href="/" />;
+  if (!GALERIA) return <Redirect href="/" />;
 
   const estado = ESTADOS_WORK.find((e) => e.id === p.estado);
   if (estado) {

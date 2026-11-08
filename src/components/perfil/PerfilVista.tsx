@@ -21,7 +21,8 @@ import { EliteBadge } from '@/components/EliteBadge';
 import { Button, Section, Skeleton, SkeletonRows, Tag } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
-import { useSizeClass } from '@/design/useSizeClass';
+import { columnasRejilla } from '@/design/responsive';
+import { useAnchoUtil, useSizeClass } from '@/design/useSizeClass';
 import { t } from '@/i18n';
 import { mayus } from '@/i18n/formato';
 import { isValidKey, nombreDia } from '@/lib/dates';
@@ -309,9 +310,14 @@ function FilaArena({
 
 // ── Logros: la vitrina ───────────────────────────────────────────────
 
+/** Lado mínimo de una losa de logro en la vitrina. */
+const LADO_LOGRO = 96;
+
 function Vitrina({ logros, onLogro }: { logros: LogroVitrina[]; onLogro: (code: string) => void }) {
-  const { sizeClass } = useSizeClass();
-  const columnas = sizeClass === 'compact' ? 3 : 4;
+  // Tantas columnas como quepan de 96 (3 en el iPhone, hasta 6 en iPad, Mac
+  // y el Duo abierto), en vez de 3 · 4 fijas: a 1126 de hueco eran losas de 170.
+  const { gutter, maxContent } = useSizeClass();
+  const columnas = columnasRejilla(Math.min(useAnchoUtil(), maxContent + 2 * gutter) - 2 * gutter, LADO_LOGRO, space.s2, 3, 6);
   const ganados = logros.filter((a) => a.unlocked).length;
   const filas: (LogroVitrina | null)[][] = [];
   for (let i = 0; i < logros.length; i += columnas) {

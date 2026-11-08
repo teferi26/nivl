@@ -3,8 +3,10 @@
 // La de serie pintaba seis iconos grises sobre una franja. Esta marca la activa
 // con una línea blanca arriba (la misma gramática que un separador editorial),
 // el icono relleno y la etiqueta en blanco, y responde al dedo con háptica.
-// Solo en `compact`; en `medium` va NavRail y en `expanded`, NavSidebar. Los
-// iconos y rótulos son los de navItems.ts.
+// En `compact` y en el «medium estrecho» (600–719: iPhone Duo abierto, Split
+// View); desde 720 va NavRail y en `expanded`, NavSidebar. Los iconos y
+// rótulos son los de navItems.ts. En una ventana ancha los destinos no se
+// estiran: se quedan en una franja centrada de 560, como la columna móvil.
 //
 // Pinta 5 destinos (`destinosDe(…, 'tabs')`): la Agenda vive debajo de Hoy. Por
 // eso la activa se decide por NOMBRE con `destinoActivo` y no por índice: en la
@@ -13,11 +15,14 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import type { ReactNode } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ink, stroke } from '@/design/tokens';
+import { ink, layout, stroke } from '@/design/tokens';
 import { fonts } from '@/lib/theme';
 import { destinoActivo, destinosDe, navItemDe, pulsarDestino } from './navItems';
+
+/** Ancho máximo de la franja de destinos: la columna móvil. */
+const ANCHO_MAX_BARRA = layout.compact.maxContent;
 
 /**
  * `acento`: el color de lo activo. Por defecto ink10 (NIVL); en los mundos de
@@ -27,6 +32,8 @@ import { destinoActivo, destinosDe, navItemDe, pulsarDestino } from './navItems'
  */
 export function TabBar({ state, descriptors, navigation, acento = ink.ink10, centro }: BottomTabBarProps & { acento?: string; centro?: ReactNode }) {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const margen = Math.max(0, Math.floor((width - ANCHO_MAX_BARRA) / 2));
   const activo = destinoActivo(state.routes, state.index, 'tabs');
   const enfocada = state.routes[state.index]?.name;
   const pestanas = destinosDe(state.routes, 'tabs').map((route) => {
@@ -64,7 +71,7 @@ export function TabBar({ state, descriptors, navigation, acento = ink.ink10, cen
   return (
     <View
       accessibilityRole="tablist"
-      style={[styles.bar, { paddingBottom: Math.max(insets.bottom, Platform.OS === 'web' ? 8 : 6) }]}
+      style={[styles.bar, { paddingBottom: Math.max(insets.bottom, Platform.OS === 'web' ? 8 : 6), paddingHorizontal: margen }]}
     >
       {centro ? (
         <>

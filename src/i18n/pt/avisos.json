@@ -30,5 +30,9 @@
     "avisosDelDia": "Não foi possível agendar os avisos do dia.",
     "aviso": "Não foi possível agendar o aviso.",
     "avisosDelSistema": "Não foi possível agendar os avisos do sistema."
+  },
+  "web": {
+    "regionA11y": "Avisos do sistema",
+    "cerrarA11y": "Fechar o aviso: {{titulo}}"
   }
 }

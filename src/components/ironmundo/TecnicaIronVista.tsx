@@ -32,7 +32,8 @@ const ANCHO_MAX = 520;
 
 export interface TecnicaIronVistaProps {
   ejercicio: Ejercicio;
-  onVolver: () => void;
+  /** Sin él (el panel derecho del catálogo en dos paneles), no hay flecha de volver. */
+  onVolver?: () => void;
   /** Lo registrado en Gimnasio. Sin él (galería), no se pinta. */
   historial?: EstadoHistorialIron;
   /** Galería: el maniquí quieto en este instante. */
@@ -137,9 +138,11 @@ export function TecnicaIronVista({ ejercicio: ej, onVolver, historial, ms }: Tec
   return (
     <PantallaIron>
       <View style={styles.cabecera}>
-        <Pressable onPress={onVolver} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('ironmundo:volver')} style={styles.atras}>
-          <GlifoIron nombre="atras" lado={px(18)} color={C.mudo} grosor={2.2} />
-        </Pressable>
+        {onVolver ? (
+          <Pressable onPress={onVolver} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('ironmundo:volver')} style={styles.atras}>
+            <GlifoIron nombre="atras" lado={px(18)} color={C.mudo} grosor={2.2} />
+          </Pressable>
+        ) : null}
         <View style={styles.flex}>
           <Text style={styles.titulo} accessibilityRole="header" maxFontSizeMultiplier={1.2}>
             {t('ironmundo:tecnica.titulo')}

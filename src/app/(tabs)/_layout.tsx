@@ -28,7 +28,9 @@ import { destinoMundo, llegadaAlMundo, transitoMundo } from '@/modos/rutasModo';
 // leer el modo guardado), se va al inicio de su mundo. Apagado, nada cambia.
 export default function TabsLayout() {
   const ventana = useAnchoUtil();
-  const { sizeClass } = marcoDe(ventana);
+  // La barra sale de `nav` (no de la clase): entre 600 y 719 la ventana es
+  // `medium` pero lleva barra inferior (iPhone Duo abierto, Split View).
+  const { nav } = marcoDe(ventana);
   const { left } = useSafeAreaInsets();
   const hueco = huecoContenido(ventana, left).ancho;
   const modos = useModo();
@@ -44,15 +46,15 @@ export default function TabsLayout() {
     <TopeAncho.Provider value={hueco}>
       <Tabs
         tabBar={(props) =>
-          sizeClass === 'compact' ? (
+          nav === 'tabs' ? (
             <TabBar {...props} acento={acentoRueda.general} centro={hayEmblema ? <EmblemaBarra /> : undefined} />
-          ) : sizeClass === 'medium' ? (
+          ) : nav === 'rail' ? (
             <NavRail {...props} acento={acentoRueda.general} />
           ) : (
             <NavSidebar {...props} acento={acentoRueda.general} />
           )
         }
-        screenOptions={{ headerShown: false, tabBarPosition: sizeClass === 'compact' ? 'bottom' : 'left' }}
+        screenOptions={{ headerShown: false, tabBarPosition: nav === 'tabs' ? 'bottom' : 'left' }}
       >
         {/* General v2 (docs/modos/GENERAL.md): las cuatro de la barra inferior
             primero (Hoy · Avance · [emblema] · Campañas · Arena); detrás, las

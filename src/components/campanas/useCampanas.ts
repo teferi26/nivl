@@ -5,7 +5,7 @@
 // que se queda en la ruta.
 
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { avisar, useAlVolver } from '@/components/ui';
 import { t } from '@/i18n';
 import { useAuth } from '@/lib/auth';
@@ -30,7 +30,17 @@ export interface HojaNuevaCampana {
   onCreate: () => void;
 }
 
-export function useCampanas(): { vista: CampanasVistaProps; hojas: { nueva: HojaNuevaCampana } } {
+/**
+ * `enPanel`: Campañas va en dos paneles (iPad, Mac, iPhone Duo abierto). Abrir
+ * o crear una campaña la elige para el panel derecho en vez de navegar.
+ */
+export function useCampanas({ enPanel = false }: { enPanel?: boolean } = {}): {
+  vista: CampanasVistaProps;
+  hojas: { nueva: HojaNuevaCampana };
+  elegida: string | null;
+  elegir: (id: string | null) => void;
+  recargar: () => void;
+} {
   const { session } = useAuth();
   const userId = session?.user.id;
 
@@ -50,6 +60,25 @@ export function useCampanas(): { vista: CampanasVistaProps; hojas: { nueva: Hoja
   // antes de saberlo (salía un instante al entrar).
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  // La campaña abierta en el panel derecho (solo con dos paneles).
+  const [elegida, setElegida] = useState<string | null>(null);
+  const abrir = (id: string) => (enPanel ? setElegida(id) : router.push({ pathname: '/dungeon/[id]', params: { id } }));
+  // Al plegar (iPhone Duo) o estrechar la ventana con una campaña abierta al
+  // lado, no se pierde: se abre en su pantalla, como en el iPhone.
+  const elegidaAntes = useRef<string | null>(null);
+  useEffect(() => {
+    if (enPanel) {
+      elegidaAntes.current = elegida;
+      return;
+    }
+    const abierta = elegidaAntes.current;
+    elegidaAntes.current = null;
+    if (abierta) {
+      // Ya va en su pantalla: al desplegar no se pinta a la vez en el panel.
+      setElegida(null);
+      router.push({ pathname: '/dungeon/[id]', params: { id: abierta } });
+    }
+  }, [enPanel, elegida]);
 
   const load = useCallback(async () => {
     try {
@@ -92,7 +121,8 @@ export function useCampanas(): { vista: CampanasVistaProps; hojas: { nueva: Hoja
       const d = await createDungeon(userId, { title: title.trim(), rank, stat });
       setFormOpen(false);
       setTitle('');
-      router.push({ pathname: '/dungeon/[id]', params: { id: d.id } });
+      if (enPanel) load();
+      abrir(d.id);
     } catch (e) {
       avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
@@ -113,7 +143,10 @@ export function useCampanas(): { vista: CampanasVistaProps; hojas: { nueva: Hoja
       subtitulo: meta.campaignsHint,
       campanas: dungeons,
       onNueva: () => setFormOpen(true),
-      onAbrir: (id: string) => router.push({ pathname: '/dungeon/[id]', params: { id } }),
+      onAbrir: abrir,
+      // undefined con un panel (la lista marca la primera); null con dos y nada
+      // abierto (no se marca ninguna: el panel de al lado dice «Elige una campaña»).
+      elegida: enPanel ? elegida : undefined,
       onReintentar: load,
     },
     hojas: {
@@ -130,5 +163,8 @@ export function useCampanas(): { vista: CampanasVistaProps; hojas: { nueva: Hoja
         onCreate,
       },
     },
+    elegida: enPanel ? elegida : null,
+    elegir: setElegida,
+    recargar: load,
   };
 }

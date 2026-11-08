@@ -11,7 +11,7 @@
 //   (useFocusHoy), UNA vez por `idFase`.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { vibrar } from '@/design/haptics';
 import {
   CONFIG_POR_DEFECTO,
@@ -28,7 +28,7 @@ import {
 } from '@/focus/pomodoro';
 import { avisarFin, cancelarAvisoFin, guardarConfig, guardarEstado, leerConfig, leerEstado } from '@/focus/temporizador';
 import { t } from '@/i18n';
-import { sonarFin } from './sonidoFin';
+import { prepararFin, sonarFin } from './sonidoFin';
 
 export interface UsePomodoro {
   listo: boolean;
@@ -98,8 +98,10 @@ export function usePomodoro(uid: string | null, onFin: (c: Cierre, config: Confi
     if (!acabada(e, n)) return;
     const cierre = cerrarFase(e, c, n);
     poner(cierre.estado);
-    // La campana solo si acaba con la app delante (fuera ya sonó el aviso).
-    if (c.sonido && AppState.currentState === 'active' && n - (e.finEn ?? n) < 5000) sonarFin();
+    // La campana solo si acaba con la app delante (fuera ya sonó el aviso). En
+    // la web también con la pestaña detrás: la notificación del navegador puede
+    // ir muda o no tener permiso.
+    if (c.sonido && (Platform.OS === 'web' || AppState.currentState === 'active') && n - (e.finEn ?? n) < 5000) sonarFin();
     vibrar('seleccion');
     onFinRef.current(cierre, c);
   }, [poner]);
@@ -123,6 +125,8 @@ export function usePomodoro(uid: string | null, onFin: (c: Cierre, config: Confi
   const empezar = useCallback(
     (objetivo?: Objetivo) => {
       vibrar('seleccion');
+      // Web: el gesto de empezar despierta el audio para la campana del final.
+      if (ref.current.config.sonido) prepararFin();
       poner(arrancar(ref.current.estado, ref.current.config, Date.now(), objetivo));
       setAhora(Date.now());
     },

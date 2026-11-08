@@ -28,6 +28,7 @@ import {
   tituloVigente,
   type AchievementDef,
 } from '@/lib/achievements';
+import { hacerFoto } from '@/lib/camara';
 import { tocarApertura } from '@/lib/apertura';
 import { useAuth } from '@/lib/auth';
 import {
@@ -419,7 +420,7 @@ export function useHoy() {
       }
       return null;
     }
-    const result = await ImagePicker.launchCameraAsync({
+    const result = await hacerFoto({
       mediaTypes: ['images'],
       quality: 0.4,
       base64: true,

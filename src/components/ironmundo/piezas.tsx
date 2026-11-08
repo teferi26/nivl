@@ -13,7 +13,7 @@
 
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState, type ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, Defs, Polyline, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { Screen } from '@/components/ui';
 import { t } from '@/i18n';
@@ -35,17 +35,34 @@ export interface PantallaIronProps {
 
 /** El fondo de IRON: negro y, arriba a la derecha, el brillo del acento. */
 export function FondoIron() {
+  // Medido en número, como BrilloGeneral: un <Svg> con "100%" no se repinta al
+  // girar el iPad o cambiar la ventana y el brillo quedaba cortado.
+  const [lado, setLado] = useState<{ w: number; h: number } | null>(null);
+  const alMedir = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    const w = Math.round(width);
+    const h = Math.round(height);
+    setLado((a) => (a && a.w === w && a.h === h ? a : { w, h }));
+  };
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <Svg width="100%" height="100%">
-        <Defs>
-          <RadialGradient id="brilloIron" cx="78%" cy="0%" rx="85%" ry="45%" fx="78%" fy="0%">
-            <Stop offset="0" stopColor={A} stopOpacity={0.16} />
-            <Stop offset="1" stopColor={A} stopOpacity={0} />
-          </RadialGradient>
-        </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#brilloIron)" />
-      </Svg>
+    <View
+      style={StyleSheet.absoluteFill}
+      onLayout={alMedir}
+      pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
+      {lado && lado.w > 0 && lado.h > 0 ? (
+        <Svg key={`${lado.w}x${lado.h}`} width={lado.w} height={lado.h}>
+          <Defs>
+            <RadialGradient id="brilloIron" cx="78%" cy="0%" rx="85%" ry="45%" fx="78%" fy="0%">
+              <Stop offset="0" stopColor={A} stopOpacity={0.16} />
+              <Stop offset="1" stopColor={A} stopOpacity={0} />
+            </RadialGradient>
+          </Defs>
+          <Rect x="0" y="0" width={lado.w} height={lado.h} fill="url(#brilloIron)" />
+        </Svg>
+      ) : null}
     </View>
   );
 }
@@ -366,9 +383,12 @@ export function FilaIron({
   style,
   accessibilityActions,
   onAccessibilityAction,
+  seleccionada,
 }: {
   children: ReactNode;
   primera?: boolean;
+  /** Lo abierto en el panel de al lado (maestro-detalle). */
+  seleccionada?: boolean;
   onPress?: () => void;
   onLongPress?: () => void;
   accessibilityLabel?: string;
@@ -390,6 +410,7 @@ export function FilaIron({
       onLongPress={onLongPress}
       accessibilityRole={onPress ? 'button' : undefined}
       accessibilityLabel={accessibilityLabel}
+      accessibilityState={seleccionada ? { selected: true } : undefined}
       accessibilityActions={accessibilityActions}
       onAccessibilityAction={onAccessibilityAction}
       style={({ pressed }) => [caja, pressed && styles.pulsada]}
