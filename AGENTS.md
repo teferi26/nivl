@@ -8,6 +8,8 @@ El proyecto está en **Expo SDK 54** (RN 0.81.5, React 19.1.0). Historial: 56→
 
 Trampas conocidas del SDK 54: `expo-sharing` no tiene config plugin (fuera de `app.json` plugins, funciona autolinkado). `StyleSheet.absoluteFill` no es spreadable en RN 0.81. Las **rutas tipadas solo se regeneran arrancando Metro** (`npx expo start`), no con `expo export`: si `tsc` falla por una ruta nueva, arranca Metro unos segundos y mátalo.
 
+**Xcode 27:** `plugins/with-uiscene.js` adopta UIScene (sin él, la app enlazada con el SDK 27 se cierra al abrir) y sube los pods a iOS 15.1. Los enlaces entran por `SceneDelegate` y pasan por `AppDelegate`. El plugin falla en el prebuild si la plantilla de Expo cambia; si un SDK futuro trae ya `SceneDelegate`, se retira.
+
 # NIVL — contexto del proyecto
 
 App de hábitos de la gente de Franky (interfaz en español), gamificada como una arena de gladiador **con un coach de IA dentro que manda en el día del usuario**. La cuenta es **propia de NIVL** (Supabase Auth: registro con confirmación por correo, login con contraseña y recuperación por enlace; `src/lib/authFlow.ts`, solo PKCE). El puente con Franky (`franky-auth`) solo existe por compatibilidad con binarios antiguos y se retira. Cada usuario tiene un **perfil de uso** (emprendedor · profesional (`trabajador`) · deportista · estudiante · general, `src/lib/kinds.ts`) que ordena módulos, hábitos propuestos y el énfasis del coach. El README explica el juego; el código manda.

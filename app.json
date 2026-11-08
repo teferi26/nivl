@@ -104,7 +104,8 @@
           "microphonePermission": "NIVL usa el micrófono solo cuando tú lo pides: para dictarle a tu coach mientras mantienes pulsado el botón de voz. Nunca graba en segundo plano.",
           "speechRecognitionPermission": "NIVL convierte tu voz en texto para enviárselo a tu coach. Se procesa en tu dispositivo cuando es posible."
         }
-      ]
+      ],
+      "./plugins/with-uiscene"
     ],
     "experiments": {
       "typedRoutes": true,
