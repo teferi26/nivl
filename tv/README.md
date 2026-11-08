@@ -32,11 +32,11 @@ cp tv/Config/Servidor.ejemplo.xcconfig tv/Config/Servidor.local.xcconfig   # y r
 
 En un xcconfig `//` empieza un comentario: la URL va como `https:/$()/proyecto.supabase.co`. **Release sin configurar no compila** (fase «Comprobar servidor»). Si un binario llegara a ejecutarse sin configuración, enseña «Servicio no disponible». ATS permite la red local solo en Debug (`Config/Info-Debug.plist`).
 
-El diseño sigue «Mármol y tinta» (`docs/design-v2/SISTEMA.md`): solo blanco y negro, Cinzel para los títulos y las cifras, Outfit para el texto, que se registran en tiempo de ejecución, y radio 0, salvo la píldora de la barra de pestañas: es del sistema y tvOS no deja cambiarla sin rehacer la barra entera. El foco se marca con **escala ×1,1 y un marco blanco**, nunca con hover. El encargo hablaba de «negro y dorado», pero el repo prohíbe el oro fuera de la rueda de modos (AGENTS.md: «Paleta solo blanco y negro»), así que manda la regla del repo. Los tokens copian `src/design/tokens.ts`, con escala de TV: el texto mínimo de lectura es de 30 pt.
+El diseño sigue «Mármol y tinta» (`docs/design-v2/SISTEMA.md`): solo blanco y negro, Cinzel para los títulos y las cifras, Outfit para el texto, que se registran en tiempo de ejecución, y radio 0, salvo la píldora de la barra de pestañas: es del sistema y tvOS no deja cambiarla sin rehacer la barra entera. El foco se marca con **escala ×1,1 y un marco blanco**, nunca con hover. Los tokens copian `src/design/tokens.ts`, con escala de TV: el texto mínimo de lectura es de 30 pt.
 
 ## Por qué SwiftUI aparte y no react-native-tvos
 
-Para tvOS haría falta cambiar `react-native` por el fork `react-native-tvos@0.81.x`. Eso altera todo el árbol y el lockfile, y deja fuera dependencias nativas que no compilan en tvOS (image-picker, speech-recognition, view-shot, screen-capture, notificaciones). Reanimated 4 y worklets son frágiles en tvOS. Por eso no puede ir en `release/1.0.11`. Este prototipo en SwiftUI compila a la primera con Xcode 27.2 y no hereda ninguno de esos riesgos.
+Para tvOS haría falta cambiar `react-native` por el fork `react-native-tvos@0.81.x`. Eso altera todo el árbol y el lockfile, y deja fuera dependencias nativas que no compilan en tvOS (image-picker, speech-recognition, view-shot, screen-capture, notificaciones). Reanimated 4 y worklets son frágiles en tvOS. Por eso no puede ir en `release/1.0.11`. Una app aparte en SwiftUI no hereda ninguno de esos riesgos. Se compila con Xcode 27.2.
 
 ## Compilar y probar
 
@@ -69,8 +69,26 @@ xcrun simctl launch <udid> com.teferi.nivl.tv -nivlServidor http://127.0.0.1:543
 
 `herramientas/` tiene un servidor de pruebas con el SQL real de las migraciones sobre PGlite, varias cuentas y órdenes para simular el iPhone y los fallos, y el scheme `NIVLTVPuntaAPunta` hace el camino completo con el mando (`herramientas/README.md`).
 
-## Lo que falta (v2) y por qué no está
+### Capturas
 
-1. **Sincronizar con la SesionEnCurso del iPhone** por realtime, para que el clic en la TV marque la serie en el teléfono. Hoy la TV lleva su propio reloj y el registro se sigue haciendo en el iPhone, donde `propagarActo` marca la misión enlazada.
-2. **Icono y Top Shelf.** tvOS pide un icono por capas (imagestack) y la imagen de la estantería superior. Sin ellos compila y corre en el simulador, pero no pasa la validación de la tienda.
-3. **Entrega.** La firma, el App ID `com.teferi.nivl.tv` y la ficha en App Store Connect los hace el dueño. Aquí no se han tocado ni EAS ni Actions.
+`capturas/` tiene las de la ficha, a 3840x2160 y sin canal alfa (`simctl io screenshot` lo deja puesto y App Store Connect lo rechaza). Son inventadas: `arena` y `semana` salen de la demo; las tres de rutina, de la demo con `-variante real`, que solo enseña lo que da el servidor; `enlace` y `cuenta`, del servidor local, porque la demo no tiene código ni botones de cuenta. El código del QR solo existió en ese servidor.
+
+## Lo que falta, en orden de despliegue
+
+Nada de esto está hecho. Se ha probado contra el SQL real de las migraciones en local y con el iPhone simulado; nunca contra producción, con un iPhone de verdad ni en un Apple TV físico.
+
+**a. Aplicar las migraciones** 0125 a 0128: `node scripts/apply-migrations.mjs`. Van primero: la OTA llega en minutos y no espera al servidor.
+
+**b. Copiar la pantalla del iPhone y publicar por OTA.** Pasos en `integracion/INSTRUCCIONES.md`, con los dos requisitos que aún no existen: la entrada «Televisores enlazados» en Perfil y el aviso a la cuenta al aprobar. Es solo JS:
+
+```bash
+npx eas-cli update --channel production --platform ios --environment production --message "…" --non-interactive
+```
+
+**c. Rellenar `Config/Servidor.local.xcconfig`** con la URL y la clave pública (arriba).
+
+**d. Alta en Apple**: `PORTAL_APPLE.md`. Antes de subir falta el **icono en capas y la imagen de Top Shelf**: sin ellos compila y corre en el simulador, pero no pasa la validación de la tienda. El CI no cubre tvOS.
+
+## Para más adelante
+
+**Sincronizar con la SesionEnCurso del iPhone** por realtime, para que el clic en la TV marque la serie en el teléfono. Hoy la TV lleva su propio reloj y el registro se hace en el iPhone, donde `propagarActo` marca la misión enlazada.
