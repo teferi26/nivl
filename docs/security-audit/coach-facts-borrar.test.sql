@@ -8,10 +8,10 @@ insert into auth.users (id, instance_id, aud, role, email) values
 insert into public.profiles (id) select id from auth.users where email in ('a@example.invalid','b@example.invalid') on conflict do nothing;
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"00000000-0000-4000-8000-0000000000a1","role":"authenticated"}';
-select public.accept_health_consent('2026-11-08-salud-v2');
+select public.accept_health_consent('2026-09-27-salud-v1');
 insert into public.coach_facts (id, user_id, date, category, content, source) values ('00000000-0000-4000-8000-00000000fa01','00000000-0000-4000-8000-0000000000a1', current_date, 'proyecto', 'hecho de A', 'coach');
 set local request.jwt.claims = '{"sub":"00000000-0000-4000-8000-0000000000b2","role":"authenticated"}';
-select public.accept_health_consent('2026-11-08-salud-v2');
+select public.accept_health_consent('2026-09-27-salud-v1');
 insert into public.coach_facts (id, user_id, date, category, content, source) values ('00000000-0000-4000-8000-00000000fb01','00000000-0000-4000-8000-0000000000b2', current_date, 'proyecto', 'hecho de B', 'coach');
 reset role;
 set local role authenticated;

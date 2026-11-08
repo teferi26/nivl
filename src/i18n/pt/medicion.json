@@ -152,5 +152,21 @@
     "pendienteRotulo": "Ainda por enviar",
     "pendienteCuerpo": "A sessão está segura neste telemóvel. O NIVL volta a tentar quando o abrires.",
     "volverCardio": "Voltar"
+  },
+  "explicacion": {
+    "rotulo": "Antes de ligar",
+    "entradilla": "A tua permissão de saúde continua igual. Medir com a Apple Saúde, o relógio ou o GPS é novo e só se liga se o ativares.",
+    "leeRotulo": "O que é lido",
+    "lee": "Da Apple Saúde e do relógio, o que selecionares: treinos, pulsação, energia ativa, passos, sono e peso. Do GPS, o percurso de cada sessão que iniciares.",
+    "paraRotulo": "Para quê",
+    "para": "Para guardar os teus treinos na tua conta, compará-los com o que registas e mostrar-te os teus números. O coach usa os treinos medidos só com a permissão de IA, e os resumos diários só se ligares também esse interruptor.",
+    "controlRotulo": "Como se desliga",
+    "control": "Remove cada fonte nas Definições do iPhone. Se retirares a permissão de saúde no Perfil, o que foi medido é apagado.",
+    "sistema": "Depois, a Apple perguntará com o seu próprio diálogo.",
+    "activar": "Ativar a medição",
+    "ahoraNo": "Agora não",
+    "relojTitulo": "O teu relógio tem treinos à espera",
+    "relojTexto": "Estão a salvo. Chegam quando ativares a medição.",
+    "relojBoton": "Ver o que é lido"
   }
 }

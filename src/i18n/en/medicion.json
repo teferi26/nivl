@@ -152,5 +152,21 @@
     "pendienteRotulo": "Not uploaded yet",
     "pendienteCuerpo": "The session is safe on this phone. NIVL will try again when it is next opened.",
     "volverCardio": "Back"
+  },
+  "explicacion": {
+    "rotulo": "Before connecting",
+    "entradilla": "Your health permission stays as it was. Measuring with Apple Health, the watch or GPS is new and only turns on if you activate it.",
+    "leeRotulo": "What is read",
+    "lee": "From Apple Health and the watch, what you select: workouts, heart rate, active energy, steps, sleep and weight. From GPS, the route of each session you start.",
+    "paraRotulo": "What for",
+    "para": "To save your workouts to your account, compare them with what you log and show you your numbers. The coach uses your measured workouts only if you have the AI permission, and your daily summaries only if you also turn on that switch.",
+    "controlRotulo": "How to turn it off",
+    "control": "Remove each source in iPhone Settings. If you withdraw the health permission in Profile, what was measured is erased.",
+    "sistema": "Apple will then ask you in its own dialog.",
+    "activar": "Activate measuring",
+    "ahoraNo": "Not now",
+    "relojTitulo": "Your watch has workouts waiting",
+    "relojTexto": "They are safe. They will arrive once you activate measuring.",
+    "relojBoton": "See what is read"
   }
 }

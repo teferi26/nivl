@@ -8,6 +8,7 @@
 // Uso:
 //   SUPABASE_ACCESS_TOKEN=sbp_... node scripts/apply-migrations.mjs [--dry] [--hasta=NNNN]
 //
+// --sin=NNNN[,NNNN] se salta esas migraciones (la 0113 espera a la OTA).
 // --hasta para en esa migración (incluida). Hace falta cuando una OTA tiene que
 // salir entre dos migraciones (0112 → OTA → 0113).
 //
@@ -22,6 +23,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
 const MIGRATIONS = join(ROOT, 'supabase', 'migrations');
 const DRY = process.argv.includes('--dry');
+const SIN = (process.argv.find((a) => a.startsWith('--sin='))?.slice('--sin='.length) ?? '').split(',').filter(Boolean);
 const HASTA = process.argv.find((a) => a.startsWith('--hasta='))?.slice('--hasta='.length) ?? null;
 
 function readEnv() {
@@ -77,7 +79,7 @@ const HUELLAS = {
   '0125': `coalesce(obj_description(to_regprocedure('public.tv_emitir_codigo(text)'), 'pg_proc') like '%nivl:tv-enlace-0125%', false)`,
   '0142': `coalesce(obj_description(to_regprocedure('public.liquidate_creator(uuid,text)'), 'pg_proc') like '%nivl:pago-multiplos-0142%', false)`,
   '0141': `to_regprocedure('public.devengar_comisiones()') is not null`,
-  '0111': `public.health_consent_version() = '2026-11-08-salud-v2'`,
+  '0111': `to_regprocedure('public.activar_medicion()') is not null`,
   '0110': `to_regclass('public.salud_diaria') is not null and coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:salud-diaria-0110%', false) and coalesce(obj_description(to_regprocedure('public.complete_health_erasure(uuid,uuid)'), 'pg_proc') like '%nivl:salud-diaria-0110%', false)`,
   '0140': `to_regprocedure('public.mis_modos()') is not null`,
   '0136': `coalesce(col_description('public.ai_plans'::regclass, (select attnum::int from pg_attribute where attrelid = 'public.ai_plans'::regclass and attname = 'routes')) like '%nivl:un-modelo-0136%', false)`,
@@ -199,6 +201,7 @@ async function applyPendingMigrations() {
   const pendientes = archivos.filter((f) => {
     const n = f.slice(0, 4);
     if (HASTA !== null && n > HASTA) return false;
+    if (SIN.includes(n)) return false;
     return !HUELLAS[n] || estado[`m${n}`] === false;
   });
 

@@ -75,6 +75,9 @@ const CATEGORIAS = Object.fromEntries(
 ) as SaludConexionVistaProps['categorias'];
 
 const BASE: SaludConexionVistaProps = {
+  explicar: false,
+  activando: false,
+  errorActivar: null,
   cargado: true,
   noDisponible: null,
   errorCarga: null,
@@ -94,6 +97,11 @@ const BASE: SaludConexionVistaProps = {
 };
 
 describe('EntrenoGpsVista', () => {
+  it('sin activar la medición, se explica antes de pedir permiso al sistema', () => {
+    const texto = gps({ fase: 'explicacion', activando: false, error: null });
+    expect(texto).toContain('Qué se lee');
+    expect(texto).toContain('Activar la medición');
+  });
   it('sin módulo dice por qué', () => {
     expect(gps({ fase: 'no_disponible', motivo: 'android' })).toContain('Android');
     expect(gps({ fase: 'no_disponible', motivo: 'web' })).toContain('iPhone');

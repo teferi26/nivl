@@ -37,7 +37,9 @@ const CATEGORIAS_INICIALES = Object.fromEntries(ORDEN_CATEGORIAS.map((c) => [c, 
 export function useSaludConexion(): SaludConexionVistaProps {
   const { session } = useAuth();
   const userId = session?.user.id;
-  const { accepted } = useHealthConsent();
+  const { accepted: permisoSalud, medicionActiva, activarMedicion } = useHealthConsent();
+  // Hasta activarla no se pregunta nada a HealthKit, ni siquiera qué permisos hay.
+  const accepted = permisoSalud && medicionActiva;
   const noDisponible = motivoNoDisponible(Platform.OS, hayModuloSalud(), disponible());
 
   const [cargado, setCargado] = useState(false);
@@ -54,6 +56,8 @@ export function useSaludConexion(): SaludConexionVistaProps {
   const [enviarACoach, setEnviarACoach] = useState<boolean | null>(null);
   const [guardandoCoach, setGuardandoCoach] = useState(false);
   const [errorCoach, setErrorCoach] = useState<string | null>(null);
+  const [activando, setActivando] = useState(false);
+  const [errorActivar, setErrorActivar] = useState<string | null>(null);
   // Cerrojo síncrono: dos toques seguidos ven el mismo estado de React.
   const ocupado = useRef(false);
   const ocupadoCoach = useRef(false);
@@ -137,6 +141,19 @@ export function useSaludConexion(): SaludConexionVistaProps {
     }
   };
 
+  const activar = async () => {
+    if (activando) return;
+    setActivando(true);
+    setErrorActivar(null);
+    try {
+      await activarMedicion();
+    } catch (e) {
+      setErrorActivar(mensajeSistema(e));
+    } finally {
+      setActivando(false);
+    }
+  };
+
   const cambiarCoach = async (valor: boolean) => {
     if (!userId || ocupadoCoach.current) return;
     ocupadoCoach.current = true;
@@ -156,6 +173,9 @@ export function useSaludConexion(): SaludConexionVistaProps {
   };
 
   return {
+    explicar: permisoSalud && !medicionActiva,
+    activando,
+    errorActivar,
     cargado,
     noDisponible,
     errorCarga,
@@ -173,6 +193,7 @@ export function useSaludConexion(): SaludConexionVistaProps {
     errorCoach,
     acciones: {
       onVolver: () => volver(router),
+      onActivar: () => void activar(),
       onReintentar: () => void cargar(),
       onCategoria: (c) => setCategorias((p) => ({ ...p, [c]: { ...p[c], marcada: !p[c].marcada } })),
       onEscribirEntrenos: setEscribirEntrenos,

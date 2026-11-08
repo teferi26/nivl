@@ -3,8 +3,9 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
+import { useHealthConsent } from '@/components/ConsentimientoSalud';
 import { Button, Card } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
@@ -13,6 +14,7 @@ import { fetchLetter } from '@/lib/contract';
 import { ensureProfile } from '@/lib/data';
 import { estadoAvisos, inicializarAvisos } from '@/lib/notifications';
 import { registrarDispositivo } from '@/lib/push';
+import { hayEntrenosRelojEsperando } from '@/watch/puente';
 
 const AVISOS_NO = 'nivl.hoy.avisos.ahora_no';
 const FIRMA_NO = 'nivl.hoy.firma.ahora_no';
@@ -45,6 +47,14 @@ export function TarjetasPrimerUso({ listo: listoProp }: { listo?: boolean }) {
 
   const [listo, setListo] = useState(false);
 
+  // Solo para quien ya ha entrenado con el reloj: lo medido espera a que active.
+  const { accepted: saludAceptada, medicionActiva } = useHealthConsent();
+  const [relojEsperando, setRelojEsperando] = useState(false);
+  const relojAhoraNo = useRef(false);
+  useFocusEffect(useCallback(() => {
+    setRelojEsperando(!!userId && saludAceptada && !medicionActiva && !relojAhoraNo.current && hayEntrenosRelojEsperando(userId));
+  }, [userId, saludAceptada, medicionActiva]));
+
   useFocusEffect(useCallback(() => {
     if (listoProp === false || !userId) return;
     let vivo = true;
@@ -67,6 +77,21 @@ export function TarjetasPrimerUso({ listo: listoProp }: { listo?: boolean }) {
       vivo = false;
     };
   }, [listoProp, userId]));
+
+  if (relojEsperando) {
+    return (
+      <Tarjeta
+        titulo={t('medicion:explicacion.relojTitulo')}
+        texto={t('medicion:explicacion.relojTexto')}
+        boton={t('medicion:explicacion.relojBoton')}
+        onBoton={() => router.push('/salud-conexion')}
+        onAhoraNo={() => {
+          relojAhoraNo.current = true;
+          setRelojEsperando(false);
+        }}
+      />
+    );
+  }
 
   if (!listo || (!pedirAvisos && !pedirFirma)) return null;
 

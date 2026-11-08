@@ -152,5 +152,21 @@
     "pendienteRotulo": "Noch nicht hochgeladen",
     "pendienteCuerpo": "Die Einheit ist auf diesem Telefon sicher. NIVL versucht es beim nächsten Öffnen erneut.",
     "volverCardio": "Zurück"
+  },
+  "explicacion": {
+    "rotulo": "Vor dem Verbinden",
+    "entradilla": "Deine Gesundheitseinwilligung bleibt, wie sie war. Messen mit Apple Health, der Uhr oder GPS ist neu und startet nur, wenn du es aktivierst.",
+    "leeRotulo": "Was gelesen wird",
+    "lee": "Aus Apple Health und von der Uhr, was du auswählst: Workouts, Puls, aktive Energie, Schritte, Schlaf und Gewicht. Vom GPS die Route jeder Einheit, die du startest.",
+    "paraRotulo": "Wozu",
+    "para": "Um deine Workouts in deinem Konto zu speichern, mit deinen Eintragungen zu vergleichen und dir deine Zahlen zu zeigen. Der Coach nutzt gemessene Workouts nur mit deiner KI-Einwilligung und Tageszusammenfassungen nur, wenn du zusätzlich diesen Schalter einschaltest.",
+    "controlRotulo": "So schaltest du es ab",
+    "control": "Jede Quelle entfernst du in den iPhone-Einstellungen. Widerrufst du die Gesundheitseinwilligung im Profil, wird das Gemessene gelöscht.",
+    "sistema": "Danach fragt Apple dich in einem eigenen Dialog.",
+    "activar": "Messung aktivieren",
+    "ahoraNo": "Nicht jetzt",
+    "relojTitulo": "Auf deiner Uhr warten Workouts",
+    "relojTexto": "Sie sind sicher. Sie kommen an, sobald du die Messung aktivierst.",
+    "relojBoton": "Ansehen, was gelesen wird"
   }
 }

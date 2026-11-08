@@ -15,6 +15,12 @@ export async function acceptHealthConsent() {
     ? 'El texto ha cambiado. Actualiza NIVL para revisarlo.'
     : data?.reason === 'borrado_pendiente' ? 'Termina el borrado pendiente antes de volver a activar salud.' : 'No se ha podido guardar el permiso.');
 }
+/** Una vez por concesión del permiso, tras explicar qué se lee y para qué. */
+export async function aceptarMedicion() {
+  const { data, error } = await supabase.rpc('activar_medicion');
+  if (error) throw error;
+  if (data?.ok !== true) throw new Error('activar_medicion');
+}
 export async function requireHealthConsent() {
   if (!(await fetchHealthConsent()).accepted) throw new ErrorVisible('Activa el permiso de salud en Perfil antes de utilizar este registro.');
 }

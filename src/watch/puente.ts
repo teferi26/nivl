@@ -265,6 +265,20 @@ export function alRecibirEntrenoReloj(fn: (id: string, json: string) => Promise<
   };
 }
 
+/** Sin tocar nada: ¿hay entrenos de esta cuenta esperando en el buzón nativo? */
+export function hayEntrenosRelojEsperando(dueno: string): boolean {
+  const modulo = nativo;
+  if (!modulo || !disponible() || typeof modulo.tomarEntrenos !== 'function') return false;
+  try {
+    return modulo.tomarEntrenos().some(({ json }) => {
+      const d = duenoEntreno(json);
+      return d === null || d === dueno;
+    });
+  } catch {
+    return false;
+  }
+}
+
 /** Borrado de datos: fuera lo de esa cuenta en el buzón, también la copia del reloj. */
 export function vaciarEntrenosReloj(dueno: string): void {
   const modulo = nativo;

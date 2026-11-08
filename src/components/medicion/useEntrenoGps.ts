@@ -31,6 +31,7 @@ import {
   type DeporteGps,
   type EstadoGps,
 } from '@/lib/medicion/saludNativa';
+import { mensajeSistema } from '@/lib/validation';
 import type { EntrenoGpsVistaProps, PantallaGps } from './EntrenoGpsVista';
 import { esDeOtroDia, motivoNoDisponible } from './puro';
 
@@ -67,7 +68,9 @@ function leerEntreno(json: string): EntrenoMedido | null {
 export function useEntrenoGps(): EntrenoGpsVistaProps {
   const { session } = useAuth();
   const userId = session?.user.id;
-  const { accepted: saludAceptada } = useHealthConsent();
+  const { accepted: saludAceptada, medicionActiva, activarMedicion } = useHealthConsent();
+  const [activando, setActivando] = useState(false);
+  const [errorActivar, setErrorActivar] = useState<string | null>(null);
   const motivo = motivoNoDisponible(Platform.OS, hayModuloSalud(), true);
 
   const [interno, setInterno] = useState<Interno | null>(() => (motivo ? null : leerEstado()));
@@ -105,6 +108,19 @@ export function useEntrenoGps(): EntrenoGpsVistaProps {
     return () => clearInterval(reloj);
   }, [midiendo]);
 
+  const activar = async () => {
+    if (activando) return;
+    setActivando(true);
+    setErrorActivar(null);
+    try {
+      await activarMedicion();
+    } catch (e) {
+      setErrorActivar(mensajeSistema(e));
+    } finally {
+      setActivando(false);
+    }
+  };
+
   const pedirPermiso = useCallback(async () => {
     setPidiendo(true);
     setError(null);
@@ -117,7 +133,7 @@ export function useEntrenoGps(): EntrenoGpsVistaProps {
   }, []);
 
   const empezar = async () => {
-    if (empezando) return;
+    if (empezando || !medicionActiva) return;
     setEmpezando(true);
     setError(null);
     try {
@@ -213,6 +229,10 @@ export function useEntrenoGps(): EntrenoGpsVistaProps {
 
   const pantalla = ((): PantallaGps => {
     if (motivo || !interno) return { fase: 'no_disponible', motivo: motivo ?? 'sin_modulo' };
+    // Una sesión en marcha no se interrumpe; lo que aún no ha empezado, sí espera.
+    if (saludAceptada && !medicionActiva && (interno.fase === 'permiso' || interno.fase === 'listo')) {
+      return { fase: 'explicacion', activando, error: errorActivar };
+    }
     switch (interno.fase) {
       case 'permiso':
         return { fase: 'permiso', denegado: interno.denegado, pidiendo, error };
@@ -232,6 +252,7 @@ export function useEntrenoGps(): EntrenoGpsVistaProps {
     pantalla,
     acciones: {
       onVolver: () => volver(router),
+      onActivar: () => void activar(),
       onPedirPermiso: () => void pedirPermiso(),
       onAbrirAjustes: () => void Linking.openSettings().catch(() => {}),
       onDeporte: setDeporte,

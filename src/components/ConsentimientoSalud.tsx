@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { useAuth } from '@/lib/auth';
 import { borrarCopiasLocales } from '@/lib/medicion/buzon';
-import { acceptHealthConsent, fetchHealthConsent, withdrawAndEraseHealth, HEALTH_COPY as T, HEALTH_ROUTES, type HealthConsent } from '@/lib/health';
+import { acceptHealthConsent, aceptarMedicion, fetchHealthConsent, withdrawAndEraseHealth, HEALTH_COPY as T, HEALTH_ROUTES, type HealthConsent } from '@/lib/health';
 import { siguienteEpoch } from '@/lib/healthmath';
 import { clearEvidenceSignatures } from '@/lib/data';
 import { cancelarAvisosSalud } from '@/lib/notifications';
@@ -28,8 +28,8 @@ const vibrarDestructiva = () => {
 };
 
 interface State extends HealthConsent { loading: boolean; error: string | null; epoch: number; }
-interface Context extends State { refresh: () => Promise<void>; ask: () => void; }
-const EMPTY: State = { accepted: false, revision: 0, erasurePending: false, loading: true, error: null, epoch: 0 };
+interface Context extends State { refresh: () => Promise<void>; ask: () => void; activarMedicion: () => Promise<void>; }
+const EMPTY: State = { accepted: false, revision: 0, medicionActiva: false, erasurePending: false, loading: true, error: null, epoch: 0 };
 const HealthContext = createContext<Context | null>(null);
 
 export function HealthConsentProvider({ children }: PropsWithChildren) {
@@ -68,7 +68,7 @@ export function HealthConsentProvider({ children }: PropsWithChildren) {
     return () => { counter.current++; listener.remove(); if (channel) void supabase.removeChannel(channel); };
   }, [uid, refresh]);
   const own = record.uid === uid ? record.value : EMPTY;
-  return <HealthContext.Provider value={{ ...own, refresh, ask: () => setOpen(true) }}>
+  return <HealthContext.Provider value={{ ...own, refresh, ask: () => setOpen(true), activarMedicion: async () => { await aceptarMedicion(); await refresh(); } }}>
     {children}
     <HealthConsentSheet key={uid ?? 'signed-out'} visible={open} close={() => setOpen(false)} accepted={async () => { await refresh(); setOpen(false); }} />
   </HealthContext.Provider>;

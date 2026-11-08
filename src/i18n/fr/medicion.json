@@ -152,5 +152,21 @@
     "pendienteRotulo": "Pas encore envoyée",
     "pendienteCuerpo": "La séance est en sécurité sur ce téléphone. NIVL réessaiera à la prochaine ouverture.",
     "volverCardio": "Retour"
+  },
+  "explicacion": {
+    "rotulo": "Avant de connecter",
+    "entradilla": "Ton autorisation santé ne change pas. Mesurer avec Apple Santé, la montre ou le GPS est nouveau et ne s’active que si tu le décides.",
+    "leeRotulo": "Ce qui est lu",
+    "lee": "Depuis Apple Santé et la montre, ce que tu coches : entraînements, pouls, énergie active, pas, sommeil et poids. Depuis le GPS, le parcours de chaque séance que tu lances.",
+    "paraRotulo": "Pour quoi faire",
+    "para": "Pour enregistrer tes entraînements sur ton compte, les comparer à ce que tu notes et te montrer tes chiffres. Le coach n’utilise tes entraînements mesurés qu’avec ton autorisation IA, et tes résumés quotidiens que si tu actives aussi cet interrupteur.",
+    "controlRotulo": "Comment l’arrêter",
+    "control": "Retire chaque source dans les Réglages de l’iPhone. Si tu retires l’autorisation santé dans Profil, ce qui a été mesuré est effacé.",
+    "sistema": "Apple te demandera ensuite avec sa propre fenêtre.",
+    "activar": "Activer la mesure",
+    "ahoraNo": "Pas maintenant",
+    "relojTitulo": "Ta montre a des entraînements en attente",
+    "relojTexto": "Ils sont en sécurité. Ils arriveront quand tu activeras la mesure.",
+    "relojBoton": "Voir ce qui est lu"
   }
 }

@@ -14,6 +14,7 @@ import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 import { miles } from '@/i18n/formato';
 import type { CategoriaSalud, ResumenDia } from '@/lib/medicion/saludNativa';
+import { ExplicacionMedicion } from './ExplicacionMedicion';
 import { ORDEN_CATEGORIAS, type MotivoNoDisponible } from './puro';
 
 export interface EstadoCategoria {
@@ -23,6 +24,10 @@ export interface EstadoCategoria {
 }
 
 export interface SaludConexionVistaProps {
+  /** Aún no ha activado la medición: se explica antes de tocar HealthKit. */
+  explicar: boolean;
+  activando: boolean;
+  errorActivar: string | null;
   cargado: boolean;
   noDisponible: MotivoNoDisponible | null;
   errorCarga: string | null;
@@ -42,6 +47,7 @@ export interface SaludConexionVistaProps {
   errorCoach: string | null;
   acciones: {
     onVolver: () => void;
+    onActivar: () => void;
     onReintentar: () => void;
     onCategoria: (c: CategoriaSalud) => void;
     onEscribirEntrenos: (v: boolean) => void;
@@ -102,6 +108,15 @@ export function SaludConexionVista(p: SaludConexionVistaProps) {
             {t('medicion:conexion.noDisponiblePie')}
           </Text>
         </TarjetaArena>
+      </Screen>
+    );
+  }
+
+  if (p.explicar) {
+    return (
+      <Screen>
+        {encabezado}
+        <ExplicacionMedicion activando={p.activando} error={p.errorActivar} onActivar={acciones.onActivar} onAhoraNo={acciones.onVolver} />
       </Screen>
     );
   }

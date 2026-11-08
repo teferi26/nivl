@@ -146,12 +146,13 @@ function ProtectedStack() {
   // permiso confirmado (no por un fallo de red) el GPS se apaga: su pantalla
   // queda tapada y no habría desde dónde pararlo. Lo que espera en los buzones
   // se retiene; solo un borrado expreso lo elimina (`borrarCopiasLocales`).
-  const { accepted: saludAceptada, loading: saludCargando, error: saludError } = useHealthConsent();
+  const { accepted: saludAceptada, medicionActiva, loading: saludCargando, error: saludError } = useHealthConsent();
   useEffect(() => {
     if (Platform.OS !== 'ios' || loading || !userId || !edadConfirmada) return;
-    if (saludAceptada) return arrancarBuzon(userId);
+    // El permiso antiguo no enciende la medición: hasta activarla, todo espera.
+    if (saludAceptada) return medicionActiva ? arrancarBuzon(userId) : undefined;
     if (!saludCargando && !saludError) gpsDescartar();
-  }, [loading, userId, edadConfirmada, saludAceptada, saludCargando, saludError]);
+  }, [loading, userId, edadConfirmada, saludAceptada, medicionActiva, saludCargando, saludError]);
 
   // Una sesión GPS es de la cuenta que la empezó: sin sesión o con otra, fuera.
   const usuarioPrevio = useRef<string | null>(null);

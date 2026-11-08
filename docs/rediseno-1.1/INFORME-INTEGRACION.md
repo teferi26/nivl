@@ -21,7 +21,13 @@ Dos arreglos sobre migraciones sin aplicar:
 
 TV: para que alguien enlace una tele hay que aplicar sus migraciones y copiar `tv/integracion/confirmar-tv.tsx.plantilla` a `src/app/tv/[codigo].tsx`, y antes hacer los dos requisitos de `tv/integracion/INSTRUCCIONES.md` (Televisores enlazados en Perfil y aviso a la cuenta). Sin esa ruta la TV no se enlaza; la app de iOS no cambia.
 
-**Decisión del dueño antes de aplicar:** la 0111 obliga a todas las personas a volver a aceptar el permiso de salud.
+**Permiso de salud (decidido el 09/11/2026):** nadie vuelve a aceptarlo. La versión sigue en v1, porque la 1.0.11 exige esa versión exacta. La 0111 añade una activación aparte para HealthKit, GPS y reloj: apagados hasta que la persona los conecta, con una explicación una sola vez, también para quien se registra ahora. El servidor la exige en `salud_diaria` y `entrenos_medidos`. El texto del permiso v1 para altas nuevas ya nombra reloj y GPS bajo el mismo identificador de versión; lo que queda registrado por fuente es la fila `2026-11-09-medicion-v1`.
+
+## Estado de la salida (09/11/2026)
+
+Autorizada por el dueño, pero **parada antes del paso 1**: en esta copia no están `.env` (`EXPO_PUBLIC_SUPABASE_URL`) ni `supabase-token.txt` (`SUPABASE_ACCESS_TOKEN`). No se ha aplicado ninguna migración, ni desplegado nada, ni hecho push. `apply-migrations.mjs` admite ya `--sin=0113`.
+
+Comprobado en el código para quien sigue en la 1.0.11: la versión del permiso no cambia; sin `x-nivl-modo` el coach es el General; `x-nivl-mode` se ignora; los productos Pro y Élite que vende siguen abriendo todo. Sin credenciales no se ha podido comprobar en producción: si `ANTHROPIC_API_KEY` tiene acceso a `claude-haiku-5-5`, ni el valor remoto de `modos_1011`.
 
 ## Orden de salida
 
@@ -31,7 +37,9 @@ Migraciones → funciones (`coach`, `prevision`, `ritual`, `revenuecat-webhook`)
 
 ## Verificación
 
-`npm run typecheck`, `npm test` (6571), `npm run lint` (0 errores), `npx expo export --platform ios` y `deno check` de `coach`, `prevision` y `ritual`.
+`npm run typecheck`, `npm test` (6615), `npm run lint` (0 errores), `npx expo export --platform ios` y `deno check` de `coach`, `prevision` y `ritual`. El permiso de salud y la activación de la medición se prueban además sobre todas las migraciones reales con `scripts/test-medicion-permiso.mjs` (PGlite): usuario antiguo, usuario antiguo que activa y usuario nuevo.
+
+**Tras fusionar adaptativo.** Recorrido web en Chrome, 375 y 1280, General e IRON: 110 combinaciones, 0 problemas del arnés, 6 fallos de interacción. Cuatro son de las pestañas de login: el arnés espera que cambie el número de campos y el registro corto ya tiene los mismos dos. Dos son del coach, sin campo de texto visible con los datos simulados; lo más probable es la pausa del coach, que cambia el campo por su pie, pero no se ha confirmado. En iOS, tras la fusión, solo se ha comprobado el arranque y la portada: la pasada a toques queda pendiente.
 
 **Binario Debug de verdad en simulador iOS 27.2 (Xcode 27.2), contra un servidor falso local.** Qué ha corrido contra ese servidor falso, no contra Supabase: autenticación, perfiles, misiones, permisos de salud e IA, derechos de modos, firma, pausa y el coach (respuesta fija, sin modelo). Lo verificado en iPhone:
 

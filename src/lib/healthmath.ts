@@ -1,8 +1,10 @@
 // Purpose/version kept independent from age and the permission to send to AI.
-export const HEALTH_CONSENT_VERSION = '2026-11-08-salud-v2';
+export const HEALTH_CONSENT_VERSION = '2026-09-27-salud-v1';
 export interface HealthConsent {
   accepted: boolean;
   revision: number;
+  /** HealthKit, GPS y reloj: se activan aparte y el permiso antiguo no los enciende (0111). */
+  medicionActiva: boolean;
   erasurePending: boolean;
 }
 export function readHealthConsent(value: unknown): HealthConsent {
@@ -10,6 +12,7 @@ export function readHealthConsent(value: unknown): HealthConsent {
   return {
     accepted: v.accepted === true && v.version === HEALTH_CONSENT_VERSION && v.current_version === HEALTH_CONSENT_VERSION && v.erasure_pending !== true,
     revision: typeof v.revision === 'number' && Number.isSafeInteger(v.revision) && v.revision >= 0 ? v.revision : 0,
+    medicionActiva: v.medicion_activa === true,
     erasurePending: v.erasure_pending === true,
   };
 }

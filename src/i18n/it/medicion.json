@@ -152,5 +152,21 @@
     "pendienteRotulo": "Non ancora inviata",
     "pendienteCuerpo": "La sessione è al sicuro su questo telefono. NIVL riproverà alla prossima apertura.",
     "volverCardio": "Indietro"
+  },
+  "explicacion": {
+    "rotulo": "Prima di collegare",
+    "entradilla": "Il tuo permesso salute resta com’era. Misurare con Apple Salute, l’orologio o il GPS è nuovo e si accende solo se lo attivi tu.",
+    "leeRotulo": "Cosa viene letto",
+    "lee": "Da Apple Salute e dall’orologio, ciò che selezioni: allenamenti, battito, energia attiva, passi, sonno e peso. Dal GPS, il percorso di ogni sessione che avvii.",
+    "paraRotulo": "A cosa serve",
+    "para": "A salvare gli allenamenti nel tuo account, confrontarli con ciò che annoti e mostrarti i tuoi numeri. Il coach usa gli allenamenti misurati solo con il permesso IA, e i riepiloghi giornalieri solo se accendi anche quell’interruttore.",
+    "controlRotulo": "Come si spegne",
+    "control": "Togli ogni fonte nelle Impostazioni dell’iPhone. Se ritiri il permesso salute in Profilo, ciò che è stato misurato viene cancellato.",
+    "sistema": "Poi Apple te lo chiederà con la sua finestra.",
+    "activar": "Attiva la misurazione",
+    "ahoraNo": "Non ora",
+    "relojTitulo": "Il tuo orologio ha allenamenti in attesa",
+    "relojTexto": "Sono al sicuro. Arriveranno quando attiverai la misurazione.",
+    "relojBoton": "Vedi cosa viene letto"
   }
 }

@@ -22,10 +22,12 @@ import { t } from '@/i18n';
 import type { EntrenoMedido, Parcial } from '@/lib/entrenoMedido';
 import type { DeporteGps, EstadoGps } from '@/lib/medicion/saludNativa';
 import { formatoDuracion, formatoRitmo, ritmoSKm } from '@/lib/medicion/rutaGps';
+import { ExplicacionMedicion } from './ExplicacionMedicion';
 import { calidadGps, kmDe, velocidadDe, type MotivoNoDisponible } from './puro';
 
 export type PantallaGps =
   | { fase: 'no_disponible'; motivo: MotivoNoDisponible }
+  | { fase: 'explicacion'; activando: boolean; error: string | null }
   | { fase: 'permiso'; denegado: boolean; pidiendo: boolean; error: string | null }
   | { fase: 'listo'; deporte: DeporteGps; autoPausa: boolean; empezando: boolean; error: string | null }
   | { fase: 'marcha'; estado: EstadoGps; segundos: number; terminando: boolean; error: string | null }
@@ -47,6 +49,7 @@ export interface EntrenoGpsVistaProps {
   pantalla: PantallaGps;
   acciones: {
     onVolver: () => void;
+    onActivar: () => void;
     onPedirPermiso: () => void;
     onAbrirAjustes: () => void;
     onDeporte: (d: DeporteGps) => void;
@@ -134,6 +137,9 @@ function Cuerpo({ pantalla: p, acciones }: EntrenoGpsVistaProps) {
           </Text>
         </TarjetaArena>
       );
+
+    case 'explicacion':
+      return <ExplicacionMedicion activando={p.activando} error={p.error} onActivar={acciones.onActivar} onAhoraNo={acciones.onVolver} />;
 
     case 'permiso':
       return (

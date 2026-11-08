@@ -14,7 +14,7 @@ jest.mock('@/components/ConsentimientoSalud', () => ({ useHealthConsent: jest.fn
 
 const edad = fetchMayorDeEdadConfirmada as jest.MockedFunction<typeof fetchMayorDeEdadConfirmada>;
 const salud = fetchHealthConsent as jest.MockedFunction<typeof fetchHealthConsent>;
-const consentimiento = (accepted: boolean) => ({ accepted, revision: 1, erasurePending: false });
+const consentimiento = (accepted: boolean) => ({ accepted, revision: 1, erasurePending: false, medicionActiva: false });
 
 const FOTO = { uri: 'file:///cache/a.jpg', fecha: '2026-10-01' };
 

@@ -40,7 +40,7 @@ La carpeta de la complicación tiene que ordenarse **después** de `watch` (el p
 | iPhone | `modules/nivl-salud` | Permisos de HealthKit por categoría, resumen diario, importación con ancla y GPS en segundo plano. `EntrenoPuro.swift` es copia exacta del reloj (lo comprueba un test). |
 | Recepción | `modules/nivl-watch`, `src/watch/puente.ts`, `src/lib/medicion/buzon.ts` | Buzón nativo, normalizado y duplicados entre orígenes (`fusion.ts`). |
 | Contraste | `src/lib/medicion/contraste.ts`, `src/components/medicion/SelloMedicion.tsx` | `medido`, `coherente` o `sin_datos`. Informativo: no cambia XP ni racha. Con `sin_datos` no se pinta nada, para que quien no tiene reloj no vea una marca. |
-| Servidor | migraciones `0110` (`salud_diaria`, `salud_preferencias`) y `0111` (permiso de salud v2) | Sin aplicar. Enviar datos al coach es un interruptor aparte, apagado por defecto. |
+| Servidor | migraciones `0110` (`salud_diaria`, `salud_preferencias`) y `0111` (activar la medición) | Sin aplicar. Enviar datos al coach es un interruptor aparte, apagado por defecto. |
 
 **Quién paga.** `guardarEntrenoMedido` (`src/lib/resistencia.ts`, de IRON) guarda, deduplica y paga. La medición no llama a `propagarActo` ni a `awardXp`. Mientras no se enchufe con `fijarAlmacenEntrenos` en `src/lib/medicion/almacen.ts`, todo se retiene y no se paga nada: no publicar sin ese paso.
 
@@ -76,7 +76,9 @@ Para repetir la sesión: `xcrun simctl location <reloj> start --speed=3 --interv
 3. En App Store Connect: etiquetas de privacidad de salud y ubicación, URL de política que mencione HealthKit, y justificar `UIBackgroundModes: location` en las notas de revisión.
 4. Apple no permite usar datos de HealthKit para publicidad ni venderlos. Enviarlos a un proveedor de IA requiere el consentimiento expreso que ya pide el interruptor del coach.
 
-Antes de publicar: aplicar `0110` y `0111` **a la vez** que sale el binario. La `0111` sube la versión del permiso de salud y todo el mundo tendrá que volver a aceptarlo.
+Antes de publicar: aplicar `0110` y `0111` antes de que salga el binario. La `0111` **no** sube la versión del permiso de salud: nadie vuelve a aceptarlo y la 1.0.11 sigue igual.
+
+**Activar la medición (0111).** HealthKit, GPS y reloj están apagados hasta que la persona los activa, con su aceptación antigua o sin ella. La primera vez que conecta Salud o abre el GPS se le explica qué se lee y para qué (`ExplicacionMedicion`), además del permiso del sistema, y `activar_medicion()` lo deja en `health_consents` con la versión `2026-11-09-medicion-v1`. Hasta entonces no se toca HealthKit, el buzón no corre y lo del reloj espera en su buzón nativo (Hoy avisa con una tarjeta). Las políticas de `salud_diaria` y `entrenos_medidos` lo exigen también en el servidor; apuntar a mano no. Retirar el permiso de salud obliga a activar de nuevo. El permiso de IA va aparte. Prueba: `scripts/test-medicion-permiso.mjs`.
 
 ## Probarlo
 
