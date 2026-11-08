@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
   // Filas sobre hairlines, sin tarjeta.
   lista: { borderTopWidth: stroke.hairline, borderBottomWidth: stroke.hairline, borderColor: ink.ink3 },
   cifraFila: {
-    fontFamily: 'Cinzel_600SemiBold',
+    fontFamily: 'PlayfairDisplay_700Bold',
     fontSize: 16,
     lineHeight: 20,
     color: ink.ink10,

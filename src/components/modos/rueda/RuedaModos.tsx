@@ -86,7 +86,7 @@ export const MS_RECARGA = 600;
 export const MS_FUNDIDO = 200;
 
 /** Cinzel Black (la lámina): los nombres de modo grandes. */
-const CINZEL_BLACK = 'Cinzel_900Black';
+const CINZEL_BLACK = 'PlayfairDisplay_700Bold';
 const OUTFIT_BOLD = tipo.label.family;
 /** Outfit ExtraBold (la lámina: 800) para los rótulos de la rueda y la recarga. */
 const OUTFIT_BLACK = 'Outfit_800ExtraBold';

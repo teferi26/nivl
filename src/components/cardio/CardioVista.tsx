@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
   filaTexto: { flex: 1, minWidth: 0, gap: 2 },
   tituloFila: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
   titulo: { flexShrink: 1, fontFamily: 'Outfit_600SemiBold', fontSize: 16, lineHeight: 22, color: ink.ink9 },
-  cifras: { fontFamily: 'Cinzel_600SemiBold', fontSize: 14, lineHeight: 20, color: ink.ink8 },
+  cifras: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 14, lineHeight: 20, color: ink.ink8 },
   extra: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   derecha: { alignItems: 'flex-end', gap: 2 },
-  fecha: { fontFamily: 'Cinzel_600SemiBold', fontSize: 14, lineHeight: 20, color: ink.ink9 },
+  fecha: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 14, lineHeight: 20, color: ink.ink9 },
   xp: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,

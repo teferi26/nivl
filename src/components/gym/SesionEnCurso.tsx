@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     color: ink.ink6,
     textAlign: 'center',
   },
-  numero: { fontFamily: 'Cinzel_600SemiBold', fontSize: 14, color: ink.ink6 },
+  numero: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 14, color: ink.ink6 },
   celda: {
     height: BOTON,
     backgroundColor: ink.ink2,
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s1,
     paddingVertical: 0,
     color: ink.ink10,
-    fontFamily: 'Cinzel_600SemiBold',
+    fontFamily: 'PlayfairDisplay_700Bold',
     fontSize: 16,
     textAlign: 'center',
     ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null),

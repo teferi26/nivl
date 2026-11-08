@@ -306,10 +306,10 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: ink.ink10,
   },
-  ordinal: { width: 24, fontFamily: 'Cinzel_600SemiBold', fontSize: 14, color: ink.ink6, textAlign: 'center' },
+  ordinal: { width: 24, fontFamily: 'PlayfairDisplay_700Bold', fontSize: 14, color: ink.ink6, textAlign: 'center' },
   filaTexto: { flex: 1, minWidth: 0, gap: 2 },
   nombre: { fontFamily: 'Outfit_600SemiBold', fontSize: 16, lineHeight: 22, color: ink.ink9 },
-  carga: { fontFamily: 'Cinzel_600SemiBold', fontSize: 14, lineHeight: 20, color: ink.ink8 },
+  carga: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 14, lineHeight: 20, color: ink.ink8 },
   detalle: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,

@@ -467,6 +467,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: ink.ink6,
   },
-  cifra: { fontFamily: 'Cinzel_600SemiBold', fontSize: 15, lineHeight: 20, color: ink.ink10 },
+  cifra: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 15, lineHeight: 20, color: ink.ink10 },
   serie: { marginTop: space.s4 },
 });

@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   placa: { width: LADO_RANURA, height: LADO_RANURA, borderRadius: 12, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   textos: { flex: 1, minWidth: 0 },
   pulsado: { opacity: 0.7 },
-  nombre: { fontFamily: 'Cinzel_900Black', fontSize: 24, lineHeight: 27, letterSpacing: 1.9, color: ink.ink10 },
+  nombre: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 24, lineHeight: 27, letterSpacing: 1.9, color: ink.ink10 },
   subtitulo: { fontFamily: 'Outfit_500Medium', fontSize: 12, lineHeight: 15, letterSpacing: 0.7, color: GRIS, marginTop: 2 },
   nivel: { width: 96, alignItems: 'flex-end' },
   nv: { fontFamily: 'Outfit_800ExtraBold', fontSize: 13, lineHeight: 16, letterSpacing: 1.6 },

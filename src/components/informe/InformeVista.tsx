@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: ink.ink6,
   },
-  evidenciaCifra: { fontFamily: 'Cinzel_600SemiBold', fontSize: 14, lineHeight: 20, color: ink.ink10 },
+  evidenciaCifra: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 14, lineHeight: 20, color: ink.ink10 },
   lectura: { fontFamily: tipo.body.family, fontSize: tipo.body.size, lineHeight: tipo.body.lineHeight, color: ink.ink9 },
   consejo: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink8 },
   falloOraculo: { marginTop: space.s4 },
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
   marcaHecho: { width: BOTON, height: BOTON, alignItems: 'center', justifyContent: 'center' },
   stat: { paddingVertical: space.s3, gap: space.s2 },
   statCabecera: { flexDirection: 'row', alignItems: 'baseline', gap: space.s2 },
-  statAbbr: { flex: 1, minWidth: 0, fontFamily: 'Cinzel_600SemiBold', fontSize: 14, lineHeight: 20, letterSpacing: 1, color: ink.ink8 },
+  statAbbr: { flex: 1, minWidth: 0, fontFamily: 'PlayfairDisplay_700Bold', fontSize: 14, lineHeight: 20, letterSpacing: 1, color: ink.ink8 },
   statTop: { color: ink.ink10 },
   statNombre: { fontFamily: tipo.bodySm.family, fontSize: 13, letterSpacing: 0, color: ink.ink6 },
   dominante: {
@@ -404,5 +404,5 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: ink.ink8,
   },
-  statXp: { fontFamily: 'Cinzel_600SemiBold', fontSize: 14, lineHeight: 20, color: ink.ink8 },
+  statXp: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 14, lineHeight: 20, color: ink.ink8 },
 });

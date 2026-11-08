@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     color: ink.ink6,
   },
   numTira: {
-    fontFamily: 'Cinzel_600SemiBold',
+    fontFamily: 'PlayfairDisplay_700Bold',
     fontSize: 18,
     lineHeight: 24,
     color: ink.ink9,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     borderColor: ink.ink10,
   },
   numMes: {
-    fontFamily: 'Cinzel_600SemiBold',
+    fontFamily: 'PlayfairDisplay_700Bold',
     fontSize: 14,
     lineHeight: 18,
     color: ink.ink9,

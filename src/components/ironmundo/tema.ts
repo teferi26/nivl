@@ -72,7 +72,7 @@ export const F = {
   sb: 'Outfit_600SemiBold',
   b: 'Outfit_700Bold',
   xb: 'Outfit_800ExtraBold',
-  cinzel: 'Cinzel_700Bold',
+  cinzel: 'PlayfairDisplay_700Bold',
 } as const;
 
 /** Medidas de la lámina ya pasadas a la app. */

@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
   punto: { width: MARCA, height: MARCA, borderRadius: MARCA / 2, backgroundColor: ink.ink9 },
   cuadro: { width: MARCA, height: MARCA, borderWidth: stroke.hairline, borderColor: ink.ink9 },
   hora: {
-    fontFamily: 'Cinzel_600SemiBold',
+    fontFamily: 'PlayfairDisplay_700Bold',
     fontSize: 16,
     lineHeight: 20,
     color: ink.ink10,

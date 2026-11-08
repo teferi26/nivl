@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   filaHora: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', alignItems: 'center' },
   horaTexto: {
     width: ANCHO_HORAS,
-    fontFamily: 'Cinzel_600SemiBold',
+    fontFamily: 'PlayfairDisplay_700Bold',
     fontSize: 11,
     color: ink.ink6,
     fontVariant: ['tabular-nums'],
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   // Fondo negro: tapa la "hh:00" de debajo si la hora actual cae cerca.
   ahoraHora: {
     width: ANCHO_HORAS,
-    fontFamily: 'Cinzel_700Bold',
+    fontFamily: 'PlayfairDisplay_700Bold',
     fontSize: 11,
     lineHeight: 14,
     color: ink.ink10,
