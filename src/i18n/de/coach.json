@@ -148,5 +148,17 @@
     "recargaNota": "Erweitert die KI deines aktiven Pro- oder Élite-Plans. Was du nicht nutzt, bleibt erhalten.",
     "recargaHecha": "Aufladung angewendet. Das System antwortet wieder.",
     "recargaPendiente": "Der Store hat die Aufladung abgebucht. Sie wird in wenigen Sekunden angewendet."
+  },
+  "pausa": {
+    "estado": "Pausiert",
+    "titulo": "DEIN COACH PAUSIERT",
+    "cuerpo": "Er hat angehalten, um dir nicht unnötig zu schreiben. Er ist weiter da, mit allem, was dir gehört, wann immer du zurückkommen willst.",
+    "reactivar": "Coach reaktivieren",
+    "objetivos": "Das hattest du dir vorgenommen",
+    "noPasa_one": "Es ist nicht schlimm, dass du {{count}} Tag nicht geantwortet hast. Das passiert jedem. Was zählt, ist, dass du hier bist.",
+    "noPasa_other": "Es ist nicht schlimm, dass du {{count}} Tage nicht geantwortet hast. Das passiert jedem. Was zählt, ist, dass du hier bist.",
+    "comprometerse": "Ich verpflichte mich wieder",
+    "ahoraNo": "Jetzt nicht",
+    "cargandoA11y": "Deine Ziele werden geladen"
   }
 }

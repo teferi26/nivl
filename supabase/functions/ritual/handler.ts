@@ -7,9 +7,12 @@
 //   · brief          — a la hora de despertar, con el plan del día escrito
 //   · revision       — domingo por la tarde
 //   · cierre_mensual — el día 1
-//   · escalada       — si lleva días en silencio (la carta con tres puertas)
 //   · checkin        — (L6) si no le toca nada de lo anterior: una pregunta
 //                      breve de seguimiento, con tope (ver _shared/checkin.ts)
+//
+// Con 3 días o más sin que el usuario escriba, el coach queda en pausa (0135,
+// _shared/coachpausa.ts): ni ritual ni checkin, y ni se abre sesión. Sustituye
+// a la antigua escalada de los 4 días. Se vuelve desde el chat (useCoach).
 //
 // Después empuja el resultado por notificación push, con la política del
 // servidor (_shared/pushpolicy.ts, espejo de src/lib/pushPolicy.ts): solo si
@@ -28,7 +31,9 @@ import { AI_SAFETY_RULES } from '../_shared/ai-safety.ts';
 import { buildContextMinimo } from '../_shared/context.ts';
 import { DATOS_ABRE, DATOS_CIERRA, neutralizarDatos, REGLA_DATOS } from '../_shared/prompt.ts';
 import { pushDelServidorPermitido, type Momento } from '../_shared/pushpolicy.ts';
+import { coachEnPausa } from '../_shared/coachpausa.ts';
 import {
+  briefHechoEn,
   checkinPermitido,
   desdeParaMensajes,
   esMensajeDelGladiador,
@@ -54,6 +59,8 @@ interface Perfil {
   coach_mode: string;
   /** Última apertura de la app, fecha local (0048). null = cliente antiguo o migración sin aplicar. */
   last_open_on?: string | null;
+  /** Último mensaje escrito por el usuario (0135). Sin el dato, el coach sigue activo. */
+  coach_last_reply_at?: string | null;
 }
 
 /** El reloj del ritual. Los tests lo sustituyen para fijar la hora. */
@@ -628,8 +635,6 @@ async function decidir(sb: Db, p: Perfil): Promise<Decision | null> {
     return !!data?.length;
   };
 
-  const inicioDia = `${local.fecha}T00:00:00Z`;
-
   // 1) Cierre mensual: el día 1, a la hora de despertar.
   if (local.fecha.endsWith('-01') && local.hora === horaDe(p.wake_time)) {
     const mes = local.fecha.slice(0, 7);
@@ -658,33 +663,22 @@ async function decidir(sb: Db, p: Perfil): Promise<Decision | null> {
 
   // 3) Brief diario, a la hora de despertar.
   if (local.hora === horaDe(p.wake_time)) {
-    if (!(await yaHecho('brief', inicioDia))) {
+    // Por día local, no UTC: un brief de reactivación por la noche no puede
+    // comerse el de la mañana siguiente ni al revés.
+    const desde = new Date(relojRitual.ahora().getTime() - 2 * 86_400_000).toISOString();
+    const { data: briefs } = await sb
+      .from('coach_runs')
+      .select('created_at, error')
+      .eq('user_id', p.id)
+      .eq('kind', 'brief')
+      .gte('created_at', desde)
+      .limit(20);
+    if (!briefHechoEn((briefs ?? []) as { created_at?: unknown; error?: unknown }[], local.fecha, p.timezone)) {
       return {
         kind: 'brief',
         message: `Es ${local.fecha}. Dicta el brief de hoy y escribe el plan.`,
         titulo: 'Órdenes del día',
         ruta: '/(tabs)',
-      };
-    }
-  }
-
-  // 4) Escalada: cuatro días sin que él diga nada, a media mañana.
-  if (local.hora === 11) {
-    const hace4dias = new Date(Date.now() - 4 * 86400000).toISOString();
-    const { data: suyos } = await sb
-      .from('coach_messages')
-      .select('id')
-      .eq('user_id', p.id)
-      .eq('role', 'user')
-      .gte('created_at', hace4dias)
-      .limit(1);
-    const hace7dias = new Date(Date.now() - 7 * 86400000).toISOString();
-    if (!suyos?.length && !(await yaHecho('escalada', hace7dias))) {
-      return {
-        kind: 'escalada',
-        message: 'Lleva cuatro días en silencio.',
-        titulo: 'Tu coach te ha escrito',
-        ruta: '/(tabs)/coach',
       };
     }
   }
@@ -704,7 +698,7 @@ export async function handler(req: Request): Promise<Response> {
   // cliente antiguo, que la política trata como abierta hoy).
   let { data: perfiles, error: perfilesErr } = await admin
     .from('profiles')
-    .select('id, name, timezone, wake_time, sleep_time, coach_mode, last_open_on');
+    .select('id, name, timezone, wake_time, sleep_time, coach_mode, last_open_on, coach_last_reply_at');
   if (perfilesErr && esColumnaInexistente(perfilesErr)) {
     ({ data: perfiles } = await admin
       .from('profiles')
@@ -715,6 +709,8 @@ export async function handler(req: Request): Promise<Response> {
   const fallos: { user: string; error: string }[] = [];
 
   for (const p of (perfiles ?? []) as Perfil[]) {
+    // En pausa, cero IA y cero sesiones: se corta antes de cualquier consulta.
+    if (coachEnPausa(p.coach_last_reply_at, relojRitual.ahora(), p.timezone)) continue;
     // La sesión que se abre por el gladiador (magic link) se cierra al acabar
     // con él: antes se quedaba viva, con su refresh token, una por ritual.
     let jwt: string | null = null;
@@ -792,7 +788,7 @@ export async function handler(req: Request): Promise<Response> {
       if ((await consentimientoIa(sb, p.id)) !== true) continue;
 
       // El día 1 el único push del día es el del mes (prioridad acordada:
-      // escalada > mensual > brief > check-in). Si hay pase de fotos, sale
+      // mensual > brief > check-in). Si hay pase de fotos, sale
       // «Tu mes en imágenes» y el cierre queda en el hilo; si no, el cierre.
       const fotosMes = decision.kind === 'cierre_mensual' ? await resumenMensual(jwt).catch(() => null) : null;
       if (fotosMes && puedeEmpujar) {

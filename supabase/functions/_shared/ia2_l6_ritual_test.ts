@@ -298,3 +298,27 @@ Deno.test('Día 1: el único push es «Tu mes en imágenes» (prioridad mensual 
     f.restaurar();
   }
 });
+
+Deno.test('Pausa: con 3 días sin escribir, ni modelo, ni push, ni sesión, ni consultas de consentimiento', async () => {
+  const f = escenario({ perfilExtra: { coach_last_reply_at: '2026-10-07T16:30:00Z' } });
+  const { status, cuerpo } = await correr(f);
+  equal(status, 200);
+  equal(cuerpo.hechos.length, 0);
+  equal(f.proveedor.length, 0);
+  equal(pushes(f).length, 0);
+  equal(rpcs(f, 'ai_begin_turn').length, 0);
+  equal(rpcs(f, 'ai_consent_ok').length, 0);
+  equal(f.llamadas.filter((l) => l.url.pathname.includes('generate_link')).length, 0);
+});
+
+Deno.test('Pausa: un segundo antes de los 3 días el checkin sigue', async () => {
+  const f = escenario({ perfilExtra: { coach_last_reply_at: '2026-10-07T16:30:01Z' } });
+  const { cuerpo } = await correr(f);
+  ok(cuerpo.hechos.some((h) => h.kind === 'checkin'), JSON.stringify(cuerpo));
+});
+
+Deno.test('Pausa: sin el dato (servidor antes de la migración) el coach sigue activo', async () => {
+  const f = escenario({ perfilExtra: { coach_last_reply_at: null } });
+  const { cuerpo } = await correr(f);
+  ok(cuerpo.hechos.some((h) => h.kind === 'checkin'), JSON.stringify(cuerpo));
+});

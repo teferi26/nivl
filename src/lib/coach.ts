@@ -15,6 +15,7 @@ import type { Slide } from './photos';
 import { supabase } from './supabase';
 import { dateKey } from './dates';
 import { fetchHealthConsent, requireHealthConsent } from './health';
+import { objetivosDePausa } from './coachpausaObjetivos';
 import { ErrorVisible } from './validation';
 import { sinGuiones } from './singuiones';
 import { cabecerasModoCoach } from '@/modos/coach';
@@ -145,7 +146,9 @@ export type CoachDenyReason =
   | 'tope_funcion'
   /** Sin consentimiento vigente para la IA (0028): se abre la hoja, no un error. */
   | 'sin_consentimiento'
-  | 'sin_consentimiento_salud';
+  | 'sin_consentimiento_salud'
+  /** Ya hay brief hoy: reactivar el coach no genera otro. No es un fallo. */
+  | 'brief_ya_hecho';
 
 const DENY_REASONS: readonly CoachDenyReason[] = [
   'sin_suscripcion',
@@ -157,6 +160,7 @@ const DENY_REASONS: readonly CoachDenyReason[] = [
   'tope_funcion',
   'sin_consentimiento',
   'sin_consentimiento_salud',
+  'brief_ya_hecho',
 ];
 
 /** Potencia del turno (0024): el profundo es solo del Élite y tiene su propio bolsillo. */
@@ -198,6 +202,8 @@ export function accessNotice(e: CoachAccessError): string {
       return 'El modo profundo es parte de NIVL Élite. El estándar sigue contigo.';
     case 'profundo_agotado':
       return 'Has usado tus turnos profundos de este mes. El modo estándar sigue disponible.';
+    case 'brief_ya_hecho':
+      return 'El brief de hoy ya está en el chat.';
     case 'sin_consentimiento':
       return 'Antes de usar el coach tienes que aceptar el envío de tus datos al proveedor de IA. Puedes hacerlo en Perfil.';
   }
@@ -370,6 +376,37 @@ export async function streamCoach(opts: {
 
   if (fallo) throw new Error(fallo);
   if (!terminado) throw new Error('La respuesta del coach se ha interrumpido.');
+}
+
+/** Vuelve a poner en marcha el coach (0135). Devuelve el instante que ha quedado en el servidor. */
+export async function reactivarCoach(): Promise<string> {
+  const { data, error } = await supabase.rpc('reactivar_coach');
+  if (error) throw error;
+  return typeof data === 'string' ? data : new Date().toISOString();
+}
+
+/** Lo que se recuerda al reactivar. Si no se puede leer, la pantalla sigue sin lista. */
+export async function fetchObjetivosPausa(userId: string): Promise<string[]> {
+  const [abiertos, metas] = await Promise.all([
+    supabase.from('goals').select('title').eq('user_id', userId).eq('status', 'active').order('created_at', { ascending: false }).limit(5),
+    supabase.from('events').select('payload').eq('user_id', userId).eq('type', 'onboarding_goal').order('created_at', { ascending: false }).limit(2),
+  ]);
+  return objetivosDePausa(abiertos.data ?? [], metas.data ?? []);
+}
+
+// Los encargos del servidor van con la forma exacta que `esMensajeDelGladiador`
+// (_shared/checkin.ts) y la 0135 reconocen: no cuentan como respuesta suya.
+export const encargoBrief = (): string => `Es ${dateKey()}. Dicta el brief de hoy y escribe el plan.`;
+export const encargoPlan = (): string => `Es ${dateKey()}. Escribe el plan del dia completo.`;
+
+/** ¿Hay ya plan del día? (el brief a veces no llega a escribirlo). */
+export async function hayPlanDeHoy(userId: string): Promise<boolean> {
+  const { count, error } = await supabase
+    .from('day_plans')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('date', dateKey());
+  return !!error || !!count;
 }
 
 /** Ritual sin streaming (brief, revisión…): devuelve el texto ya completo. */

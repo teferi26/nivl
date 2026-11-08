@@ -87,6 +87,16 @@ function base(cambios: Partial<CoachVistaProps> = {}): CoachVistaProps {
 
 const compositor = base().compositor;
 
+const PAUSA = {
+  paso: 'inicio' as const,
+  dias: 5,
+  objetivos: ['Correr una media maratón en marzo', 'Ahorrar 3.000 € este año'],
+  reactivando: false,
+  onReactivar: nada,
+  onComprometerse: nada,
+  onVolver: nada,
+};
+
 export const DEMO: DemoPantalla | null = {
   id: 'coach',
   titulo: 'Coach',
@@ -115,6 +125,26 @@ export const DEMO: DemoPantalla | null = {
       id: 'vacio-pro',
       titulo: 'Vacío con Pro',
       render: () => <CoachVista {...base({ vacio: true, burbujas: [], consultas: 0 })} />,
+    },
+    {
+      id: 'pausa',
+      titulo: 'En pausa',
+      render: () => <CoachVista {...base({ burbujas: HILO.slice(0, 2), pausa: PAUSA })} />,
+    },
+    {
+      id: 'pausa-compromiso',
+      titulo: 'En pausa: volver',
+      render: () => <CoachVista {...base({ burbujas: HILO.slice(0, 2), pausa: { ...PAUSA, paso: 'compromiso' } })} />,
+    },
+    {
+      id: 'pausa-cargando',
+      titulo: 'En pausa: cargando objetivos',
+      render: () => <CoachVista {...base({ burbujas: HILO.slice(0, 2), pausa: { ...PAUSA, paso: 'compromiso', objetivos: null } })} />,
+    },
+    {
+      id: 'pausa-sin-objetivos',
+      titulo: 'En pausa: sin objetivos',
+      render: () => <CoachVista {...base({ burbujas: HILO.slice(0, 2), pausa: { ...PAUSA, paso: 'compromiso', objetivos: [] } })} />,
     },
     {
       id: 'bloqueado',

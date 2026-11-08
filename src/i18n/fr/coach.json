@@ -148,5 +148,17 @@
     "recargaNota": "Étend l'IA de ton offre Pro ou Élite active. Ce que tu n'utilises pas est conservé.",
     "recargaHecha": "Recharge appliquée. Le système répond de nouveau.",
     "recargaPendiente": "La boutique a encaissé la recharge. Elle s’applique dans quelques secondes."
+  },
+  "pausa": {
+    "estado": "En pause",
+    "titulo": "TON COACH EST EN PAUSE",
+    "cuerpo": "Il s'est arrêté pour ne pas t'écrire inutilement. Il est toujours là, avec tout ce qui est à toi, quand tu voudras revenir.",
+    "reactivar": "Réactiver le coach",
+    "objetivos": "Ce que tu t'étais fixé",
+    "noPasa_one": "Ce n'est pas grave d'avoir passé {{count}} jour sans répondre. Ça arrive à tout le monde. Ce qui compte, c'est que tu sois là.",
+    "noPasa_other": "Ce n'est pas grave d'avoir passé {{count}} jours sans répondre. Ça arrive à tout le monde. Ce qui compte, c'est que tu sois là.",
+    "comprometerse": "Je m'engage à nouveau",
+    "ahoraNo": "Pas maintenant",
+    "cargandoA11y": "Chargement de tes objectifs"
   }
 }

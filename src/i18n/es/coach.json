@@ -148,5 +148,17 @@
     "recargaNota": "Amplía la IA de tu plan Pro o Élite activo. Lo que no uses se conserva.",
     "recargaHecha": "Recarga aplicada. El sistema vuelve a responder.",
     "recargaPendiente": "La tienda ha cobrado la recarga. Se aplica en unos segundos."
+  },
+  "pausa": {
+    "estado": "En pausa",
+    "titulo": "TU COACH ESTÁ EN PAUSA",
+    "cuerpo": "Se ha parado para no escribirte de más. Sigue aquí, con todo lo tuyo, para cuando quieras volver.",
+    "reactivar": "Reactivar coach",
+    "objetivos": "Lo que te propusiste",
+    "noPasa_one": "No pasa nada por haber estado {{count}} día sin responder. Le pasa a cualquiera. Lo que cuenta es que estás aquí.",
+    "noPasa_other": "No pasa nada por haber estado {{count}} días sin responder. Le pasa a cualquiera. Lo que cuenta es que estás aquí.",
+    "comprometerse": "Me vuelvo a comprometer",
+    "ahoraNo": "Ahora no",
+    "cargandoA11y": "Cargando tus objetivos"
   }
 }

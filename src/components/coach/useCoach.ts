@@ -28,16 +28,23 @@ import {
   accessNotice,
   CoachAccessError,
   describeAction,
+  encargoBrief,
+  encargoPlan,
   fetchMainThread,
   fetchMessages,
+  fetchObjetivosPausa,
+  hayPlanDeHoy,
   isToolResultOnly,
   messageText,
+  reactivarCoach,
   streamCoach,
   type CoachAction,
+  type CoachEvent,
   type CoachMessage,
   type CoachMode,
 } from '@/lib/coach';
 import { cancelarDictado, disponible, disponibleDictado, hablar, parar, suscribirHablando } from '@/lib/coachvoz';
+import { coachEnPausa, diasSinResponder } from '@/lib/coachpausa';
 import { olvidarConsentimiento } from '@/lib/consent';
 import { ensureProfile } from '@/lib/data';
 import { isValidKey, nombreDia } from '@/lib/dates';
@@ -176,6 +183,13 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
   // turno profundo: que el mes no se queme por despiste.
   const [modo, setModo] = useState<CoachMode>('estandar');
   const userId = session?.user.id;
+  // La pausa (0135): se deriva del último mensaje escrito y de su zona. Sin
+  // perfil leído no hay pausa: ante la duda, se deja escribir.
+  const [ultimaRespuesta, setUltimaRespuesta] = useState<string | null>(null);
+  const [zona, setZona] = useState<string | null>(null);
+  const [pasoPausa, setPasoPausa] = useState<'inicio' | 'compromiso'>('inicio');
+  const [objetivosPausa, setObjetivosPausa] = useState<string[] | null>(null);
+  const [reactivando, setReactivando] = useState(false);
   // El mundo en el que está el chat: decide qué misiones son «de otro modo».
   const { activo: modosActivos, modo: modoMundo, activados, cambiar: cambiarModo } = useModo();
   // «Ir a FOCUS»: la misma recarga que la rueda (su sonido y su vibración) y
@@ -344,13 +358,18 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
       const limite = new Promise<void>((resolver) => {
         reloj = setTimeout(resolver, LIMITE_ESTADO_MS);
       });
-      void Promise.race([releerEstado(), limite]).finally(() => {
+      const perfil = ensureProfile(userId)
+        .then((p) => {
+          setKind(p.profile_kind);
+          setUltimaRespuesta(p.coach_last_reply_at ?? null);
+          setZona(p.timezone ?? null);
+        })
+        .catch(() => {});
+      // También el perfil: sin él, el cuadro de escribir asomaría antes que la pausa.
+      void Promise.race([Promise.all([releerEstado(), perfil]), limite]).finally(() => {
         if (reloj) clearTimeout(reloj);
         setEstadoListo(true);
       });
-      ensureProfile(userId)
-        .then((p) => setKind(p.profile_kind))
-        .catch(() => {});
     }, [userId, releerEstado]),
   );
 
@@ -406,6 +425,143 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
     );
   };
 
+  // Lo que llega de un turno en vivo: del chat y del brief al reactivar.
+  const nuevoTurno = () => {
+    const turno = {
+      acumulado: '',
+      ejecutadas: [] as CoachAction[],
+      onEvent: (e: CoachEvent) => {
+        switch (e.type) {
+          case 'start':
+            setThreadId(e.threadId);
+            break;
+          case 'thinking':
+            setPensando(true);
+            break;
+          case 'text':
+            setPensando(false);
+            setEsperando(false);
+            turno.acumulado += e.delta;
+            setEnCurso(turno.acumulado);
+            alFondo();
+            break;
+          case 'tool':
+            // Una herramienta no es la respuesta: «pensando» sigue hasta el
+            // primer texto.
+            turno.ejecutadas.push(e.action);
+            setAcciones([...turno.ejecutadas]);
+            alFondo();
+            break;
+          case 'done':
+            setEsperando(false);
+            setBurbujas((b) => [
+              ...b,
+              {
+                id: `done-${Date.now()}`,
+                role: 'assistant',
+                text: e.text || turno.acumulado,
+                acciones: turno.ejecutadas.filter((a) => !esConsulta(a.name)).map((a) => describeAction(a.name)),
+                herramientas: turno.ejecutadas.filter((a) => a.ok).map((a) => a.name),
+                misiones: turno.ejecutadas.map(misionDeAccion).filter((x): x is MisionConModos => x !== null),
+              },
+            ]);
+            setEnCurso('');
+            setAcciones([]);
+            alFondo();
+            break;
+          case 'error':
+            setEsperando(false);
+            setError(mensajeSistema(e));
+            break;
+        }
+      },
+    };
+    return turno;
+  };
+
+  // El candado ha dicho que no: se explica sin alarma.
+  const tratarNegativa = (e: CoachAccessError) => {
+    if (e.reason === 'sin_suscripcion') {
+      setEstado(SIN_IA);
+    } else if (e.reason === 'sin_consentimiento') {
+      // El servidor no lo tiene (retirado en otro dispositivo, versión
+      // nueva del texto): se vuelve a preguntar, sin alarma.
+      olvidarConsentimiento();
+      consentimiento.pedir();
+    } else {
+      // Quien paga no ve fechas de recarga ni topes: solo la pausa del freno antiabuso.
+      const frenoPago = !conContadorIa(estado) && ['presupuesto_agotado', 'ritmo_diario', 'tope_funcion'].includes(e.reason);
+      setAviso({ texto: frenoPago ? t('coach:uso.freno') : accessNotice(e), energia: e.reason === 'presupuesto_agotado' });
+    }
+  };
+
+  const abrirCompromiso = () => {
+    vibrar('seleccion');
+    setPasoPausa('compromiso');
+    if (objetivosPausa === null && userId) {
+      fetchObjetivosPausa(userId)
+        .then(setObjetivosPausa)
+        .catch(() => setObjetivosPausa([]));
+    }
+  };
+
+  // Comprometerse: el coach vuelve y deja el brief ahora. Si el brief falla, el
+  // coach sigue reactivado y solo se avisa. Comparte cerrojo con el chat.
+  const comprometerse = async () => {
+    if (enviando.current) return;
+    enviando.current = true;
+    setReactivando(true);
+    setError(null);
+    setAviso(null);
+    try {
+      if (!(await consentimiento.asegurar())) return;
+      try {
+        setUltimaRespuesta(await reactivarCoach());
+      } catch (e) {
+        setError(mensajeSistema(e));
+        return;
+      }
+      setPasoPausa('inicio');
+      setReactivando(false);
+      setAcciones([]);
+      setEnCurso('');
+      setEsperando(true);
+      setOcupado(true);
+      const turno = nuevoTurno();
+      try {
+        await streamCoach({
+          kind: 'brief',
+          message: encargoBrief(),
+          threadId: threadId ?? undefined,
+          onEvent: turno.onEvent,
+        });
+        // El brief tiene que dejar el plan; si no lo hizo, se pide aparte (como el cron).
+        if (userId && !(await hayPlanDeHoy(userId))) {
+          await streamCoach({
+            kind: 'plan',
+            message: encargoPlan(),
+            onEvent: () => {},
+          }).catch(() => {});
+          void cargar();
+        }
+      } catch (e) {
+        setEnCurso('');
+        if (e instanceof CoachAccessError) {
+          if (e.reason === 'brief_ya_hecho') void cargar();
+          else tratarNegativa(e);
+        } else {
+          setError(mensajeSistema(e));
+        }
+      }
+    } finally {
+      setPensando(false);
+      setEsperando(false);
+      setOcupado(false);
+      setReactivando(false);
+      enviando.current = false;
+    }
+  };
+
   const enviar = async (mensaje: string) => {
     const limpio = mensaje.trim();
     // Cerrojo: sin él, un doble toque manda el turno dos veces y el coach
@@ -423,6 +579,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
     setEnCurso('');
     setEsperando(true);
     setOcupado(true);
+    setUltimaRespuesta(new Date().toISOString());
     const fotos = adjuntas;
     setAdjuntas([]);
     const localId = `local-${Date.now()}`;
@@ -439,8 +596,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
     ]);
     alFondo();
 
-    let acumulado = '';
-    const ejecutadas: CoachAction[] = [];
+    const turno = nuevoTurno();
     // Profundo solo si el bolsillo lo permite AHORA: un estado viejo no manda
     // un turno caro que el servidor rechazaría.
     const modoTurno: CoachMode = modo === 'profundo' && puedeProfundo(estado) ? 'profundo' : 'estandar';
@@ -450,51 +606,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
         message: limpio || t('coach:turno.miraFoto'),
         threadId: threadId ?? undefined,
         imagenes: fotos.length ? fotos : undefined,
-        onEvent: (e) => {
-          switch (e.type) {
-            case 'start':
-              setThreadId(e.threadId);
-              break;
-            case 'thinking':
-              setPensando(true);
-              break;
-            case 'text':
-              setPensando(false);
-              setEsperando(false);
-              acumulado += e.delta;
-              setEnCurso(acumulado);
-              alFondo();
-              break;
-            case 'tool':
-              // Una herramienta no es la respuesta: «pensando» sigue hasta el
-              // primer texto.
-              ejecutadas.push(e.action);
-              setAcciones([...ejecutadas]);
-              alFondo();
-              break;
-            case 'done':
-              setEsperando(false);
-              setBurbujas((b) => [
-                ...b,
-                {
-                  id: `done-${Date.now()}`,
-                  role: 'assistant',
-                  text: e.text || acumulado,
-                  acciones: ejecutadas.filter((a) => !esConsulta(a.name)).map((a) => describeAction(a.name)),
-                  herramientas: ejecutadas.filter((a) => a.ok).map((a) => a.name),
-                  misiones: ejecutadas.map(misionDeAccion).filter((x): x is MisionConModos => x !== null),
-                },
-              ]);
-              setEnCurso('');
-              setAcciones([]);
-              alFondo();
-              break;
-            case 'error':
-              setEsperando(false);
-              setError(mensajeSistema(e));
-              break;
-          }
-        },
+        onEvent: turno.onEvent,
       });
     } catch (e) {
       if (e instanceof CoachAccessError) {
@@ -503,23 +615,12 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
         // respuesta, y se explica sin alarma.
         setBurbujas((b) => b.filter((x) => x.id !== localId));
         setTexto(limpio);
-        if (e.reason === 'sin_suscripcion') {
-          setEstado(SIN_IA);
-        } else if (e.reason === 'sin_consentimiento') {
-          // El servidor no lo tiene (retirado en otro dispositivo, versión
-          // nueva del texto): se vuelve a preguntar, sin alarma.
-          olvidarConsentimiento();
-          consentimiento.pedir();
-        } else {
-          // Quien paga no ve fechas de recarga ni topes: solo la pausa del freno antiabuso.
-          const frenoPago = !conContadorIa(estado) && ['presupuesto_agotado', 'ritmo_diario', 'tope_funcion'].includes(e.reason);
-          setAviso({ texto: frenoPago ? t('coach:uso.freno') : accessNotice(e), energia: e.reason === 'presupuesto_agotado' });
-        }
+        tratarNegativa(e);
       } else {
         setError(mensajeSistema(e));
         // Si el coach no llegó a contestar nada, el mensaje no ha cuajado: se
         // devuelve al cuadro (con sus fotos) para reintentar sin reescribirlo.
-        if (!acumulado && !ejecutadas.length) {
+        if (!turno.acumulado && !turno.ejecutadas.length) {
           setBurbujas((b) => b.filter((x) => x.id !== localId));
           setTexto(limpio);
           setAdjuntas(fotos);
@@ -557,6 +658,9 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
   };
 
   const vacio = !burbujas.length && !enCurso;
+  // Solo con coach contratado y con certeza: una cuenta gratuita nunca lo ve.
+  const ahoraPausa = new Date();
+  const enPausa = isPro(estado) && coachEnPausa(ultimaRespuesta, ahoraPausa, zona);
   // Solo con certeza: mientras `estado` sea null no se bloquea a nadie.
   const sinPro = estado !== null && !isPro(estado);
   const recarga = estado?.renews && isValidKey(estado.renews) ? nombreDia(estado.renews).toLowerCase() : null;
@@ -671,6 +775,17 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
       // integrado, el nivel: solo Élite y owner van por un modelo con visión.
       conFotos: estado ? puedeVerFotos(estado) : null,
     },
+    pausa: enPausa
+      ? {
+          paso: pasoPausa,
+          dias: diasSinResponder(ultimaRespuesta, ahoraPausa, zona),
+          objetivos: objetivosPausa,
+          reactivando,
+          onReactivar: abrirCompromiso,
+          onComprometerse: () => void comprometerse(),
+          onVolver: () => setPasoPausa('inicio'),
+        }
+      : null,
     onIrAModo: irAModo,
     onPro: () => router.push('/pro'),
     onMemoria: () => router.push('/memoria'),
