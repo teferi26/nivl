@@ -95,6 +95,54 @@ final class MaquinaSesionTests: XCTestCase {
     func testRutinaVaciaNaceTerminada() {
         XCTAssertEqual(MaquinaSesion(rutina: rutina([])).fase, .terminada)
     }
+
+    func testAlVolverDeSegundoPlanoElRelojDiceLaVerdadYNoSuenaTarde() {
+        var m = MaquinaSesion(rutina: rutina([2], descanso: 60))
+        m.pulsar(ahora: t0)
+        m.pulsar(ahora: t0)
+        // El descanso acabó en t0+60 y la app vuelve media hora después.
+        XCTAssertFalse(m.tic(ahora: t0.addingTimeInterval(1800)), "un aviso a destiempo no suena")
+        XCTAssertEqual(m.fase, .serie(desde: t0.addingTimeInterval(60)))
+        XCTAssertEqual(m.transcurrido(ahora: t0.addingTimeInterval(1800)), 1740)
+    }
+
+    func testAlVolverConElDescansoEnMarchaQuedaLoQueQueda() {
+        var m = MaquinaSesion(rutina: rutina([2], descanso: 90))
+        m.pulsar(ahora: t0)
+        m.pulsar(ahora: t0)
+        XCTAssertFalse(m.tic(ahora: t0.addingTimeInterval(70)))
+        XCTAssertEqual(m.restante(ahora: t0.addingTimeInterval(70)), 20)
+    }
+
+    func testAvisoConRetrasoPequenoSiSuena() {
+        var m = MaquinaSesion(rutina: rutina([2], descanso: 30))
+        m.pulsar(ahora: t0)
+        m.pulsar(ahora: t0)
+        XCTAssertTrue(m.tic(ahora: t0.addingTimeInterval(30 + MaquinaSesion.margenAviso)))
+    }
+
+    func testPantallaDespiertaSoloMientrasDuraLaSesion() {
+        var m = MaquinaSesion(rutina: rutina([1, 1], descanso: 0))
+        XCTAssertFalse(m.pantallaDespierta(ahora: t0), "sin empezar se puede apagar")
+        m.pulsar(ahora: t0)
+        XCTAssertTrue(m.pantallaDespierta(ahora: t0.addingTimeInterval(60)))
+        XCTAssertFalse(m.pantallaDespierta(ahora: t0.addingTimeInterval(MaquinaSesion.limiteSinMando)),
+                       "sesión abandonada: la TV puede apagarse")
+        m.pulsar(ahora: t0.addingTimeInterval(100))
+        m.pulsar(ahora: t0.addingTimeInterval(200))
+        XCTAssertEqual(m.fase, .terminada)
+        XCTAssertFalse(m.pantallaDespierta(ahora: t0.addingTimeInterval(201)), "acabada se puede apagar")
+    }
+
+    func testMenuSoloPideConfirmacionConLaSesionEnMarcha() {
+        var m = MaquinaSesion(rutina: rutina([1], descanso: 0))
+        XCTAssertFalse(m.enMarcha)
+        m.pulsar(ahora: t0)
+        XCTAssertTrue(m.enMarcha)
+        m.pulsar(ahora: t0)
+        XCTAssertEqual(m.fase, .terminada)
+        XCTAssertFalse(m.enMarcha)
+    }
 }
 
 final class JuegoTests: XCTestCase {
@@ -132,12 +180,96 @@ final class FormatoTests: XCTestCase {
         XCTAssertEqual(Formato.reloj(-3), "0:00")
     }
 
+    func testPrescripcionSinHuecosNiCerosInventados() {
+        XCTAssertEqual(Formato.prescripcion(series: 4, reps: "8 a 10", cargaKg: 80.5), "4 × 8 a 10 · 80,5 kg")
+        XCTAssertEqual(Formato.prescripcion(series: 3, reps: "AMRAP", cargaKg: nil), "3 × AMRAP")
+        XCTAssertEqual(Formato.prescripcion(series: 3, reps: "", cargaKg: nil), "3 series")
+        XCTAssertEqual(Formato.prescripcion(series: 1, reps: "", cargaKg: 20), "1 serie · 20 kg")
+    }
+
+    func testCuandoEsLaProxima() {
+        XCTAssertEqual(Formato.cuando(enDias: 1, diaSemana: 4), "Mañana")
+        XCTAssertEqual(Formato.cuando(enDias: 3, diaSemana: 6), "Sábado")
+        XCTAssertEqual(Formato.cuando(enDias: 7, diaSemana: 3), "El miércoles que viene")
+        XCTAssertEqual(Formato.cuando(enDias: 2, diaSemana: 9), "En 2 días")
+    }
+
     func testKgYTendencia() {
         XCTAssertEqual(Formato.kg(80), "80")
         XCTAssertEqual(Formato.kg(42.5), "42,5")
         XCTAssertEqual(Formato.tendencia(-0.43), "\u{2212}0,43")
         XCTAssertEqual(Formato.tendencia(0.2), "+0,20")
         XCTAssertEqual(Formato.tendencia(0), "0,00")
+    }
+}
+
+final class SalonTests: XCTestCase {
+    private func ejercicio(_ id: String) -> EjercicioTV {
+        EjercicioTV(id: id, nombre: id, series: 3, reps: "8", cargaKg: nil, descansoSeg: 90, figura: nil, musculos: [], tecnica: [])
+    }
+
+    private func fila(_ id: String, yo: Bool = false) -> FilaArena {
+        FilaArena(id: id, soyYo: yo, nombre: id, titulo: "Tiro", rango: "E", xpTotal: 0, xpVentana: 0, racha: 0, cumplimientoPct: nil, elite: false)
+    }
+
+    func testEstadoDeLaPestanaEntreno() {
+        let r = RutinaTV(nombre: "Torso", dia: "Lunes", ejercicios: [ejercicio("a")])
+        let vacia = RutinaTV(nombre: "Pierna", dia: "Lunes", ejercicios: [])
+        let p = ProximaSesion(nombre: "Pierna", diaSemana: 4, enDias: 1, ejercicios: 6)
+        XCTAssertEqual(EstadoEntreno.decidir(rutina: r, saludActiva: true, proxima: nil), .rutina(r))
+        XCTAssertEqual(EstadoEntreno.decidir(rutina: vacia, saludActiva: true, proxima: p), .rutinaVacia(nombre: "Pierna"))
+        XCTAssertEqual(EstadoEntreno.decidir(rutina: nil, saludActiva: true, proxima: p), .descanso(p))
+        XCTAssertEqual(EstadoEntreno.decidir(rutina: nil, saludActiva: true, proxima: nil), .descanso(nil))
+        XCTAssertEqual(EstadoEntreno.decidir(rutina: nil, saludActiva: false, proxima: p), .sinSalud, "sin consentimiento no se enseña nada de salud")
+    }
+
+    func testSinFiguraNiTecnicaLaColumnaNoExiste() {
+        XCTAssertFalse(RutinaTV(nombre: "T", dia: "L", ejercicios: [ejercicio("a")]).tieneTecnica)
+        XCTAssertTrue(Demo.rutina.tieneTecnica)
+    }
+
+    func testVentanaDeLaLista() {
+        XCTAssertEqual(ListaVisible.ventana(total: 0, actual: 0, capacidad: 6), 0..<0)
+        XCTAssertEqual(ListaVisible.ventana(total: 4, actual: 3, capacidad: 6), 0..<4)
+        XCTAssertEqual(ListaVisible.ventana(total: 10, actual: 0, capacidad: 6), 0..<6)
+        XCTAssertEqual(ListaVisible.ventana(total: 10, actual: 5, capacidad: 6), 4..<10)
+        XCTAssertEqual(ListaVisible.ventana(total: 10, actual: 9, capacidad: 6), 4..<10)
+        for actual in 0..<30 {
+            let v = ListaVisible.ventana(total: 30, actual: actual, capacidad: 6)
+            XCTAssertTrue(v.contains(actual), "el actual siempre se ve")
+            XCTAssertEqual(v.count, 6)
+        }
+    }
+
+    func testTuPuesto() {
+        XCTAssertNil(PuestoArena.propio([]))
+        XCTAssertNil(PuestoArena.propio([fila("a")]))
+        XCTAssertEqual(PuestoArena.propio([fila("a"), fila("b", yo: true), fila("c")]), PuestoArena(puesto: 2, total: 3))
+        XCTAssertEqual(PuestoArena.propio(Demo.arenaLarga), PuestoArena(puesto: 137, total: 200))
+    }
+
+    private func semana(pesos: [PuntoPeso] = [], tendencia: Double? = nil, inicio: Double? = nil, fin: Double? = nil,
+                        hechas: Int = 0, racha: Int = 0, mapa: [[Double]] = [[0, 0]]) -> SemanaTV {
+        SemanaTV(racha: racha, piedras: 0, piedrasMax: 3, xpGanado: 0, hechas: hechas, falladas: 0, dias: [], mapa: mapa,
+                 pesos: pesos, tendenciaKgSemana: tendencia, tendenciaInicio: inicio, tendenciaFin: fin, lectura: nil)
+    }
+
+    func testElPesoDesapareceSinDatoVerdadero() {
+        let p = [PuntoPeso(id: 0, dia: 0, kg: 80)]
+        XCTAssertNotNil(semana(pesos: p, tendencia: -0.2, inicio: 80, fin: 79).seccionPeso(saludActiva: true))
+        XCTAssertNil(semana(pesos: p, tendencia: -0.2, inicio: 80, fin: 79).seccionPeso(saludActiva: false), "sin consentimiento")
+        XCTAssertNil(semana(pesos: p).seccionPeso(saludActiva: true), "sin tendencia no hay recta falsa")
+        XCTAssertNil(semana(tendencia: -0.2, inicio: 80, fin: 79).seccionPeso(saludActiva: true), "sin pesajes en la ventana")
+    }
+
+    func testCuentaSinHistorial() {
+        XCTAssertTrue(semana().sinHistorial)
+        XCTAssertTrue(Demo.semanaVacia.sinHistorial)
+        XCTAssertFalse(semana(hechas: 1).sinHistorial)
+        XCTAssertFalse(semana(racha: 2).sinHistorial)
+        XCTAssertFalse(semana(mapa: [[0, 0.5]]).sinHistorial)
+        XCTAssertFalse(semana(pesos: [PuntoPeso(id: 0, dia: 0, kg: 80)]).sinHistorial)
+        XCTAssertFalse(Demo.semanaSinPeso.sinHistorial)
     }
 }
 

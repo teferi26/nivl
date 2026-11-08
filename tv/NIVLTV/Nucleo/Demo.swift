@@ -19,6 +19,86 @@ enum Demo {
         semana: semana
     )
 
+    /// Los estados que no se ven con la cuenta llena, para capturas (`-variante`).
+    static func datos(variante: String?) -> DatosTV {
+        let d = datos
+        switch variante {
+        case "vacia":
+            return DatosTV(
+                perfil: PerfilTV(nombre: "Tito N.", titulo: "Tiro", rango: "E", xpTotal: 0, elite: false),
+                saludActiva: true, rutina: nil,
+                arena: [FilaArena(id: "yo", soyYo: true, nombre: "Tito N.", titulo: "Tiro", rango: "E",
+                                  xpTotal: 0, xpVentana: 0, racha: 0, cumplimientoPct: nil, elite: false)],
+                ludus: nil, semana: semanaVacia
+            )
+        case "sinsalud":
+            return DatosTV(perfil: d.perfil, saludActiva: false, rutina: nil, arena: d.arena, ludus: d.ludus, semana: semanaSinPeso)
+        case "descanso":
+            return DatosTV(perfil: d.perfil, saludActiva: true, rutina: nil, arena: d.arena, ludus: d.ludus, semana: d.semana,
+                           proxima: ProximaSesion(nombre: "Pierna · fuerza", diaSemana: 4, enDias: 1, ejercicios: 6))
+        case "real":
+            return DatosTV(perfil: d.perfil, saludActiva: true, rutina: rutinaComoLaReal, arena: d.arena, ludus: d.ludus, semana: d.semana)
+        case "larga":
+            return DatosTV(perfil: d.perfil, saludActiva: true, rutina: rutinaComoLaReal, arena: arenaLarga, ludus: ludusLleno, semana: d.semana)
+        default:
+            return d
+        }
+    }
+
+    /// Lo que llega del servidor: sin figura ni técnica, descanso fijo, cargas que faltan.
+    static let rutinaComoLaReal = RutinaTV(
+        nombre: "Torso fuerza",
+        dia: "Martes · rutina semanal",
+        ejercicios: [
+            ("Press de banca con barra en banco inclinado a treinta grados", 4, "6", 80.0),
+            ("Remo con barra", 4, "8 a 10", 70.0),
+            ("Press militar", 3, "10", 42.5),
+            ("Dominadas", 3, "AMRAP", nil),
+            ("Fondos en paralelas", 3, "12", nil),
+            ("Curl martillo", 3, "12", 14.0),
+            ("Extensión de tríceps", 3, "15", 25.0),
+            ("Facepull", 3, "15", 20.0),
+            ("Plancha", 2, "", nil),
+        ].enumerated().map { i, e in
+            EjercicioTV(id: "r\(i)", nombre: e.0, series: e.1, reps: e.2, cargaKg: e.3, descansoSeg: 90,
+                        figura: nil, musculos: [], tecnica: [])
+        }
+    )
+
+    /// 200 filas con nombres imposibles; tú, en la 137.
+    static let arenaLarga: [FilaArena] = (1...200).map { i in
+        let yo = i == 137
+        return FilaArena(
+            id: "f\(i)", soyYo: yo,
+            nombre: yo ? "Ana V." : (i % 3 == 0 ? "Maximiliano Constantino de la Santísima Trinidad \(i)" : "Gladiador \(i)"),
+            titulo: i % 4 == 0 ? "Héroe de la arena con título equipado larguísimo" : "Veterano",
+            rango: ["S", "A", "B", "C", "D", "E"][min(5, i / 40)],
+            xpTotal: 1_250_000 - i * 5_000, xpVentana: max(0, 123_456 - i * 700), racha: max(0, 365 - i * 2),
+            cumplimientoPct: i % 5 == 0 ? nil : max(0, 100 - i / 3), elite: i % 7 == 0
+        )
+    }
+
+    static let ludusLleno = LudusTV(
+        nombre: "Ludus de la Gran Capua y sus alrededores",
+        miembros: (0..<8).map { i in
+            FilaLudus(id: "l\(i)", nombre: i == 2 ? "Ana V." : "Miembro con nombre muy largo \(i)", xpVentana: 1_000 + i * 310,
+                      cumplimientoPct: i == 5 ? nil : 90 - i, soyYo: i == 2)
+        }
+    )
+
+    static let semanaVacia = SemanaTV(
+        racha: 0, piedras: 0, piedrasMax: 3, xpGanado: 0, hechas: 0, falladas: 0,
+        dias: ["L", "M", "X", "J", "V", "S", "D"].map { DiaSemana(id: $0, inicial: $0, hechas: 0, falladas: 0) },
+        mapa: Array(repeating: Array(repeating: 0, count: 7), count: 12),
+        pesos: [], tendenciaKgSemana: nil, tendenciaInicio: nil, tendenciaFin: nil, lectura: nil
+    )
+
+    static let semanaSinPeso = SemanaTV(
+        racha: semana.racha, piedras: semana.piedras, piedrasMax: semana.piedrasMax, xpGanado: semana.xpGanado,
+        hechas: semana.hechas, falladas: semana.falladas, dias: semana.dias, mapa: semana.mapa,
+        pesos: [], tendenciaKgSemana: nil, tendenciaInicio: nil, tendenciaFin: nil, lectura: nil
+    )
+
     static let rutina = RutinaTV(
         nombre: "TORSO · FUERZA",
         dia: "Martes · semana 3 de la campaña",
@@ -147,7 +227,10 @@ enum Demo {
         var t: [String] = [rutina.nombre, rutina.dia, ludus.nombre, semana.lectura ?? ""]
         for e in rutina.ejercicios { t += [e.nombre, e.reps] + e.musculos + e.tecnica }
         for f in arena { t += [f.nombre, f.titulo] }
-        for m in ludus.miembros { t.append(m.nombre) }
+        for m in ludus.miembros + ludusLleno.miembros { t.append(m.nombre) }
+        t.append(ludusLleno.nombre)
+        for e in rutinaComoLaReal.ejercicios { t += [e.nombre, e.reps] }
+        for f in arenaLarga.prefix(8) { t += [f.nombre, f.titulo] }
         return t
     }
 }

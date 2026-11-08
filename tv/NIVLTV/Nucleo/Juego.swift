@@ -84,6 +84,26 @@ enum Formato {
         return "\(partes[0]) a \(partes[1])"
     }
 
+    private static let diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+
+    /// 1 lunes a 7 domingo. nil si el número no es un día.
+    static func nombreDia(_ dia: Int) -> String? {
+        (1...7).contains(dia) ? diasSemana[dia - 1] : nil
+    }
+
+    /// Cuándo es la próxima sesión, en palabras.
+    static func cuando(enDias: Int, diaSemana: Int) -> String {
+        if enDias == 1 { return "Mañana" }
+        guard let dia = nombreDia(diaSemana) else { return "En \(enDias) días" }
+        return enDias == 7 ? "El \(dia.lowercased()) que viene" : dia
+    }
+
+    /// «4 × 8 a 10 · 80 kg». Sin carga no hay kilos; sin repeticiones, «4 series».
+    static func prescripcion(series: Int, reps: String, cargaKg: Double?) -> String {
+        let base = reps.isEmpty ? (series == 1 ? "1 serie" : "\(series) series") : "\(series) × \(reps)"
+        return base + (cargaKg.map { " · \(kg($0)) kg" } ?? "")
+    }
+
     /// Lo que se pinta junto a «Última sincronización».
     static func hace(_ desde: Date, ahora: Date) -> String {
         let s = Int(ahora.timeIntervalSince(desde))

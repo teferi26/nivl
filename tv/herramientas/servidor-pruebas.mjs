@@ -5,7 +5,7 @@
 // haría PostgREST. Los datos se pierden al pararlo. Nombres inventados, ningún dato personal.
 //
 //   PGLITE_PACKAGE_ROOT=<carpeta con @electric-sql/pglite> node tv/herramientas/servidor-pruebas.mjs [--puerto 54399]
-//   node tv/herramientas/servidor-pruebas.mjs aprobar [CODIGO] [--cuenta llena|vacia|sinsalud]
+//   node tv/herramientas/servidor-pruebas.mjs aprobar [CODIGO] [--cuenta llena|vacia|sinsalud|descanso]
 //   node tv/herramientas/servidor-pruebas.mjs rechazar [CODIGO]
 //   node tv/herramientas/servidor-pruebas.mjs caducar-codigo | revocar | estado
 //   node tv/herramientas/servidor-pruebas.mjs fallo 503      (0 corta la conexión; «no» lo quita)
@@ -102,7 +102,7 @@ const uno = async (q, a = []) => Object.values((await db.query(q, a)).rows[0])[0
 
 // ── Semillas ficticias ──
 const uid = (n) => `${String(n).padStart(8, '0')}-0000-4000-8000-000000000000`;
-const CUENTAS = { llena: uid(1), vacia: uid(2), sinsalud: uid(3) };
+const CUENTAS = { llena: uid(1), vacia: uid(2), sinsalud: uid(3), descanso: uid(4) };
 const AMIGOS = [
   [uid(11), 'Cassio Valerio', 'B', 18400, 34],
   [uid(12), 'Drusila Faro', 'C', 12100, 21],
@@ -113,7 +113,7 @@ const AMIGOS = [
 const fecha = (delta = 0) => new Date(Date.now() + delta * 86400000).toISOString().slice(0, 10);
 
 await como('postgres');
-const todos = [[CUENTAS.llena, 'Livia Tessari'], [CUENTAS.vacia, 'Tito Novel'], [CUENTAS.sinsalud, 'Sabina Roca'], ...AMIGOS.map((a) => [a[0], a[1]])];
+const todos = [[CUENTAS.llena, 'Livia Tessari'], [CUENTAS.vacia, 'Tito Novel'], [CUENTAS.sinsalud, 'Sabina Roca'], [CUENTAS.descanso, 'Rufo Ansa'], ...AMIGOS.map((a) => [a[0], a[1]])];
 for (const [id, nombre] of todos) {
   await db.query('insert into auth.users(id,email) values($1,$2)', [id, id.slice(0, 8) + '@correo.invalid']);
   await db.query("insert into profiles(id,name,timezone) values($1,$2,'UTC') on conflict (id) do update set name=excluded.name,timezone='UTC'", [id, nombre]);
@@ -132,7 +132,7 @@ for (const [id, , rango, xp, racha] of AMIGOS) {
 }
 await como('authenticated', A);
 const version = await uno('select health_consent_version()');
-for (const id of [A, CUENTAS.vacia]) { await como('authenticated', id); await uno('select accept_health_consent($1)', [version]); }
+for (const id of [A, CUENTAS.vacia, CUENTAS.descanso]) { await como('authenticated', id); await uno('select accept_health_consent($1)', [version]); }
 
 // Consentimiento dado, sin rutina ni amigos: vacia. Sin consentimiento: sinsalud.
 const hoy = fecha();
@@ -142,6 +142,15 @@ await db.query("select set_config('request.jwt.claim.role','authenticated',false
 const dia = await uno("insert into gym_days(user_id,day_of_week,name) values($1,$2,'Torso fuerza') returning id", [A, isodow]);
 await db.query(`insert into gym_exercises(gym_day_id,user_id,name,sets,reps,weight,position) values
   ($1,$2,'Press de banca',4,6,80,1),($1,$2,'Remo con barra',4,8,70,2),($1,$2,'Press militar',3,10,42.5,3),($1,$2,'Dominadas',3,8,null,4)`, [dia, A]);
+// Hoy no toca: la rutina es pasado mañana.
+await como('postgres', CUENTAS.descanso);
+await db.query("select set_config('request.jwt.claim.role','authenticated',false)");
+const isodowOtro = await uno('select extract(isodow from $1::date)::int', [fecha(2)]);
+const diaOtro = await uno("insert into gym_days(user_id,day_of_week,name) values($1,$2,'Pierna fuerza') returning id", [CUENTAS.descanso, isodowOtro]);
+await db.query(`insert into gym_exercises(gym_day_id,user_id,name,sets,reps,weight,position) values
+  ($1,$2,'Sentadilla',4,6,100,1),($1,$2,'Peso muerto rumano',3,8,90,2),($1,$2,'Zancadas',3,12,null,3)`, [diaOtro, CUENTAS.descanso]);
+await como('postgres', A);
+await db.query("select set_config('request.jwt.claim.role','authenticated',false)");
 for (let i = 30; i >= 0; i -= 2) {
   await db.query('insert into body_metrics(user_id,date,weight_kg) values($1,$2,$3)', [A, fecha(-i), (84.6 - (30 - i) * 0.0617 + (i % 4 ? 0.13 : -0.07)).toFixed(1)]);
 }
@@ -259,5 +268,5 @@ const servidor = createServer(async (req, res) => {
 servidor.listen(PUERTO, '127.0.0.1', () => {
   console.log(`Servidor de pruebas listo en http://127.0.0.1:${PUERTO} (${migraciones.length} migraciones)`);
   console.log(`Clave pública local: ${CLAVE}`);
-  console.log('Cuentas: llena, vacia, sinsalud');
+  console.log('Cuentas: llena, vacia, sinsalud, descanso');
 });

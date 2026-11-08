@@ -6,9 +6,9 @@ Esta es una app nativa en SwiftUI para tvOS 17 o superior, con su propio bundle 
 
 | Pestaña | Contenido | Mando |
 |---|---|---|
-| **Entreno** | Entrenamiento de IRON del día: la rutina, el ejercicio con su figura y la técnica, y debajo series × repeticiones × carga prescrita con un reloj enorme. Al acabar el descanso suena un aviso (el mismo sonido que el fin de bloque de FOCUS). | Clic: serie hecha, o saltar el descanso. Play/Pausa: congela el descanso. |
-| **Arena** | La tabla de amigos (`friends_board`, ya ordenada por el servidor), con el rango registrado, el laurel de Élite y una ficha del gladiador que tiene el foco. Debajo, tu ludus (`elite_group_board`), sin puestos ni XP. | Arriba y abajo para recorrer la tabla. |
-| **Semana** | Racha, piedras, XP ganado, misiones hechas y falladas por día (las falladas en trama), el mapa de 12 semanas y la tendencia de peso con la recta del estudio. | Solo lectura. |
+| **Entreno** | La rutina del día y su botón Empezar, o «Hoy no toca» con la próxima sesión. La sesión guiada se abre a pantalla completa: series × repeticiones × carga prescrita y un reloj enorme. Lo que el servidor no da (figura, técnica, carga) no se pinta. Al acabar el descanso suena un aviso. Al terminar, la TV dice que se registra en el iPhone: no escribe ni marca nada. | Clic: serie terminada, o saltar el descanso. Play/Pausa: congela el descanso. Menú: confirma antes de salir de la sesión y nunca saca de la app. |
+| **Arena** | La tabla de amigos ya ordenada por el servidor, tu puesto, y una ficha con el nivel del gladiador que tiene el foco. Debajo, tu ludus si lo hay, en el orden del servidor y sin puestos. Las filas tienen foco pero no son botones: el clic no promete nada. | Al bajar desde las pestañas, el foco cae en tu fila. Arriba y abajo recorren la tabla. |
+| **Semana** | Racha, piedras, XP ganado, misiones hechas y falladas por día (las falladas en trama), el mapa de 12 semanas y la tendencia de peso con la recta del estudio. Sin peso, sin recta o sin consentimiento, esa tarjeta no existe. Cuenta nueva: una frase en vez de ceros. | Solo lectura: nada enfocable. |
 | **Cuenta** | Quién está enlazado, última sincronización, Sincronizar ahora y Cerrar sesión con confirmación. | Arriba y abajo entre los botones. |
 
 ## Enlace y sesión
@@ -17,6 +17,8 @@ Contrato con el servidor: `CONTRATO.md`. La TV enseña un código y un QR (`nivl
 
 - **Token** en el Llavero: no sincronizable, solo en este aparato, legible tras el primer desbloqueo (`Nucleo/Almacenes.swift`).
 - **Caché** del último paquete en Caches, para abrir sin red. Con datos que no son de ahora, un sello arriba a la derecha dice de cuándo son.
+- **Primera carga**: cada pestaña enseña su forma en huecos (`Vistas/Huecos.swift`), nunca un spinner. La pestaña elegida sobrevive a la carga.
+- **Pantalla despierta** solo durante la sesión guiada. Sin tocar el mando 45 minutos se da por abandonada y la TV puede apagarse. El reloj va por fechas absolutas: al volver de segundo plano dice la verdad, y un descanso ya vencido no suena tarde.
 - **Solo `sesion_invalida` borra la sesión.** Un fallo de red o un HTTP 5xx nunca. Cerrar sesión borra Llavero y caché en el acto, haya red o no.
 - **Lógica pura** en `Nucleo/MaquinaApp.swift` (estados, transiciones, política de sondeo) y `Nucleo/Contrato.swift` (decodificación). `ModeloApp` solo ejecuta los efectos. Sondeo tras recibir la respuesta anterior y parado en segundo plano; refresco cada 5 minutos, como mucho uno por minuto. Las peticiones en vuelo no se cancelan: un canje aprobado no se pierde.
 
@@ -46,7 +48,7 @@ xcodebuild -project NIVLTV.xcodeproj -scheme NIVLTV \
   -derivedDataPath .build CODE_SIGNING_ALLOWED=NO test
 ```
 
-Los 65 tests de `NIVLTVTests` cubren la máquina de la sesión de entreno, la curva de nivel copiada de `game.ts`, los formatos, el contrato (`SesionTests.swift`: decodificación, fechas de Postgres, transiciones, formato del código y QR) y que ninguna cadena lleve guion largo.
+Los 80 tests de `NIVLTVTests` cubren la máquina de la sesión de entreno, la curva de nivel copiada de `game.ts`, los formatos, lo que enseña cada pestaña (`SalonTests`: sin salud, sin historial, peso que desaparece, ventana de la lista), el contrato (`SesionTests.swift`: decodificación, fechas de Postgres, transiciones, formato del código y QR) y que ninguna cadena lleve guion largo. El foco y el botón Menú se prueban con el mando en `NIVLTVUITests/SalonUITests` (scheme `NIVLTVPuntaAPunta`).
 
 **Con el simulador hay que firmar ad hoc para que funcione el Llavero.** Con `CODE_SIGNING_ALLOWED=NO` compila y pasan los tests, pero `SecItemAdd` falla y la app se queda en «no ha podido guardar la sesión»:
 
@@ -60,7 +62,8 @@ En Release para aparato este camino no se compila. La demo no usa red, Llavero n
 
 ```bash
 xcrun simctl launch <udid> com.teferi.nivl.tv -nivlDemo 1 -pestana arena     # entreno | arena | semana | cuenta
-xcrun simctl launch <udid> com.teferi.nivl.tv -nivlDemo 1 -estado descanso   # descanso | serie | fin
+xcrun simctl launch <udid> com.teferi.nivl.tv -nivlDemo 1 -estado descanso   # descanso | serie | fin | carga | sinred
+xcrun simctl launch <udid> com.teferi.nivl.tv -nivlDemo 1 -variante larga     # vacia | sinsalud | descanso | real | larga (200 filas y nombres imposibles)
 xcrun simctl launch <udid> com.teferi.nivl.tv -nivlServidor http://127.0.0.1:54399 -nivlClave clave-publica-local
 ```
 

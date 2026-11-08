@@ -67,6 +67,7 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0128': `coalesce(obj_description(to_regprocedure('public.tv_datos(text,date)'), 'pg_proc') like '%nivl:tv-proxima-0128%', false)`,
   '0127': `coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:export-tv-0127%', false)`,
   '0126': `coalesce(obj_description(to_regprocedure('public.tv_datos(text,date)'), 'pg_proc') like '%nivl:tv-datos-0126%', false)`,
   '0125': `coalesce(obj_description(to_regprocedure('public.tv_emitir_codigo(text)'), 'pg_proc') like '%nivl:tv-enlace-0125%', false)`,

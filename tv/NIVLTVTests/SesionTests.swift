@@ -106,6 +106,37 @@ final class ContratoTests: XCTestCase {
     }
 }
 
+final class RutinaRealTests: XCTestCase {
+    private let json = #"""
+    {"estado":"ok","generado_en":"2026-11-08T12:00:00+00:00","hoy":"2026-11-08","sesion_caduca_en":"2027-02-06T12:00:00+00:00",
+     "salud_activa":true,"perfil":{"nombre":"L","titulo":"T","tipo":null,"rango":"C","xp_total":1,"elite":false},
+     "rutina":{"fuente":"rutina","nombre":"Torso","dia_semana":9,"hecha":true,"ejercicios":[
+       {"id":"a","nombre":"Plancha","series":0,"reps":"","carga_kg":0,"descanso_seg":-5},
+       {"id":"b","nombre":"Press","series":4,"reps":"8-10","carga_kg":null,"descanso_seg":90}]},
+     "arena":[],"ludus":null,"proxima":{"nombre":"Pierna","dia_semana":4,"en_dias":2,"ejercicios":6},
+     "semana":{"racha":0,"piedras":0,"piedras_max":3,"xp_ganado":0,"hechas":0,"falladas":0,"dias":[],"mapa":[],"pesos":[],
+       "tendencia_kg_semana":null,"tendencia_inicio":null,"tendencia_fin":null,"lectura":null}}
+    """#
+
+    func testNoSeInventaCargaNiFiguraYSeToleraLoRaro() throws {
+        let v = try ContratoTV.paquete(Data(json.utf8)).vista
+        let r = try XCTUnwrap(v.rutina)
+        XCTAssertNil(r.ejercicios[0].cargaKg, "0 kg no es una carga")
+        XCTAssertEqual(r.ejercicios[0].series, 1)
+        XCTAssertEqual(r.ejercicios[0].descansoSeg, 0)
+        XCTAssertEqual(r.ejercicios[1].reps, "8 a 10")
+        XCTAssertNil(r.ejercicios[1].figura)
+        XCTAssertFalse(r.tieneTecnica)
+        XCTAssertTrue(r.hecha)
+        XCTAssertTrue(r.dia.hasPrefix("Hoy"))
+        XCTAssertEqual(v.proxima, ProximaSesion(nombre: "Pierna", diaSemana: 4, enDias: 2, ejercicios: 6))
+    }
+
+    func testUnServidorSinLa0128SeLeeSinProxima() throws {
+        XCTAssertNil(try ContratoTV.paquete(Data(paqueteJSON.utf8)).vista.proxima)
+    }
+}
+
 final class CodigoTests: XCTestCase {
     func testFormato() {
         XCTAssertEqual(CodigoTV.visible("ABCD2345"), "ABCD-2345")

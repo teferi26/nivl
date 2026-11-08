@@ -82,6 +82,15 @@ struct PaqueteTV: Decodable, Equatable {
     let arena: [FilaArenaC]
     let ludus: Ludus?
     let semana: Semana
+    /// Falta en servidores anteriores a la 0128: se trata como null.
+    let proxima: Proxima?
+
+    struct Proxima: Decodable, Equatable {
+        let nombre: String
+        let diaSemana: Int
+        let enDias: Int
+        let ejercicios: Int
+    }
 
     struct Perfil: Decodable, Equatable {
         let nombre: String
@@ -272,10 +281,6 @@ enum CodigoTV {
 // MARK: Del contrato a lo que pintan las vistas
 
 extension PaqueteTV {
-    private static let dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
-    /// El servidor no da figura, músculos ni técnica (contrato). Figura neutra.
-    private static let figuraNeutra = "figure.strengthtraining.traditional"
-
     var vista: DatosTV {
         DatosTV(
             perfil: PerfilTV(
@@ -312,12 +317,15 @@ extension PaqueteTV {
                 tendenciaInicio: semana.tendenciaInicio,
                 tendenciaFin: semana.tendenciaFin,
                 lectura: semana.lectura
-            )
+            ),
+            proxima: proxima.map {
+                ProximaSesion(nombre: $0.nombre, diaSemana: $0.diaSemana, enDias: $0.enDias, ejercicios: $0.ejercicios)
+            }
         )
     }
 
     private static func vistaRutina(_ r: Rutina) -> RutinaTV {
-        let dia = (1...7).contains(r.diaSemana) ? dias[r.diaSemana - 1] : "Hoy"
+        let dia = Formato.nombreDia(r.diaSemana) ?? "Hoy"
         let detalle: String
         if r.hecha {
             detalle = "sesión registrada hoy"
@@ -330,10 +338,14 @@ extension PaqueteTV {
             nombre: r.nombre,
             dia: "\(dia) · \(detalle)",
             ejercicios: r.ejercicios.map {
-                EjercicioTV(id: $0.id, nombre: $0.nombre, series: $0.series,
-                            reps: Formato.reps($0.reps), cargaKg: $0.cargaKg, descansoSeg: $0.descansoSeg,
-                            figura: figuraNeutra, musculos: [], tecnica: [])
-            }
+                // Figura, músculos y técnica no llegan del servidor (contrato). Tampoco
+                // se finge una carga: 0 o null es «sin carga prescrita».
+                EjercicioTV(id: $0.id, nombre: $0.nombre, series: max(1, $0.series),
+                            reps: Formato.reps($0.reps), cargaKg: $0.cargaKg.flatMap { $0 > 0 ? $0 : nil },
+                            descansoSeg: max(0, $0.descansoSeg),
+                            figura: nil, musculos: [], tecnica: [])
+            },
+            hecha: r.hecha
         )
     }
 }

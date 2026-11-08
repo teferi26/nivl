@@ -1,7 +1,7 @@
 // NIVL TV · Modo salón, de solo lectura.
 //
 // Sin sesión, la pantalla de enlace. Con sesión, cuatro pestañas en la barra
-// superior de tvOS: Entreno (IRON del día con temporizador), Arena (tabla de
+// superior de tvOS: Entreno (IRON del día, sesión guiada), Arena (tabla de
 // amigos y ludus), Semana (resumen) y Cuenta. Ver tv/README.md.
 
 import SwiftUI
@@ -38,13 +38,7 @@ private struct Raiz: View {
     var body: some View {
         #if DEBUG || targetEnvironment(simulator)
         if Lanzamiento.actual.demo {
-            PestanasVista(
-                datos: Demo.datos,
-                pestanaInicial: Pestana(rawValue: Lanzamiento.actual.pestana ?? "") ?? .entreno,
-                estadoInicial: Lanzamiento.actual.estado
-            ) {
-                CuentaVista(perfil: Demo.datos.perfil, contenido: nil, aviso: nil)
-            }
+            RaizDemo()
         } else {
             RaizVista(arrancar: !Lanzamiento.enTests)
         }
@@ -53,6 +47,36 @@ private struct Raiz: View {
         #endif
     }
 }
+
+#if DEBUG || targetEnvironment(simulator)
+/// Solo capturas: `-estado carga` enseña los huecos y `-estado sinred` el sello.
+private struct RaizDemo: View {
+    private let l = Lanzamiento.actual
+    private var datos: DatosTV { Demo.datos(variante: l.variante) }
+
+    var body: some View {
+        PestanasVista(
+            datos: l.estado == "carga" ? nil : datos,
+            pestanaInicial: Pestana(rawValue: l.pestana ?? "") ?? .entreno,
+            estadoInicial: l.estado
+        ) {
+            if l.estado == "carga" {
+                HuecosCuenta()
+            } else {
+                CuentaVista(perfil: datos.perfil, contenido: nil, aviso: nil)
+            }
+        }
+        .overlay(alignment: .topTrailing) {
+            if l.estado == "sinred" {
+                SelloFrescura(contenido: Contenido(
+                    datos: datos, sincronizado: Date().addingTimeInterval(-3 * 3600),
+                    sesionCaducaEn: Date().addingTimeInterval(86400), red: .sinRed
+                ))
+            }
+        }
+    }
+}
+#endif
 
 struct RaizVista: View {
     let arrancar: Bool
@@ -96,21 +120,11 @@ struct RaizVista: View {
         switch modelo.estado.fase {
         case .arrancando, .sinEnlazar, .enlazando:
             Tinta.i0.ignoresSafeArea()
+        case .cargando, .listo:
+            // Una sola rama: la pestaña y el foco sobreviven a la primera carga.
+            pestanas
         case .noDisponible:
             PantallaAviso(titulo: Textos.noDisponibleTitulo, texto: Textos.noDisponibleTexto)
-        case .cargando:
-            CargandoVista()
-        case .listo(let c):
-            PestanasVista(datos: c.datos, pestanaInicial: Self.pestanaInicial, estadoInicial: nil) {
-                CuentaVista(
-                    perfil: c.datos.perfil,
-                    contenido: c,
-                    aviso: modelo.estado.aviso,
-                    sincronizar: { modelo.enviar(.sincronizarAhora) },
-                    cerrarSesion: { modelo.enviar(.cerrarSesion) }
-                )
-            }
-            .overlay(alignment: .topTrailing) { SelloFrescura(contenido: c) }
         case .sinRed:
             PantallaAviso(titulo: Textos.sinRedTitulo, texto: Textos.sinRedTexto) { botonesSesion }
         case .errorServidor:
@@ -120,6 +134,31 @@ struct RaizVista: View {
                 Button("Enlazar de nuevo") { modelo.enviar(.reintentar) }
                     .buttonStyle(EstiloFoco(invertido: true))
             }
+        }
+    }
+
+    private var listo: Contenido? {
+        if case .listo(let c) = modelo.estado.fase { return c }
+        return nil
+    }
+
+    private var pestanas: some View {
+        let c = listo
+        return PestanasVista(datos: c?.datos, pestanaInicial: Self.pestanaInicial, estadoInicial: nil) {
+            if let c {
+                CuentaVista(
+                    perfil: c.datos.perfil,
+                    contenido: c,
+                    aviso: modelo.estado.aviso,
+                    sincronizar: { modelo.enviar(.sincronizarAhora) },
+                    cerrarSesion: { modelo.enviar(.cerrarSesion) }
+                )
+            } else {
+                HuecosCuenta()
+            }
+        }
+        .overlay(alignment: .topTrailing) {
+            if let c { SelloFrescura(contenido: c) }
         }
     }
 
@@ -142,12 +181,13 @@ struct RaizVista: View {
 }
 
 struct PestanasVista<Cuenta: View>: View {
-    let datos: DatosTV
+    /// nil en la primera carga: cada pestaña enseña sus huecos.
+    let datos: DatosTV?
     let estadoInicial: String?
     let cuenta: Cuenta
     @State private var pestana: Pestana
 
-    init(datos: DatosTV, pestanaInicial: Pestana, estadoInicial: String?, @ViewBuilder cuenta: () -> Cuenta) {
+    init(datos: DatosTV?, pestanaInicial: Pestana, estadoInicial: String?, @ViewBuilder cuenta: () -> Cuenta) {
         self.datos = datos
         self.estadoInicial = estadoInicial
         self.cuenta = cuenta()
@@ -156,13 +196,13 @@ struct PestanasVista<Cuenta: View>: View {
 
     var body: some View {
         TabView(selection: $pestana) {
-            EntrenoPantalla(rutina: datos.rutina, saludActiva: datos.saludActiva, estadoInicial: estadoInicial)
+            pestanaEntreno
                 .tabItem { Text(Pestana.entreno.titulo) }
                 .tag(Pestana.entreno)
-            ArenaVista(filas: datos.arena, ludus: datos.ludus)
+            pestanaArena
                 .tabItem { Text(Pestana.arena.titulo) }
                 .tag(Pestana.arena)
-            SemanaVista(semana: datos.semana, saludActiva: datos.saludActiva)
+            pestanaSemana
                 .tabItem { Text(Pestana.semana.titulo) }
                 .tag(Pestana.semana)
             cuenta
@@ -171,10 +211,34 @@ struct PestanasVista<Cuenta: View>: View {
         }
         .background(Tinta.i0.ignoresSafeArea())
     }
+
+    @ViewBuilder private var pestanaEntreno: some View {
+        if let datos {
+            EntrenoPantalla(rutina: datos.rutina, saludActiva: datos.saludActiva, proxima: datos.proxima, estadoInicial: estadoInicial)
+        } else {
+            HuecosEntreno()
+        }
+    }
+
+    @ViewBuilder private var pestanaArena: some View {
+        if let datos {
+            ArenaVista(filas: datos.arena, ludus: datos.ludus)
+        } else {
+            HuecosArena()
+        }
+    }
+
+    @ViewBuilder private var pestanaSemana: some View {
+        if let datos {
+            SemanaVista(semana: datos.semana, saludActiva: datos.saludActiva)
+        } else {
+            HuecosSemana()
+        }
+    }
 }
 
 /// Deja claro que lo que se ve no es de ahora.
-private struct SelloFrescura: View {
+struct SelloFrescura: View {
     let contenido: Contenido
 
     var body: some View {
@@ -223,22 +287,5 @@ struct PantallaAviso<Acciones: View>: View {
 extension PantallaAviso where Acciones == EmptyView {
     init(titulo: String, texto: String) {
         self.init(titulo: titulo, texto: texto) { EmptyView() }
-    }
-}
-
-/// Primera carga, sin nada que enseñar todavía.
-struct CargandoVista: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: Hueco.s8) {
-            EncabezadoTV(ceja: "NIVL", titulo: Textos.cargando)
-            HuecoCarga().frame(height: 200)
-            HStack(spacing: Hueco.s8) {
-                HuecoCarga()
-                HuecoCarga()
-            }
-            .frame(height: 360)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Tinta.i0.ignoresSafeArea())
     }
 }

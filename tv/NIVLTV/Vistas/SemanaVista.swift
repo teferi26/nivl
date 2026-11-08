@@ -1,7 +1,7 @@
 // NIVL TV · Resumen de la semana.
 //
 // Racha, XP ganado, misiones hechas o falladas, el mapa de 12 semanas y la
-// tendencia de peso. Todo llega calculado (cierre de días y estudio de peso
+// tendencia de peso (si hay algo verdadero que pintar). Todo llega calculado (cierre de días y estudio de peso
 // de analytics.ts): la vista no hace aritmética, solo pinta. Lo hecho en
 // blanco; lo fallado en trama, que sustituye al rojo.
 
@@ -13,7 +13,42 @@ struct SemanaVista: View {
     let saludActiva: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Hueco.s6) {
+        Group {
+            if semana.sinHistorial {
+                vacia
+            } else {
+                completa
+            }
+        }
+        // La pantalla más densa: con el margen normal, el peso bajaba del área segura.
+        .modifier(MargenPestana(arriba: Hueco.s10))
+    }
+
+    /// Cuenta nueva: una frase digna en vez de una pared de ceros.
+    private var vacia: some View {
+        VStack(alignment: .leading, spacing: Hueco.s8) {
+            EncabezadoTV(ceja: "Resumen · esta semana", titulo: "Tu semana")
+            Tarjeta(marco: Trazo.rule, relleno: Hueco.s10) {
+                VStack(alignment: .leading, spacing: Hueco.s4) {
+                    Text(Textos.semanaVaciaTitulo)
+                        .font(Tipo.titulo)
+                        .foregroundStyle(Tinta.i10)
+                        .lineLimit(2)
+                    Text(Textos.semanaVaciaTexto)
+                        .font(Tipo.cuerpo)
+                        .foregroundStyle(Tinta.i8)
+                        .lineLimit(3)
+                }
+            }
+            .accessibilityElement(children: .combine)
+            .frame(maxWidth: 1100)
+        }
+    }
+
+    private var completa: some View {
+        // Sin peso, las dos tarjetas de arriba crecen y no queda un hueco abajo.
+        let peso = semana.seccionPeso(saludActiva: saludActiva)
+        return VStack(alignment: .leading, spacing: Hueco.s4) {
             HStack(alignment: .bottom) {
                 EncabezadoTV(ceja: "Resumen · esta semana", titulo: "Tu semana")
                     // Si no, el título (que encoge para caber en una línea)
@@ -34,7 +69,7 @@ struct SemanaVista: View {
                 Tarjeta(marco: Trazo.hairline, relleno: Hueco.s8) {
                     VStack(alignment: .leading, spacing: Hueco.s6) {
                         Rotulo(texto: "Misiones por día")
-                        BarrasSemana(dias: semana.dias)
+                        BarrasSemana(dias: semana.dias, alto: peso == nil ? 300 : 96)
                         Leyenda()
                     }
                 }
@@ -42,50 +77,40 @@ struct SemanaVista: View {
                 Tarjeta(marco: Trazo.hairline, relleno: Hueco.s8) {
                     VStack(alignment: .leading, spacing: Hueco.s6) {
                         Rotulo(texto: "Últimas 12 semanas")
-                        MapaCalor(mapa: semana.mapa)
+                        MapaCalor(mapa: semana.mapa, celda: peso == nil ? 50 : 22)
                     }
                 }
             }
 
-            // Relleno más corto: con s8 la tarjeta bajaba del área segura.
-            Tarjeta(marco: Trazo.hairline, relleno: Hueco.s6) {
-                if let tendencia = semana.tendenciaKgSemana,
-                   let inicio = semana.tendenciaInicio, let fin = semana.tendenciaFin, !semana.pesos.isEmpty {
+            if let peso {
+                // Relleno más corto: con s8 la tarjeta bajaba del área segura.
+                Tarjeta(marco: Trazo.hairline, relleno: Hueco.s6) {
                     HStack(alignment: .top, spacing: Hueco.s10) {
                         VStack(alignment: .leading, spacing: Hueco.s4) {
                             Rotulo(texto: "Peso · 4 semanas")
                             HStack(alignment: .firstTextBaseline, spacing: Hueco.s2) {
-                                Text(Formato.tendencia(tendencia))
+                                Text(Formato.tendencia(peso.tendenciaKgSemana))
                                     .font(Tipo.cifra)
                                     .foregroundStyle(Tinta.i10)
                                 Text("kg por semana").font(Tipo.cuerpoSm).foregroundStyle(Tinta.i6)
                             }
-                            Text(semana.lectura ?? "")
-                                .font(Tipo.cuerpoSm)
-                                .foregroundStyle(Tinta.i8)
-                                .fixedSize(horizontal: false, vertical: true)
+                            if let lectura = peso.lectura {
+                                Text(lectura)
+                                    .font(Tipo.cuerpoSm)
+                                    .foregroundStyle(Tinta.i8)
+                                    .lineLimit(2)
+                                    // Sin esto, el alto ajustado la dejaba en una línea cortada.
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
                         }
-                        .frame(width: 520, alignment: .leading)
-                        GraficoPeso(pesos: semana.pesos, inicio: inicio, fin: fin)
+                        .frame(width: 640, alignment: .leading)
+                        .accessibilityElement(children: .combine)
+                        GraficoPeso(pesos: peso.pesos, inicio: peso.inicio, fin: peso.fin)
                             .frame(height: 150)
-                    }
-                } else {
-                    VStack(alignment: .leading, spacing: Hueco.s4) {
-                        Rotulo(texto: "Peso · 4 semanas")
-                        Text(saludActiva
-                             ? (semana.lectura ?? "Pésate al menos tres veces para leer la tendencia.")
-                             : "Activa los datos de salud en tu iPhone para ver tu peso aquí.")
-                            .font(Tipo.cuerpoSm)
-                            .foregroundStyle(Tinta.i8)
-                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
         }
-        .padding(.horizontal, Hueco.margenLateral)
-        .padding(.top, Hueco.bajoPestanas)
-        .padding(.bottom, Hueco.s8)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }
 
@@ -93,7 +118,7 @@ struct SemanaVista: View {
 
 private struct BarrasSemana: View {
     let dias: [DiaSemana]
-    private let alto: CGFloat = 130
+    var alto: CGFloat = 130
 
     var body: some View {
         let tope = max(1, dias.map { $0.hechas + $0.falladas }.max() ?? 1)
@@ -157,6 +182,7 @@ struct Trama: View {
 
 private struct MapaCalor: View {
     let mapa: [[Double]]
+    var celda: CGFloat = 26
     private let iniciales = ["L", "M", "X", "J", "V", "S", "D"]
 
     /// Cinco escalones de gris de la escala ink, del vacío al blanco.
@@ -174,7 +200,7 @@ private struct MapaCalor: View {
         HStack(alignment: .top, spacing: Hueco.s3) {
             VStack(spacing: 6) {
                 ForEach(iniciales, id: \.self) { i in
-                    Text(i).font(Tipo.rotulo).foregroundStyle(Tinta.i6).frame(height: 26)
+                    Text(i).font(Tipo.rotulo).foregroundStyle(Tinta.i6).frame(height: celda)
                 }
             }
             ForEach(mapa.indices, id: \.self) { s in
@@ -183,7 +209,7 @@ private struct MapaCalor: View {
                         Rectangle()
                             .fill(tinta(mapa[s][d]))
                             .frame(maxWidth: .infinity)
-                            .frame(height: 26)
+                            .frame(height: celda)
                             .overlay(
                                 Rectangle().strokeBorder(Tinta.i10, lineWidth: s == mapa.count - 1 ? Trazo.hairline : 0)
                             )

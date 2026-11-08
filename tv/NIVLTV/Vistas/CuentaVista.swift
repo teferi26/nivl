@@ -41,6 +41,7 @@ struct CuentaVista: View {
                     }
                     Button("Sincronizar ahora") { sincronizar?() }
                         .buttonStyle(EstiloFoco(invertido: true))
+                        .accessibilityIdentifier("sincronizar")
                     Button("Cerrar sesión") { confirmando = true }
                         .buttonStyle(EstiloFoco())
                         .accessibilityIdentifier("cerrarSesion")

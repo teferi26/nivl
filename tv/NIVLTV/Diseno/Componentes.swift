@@ -43,29 +43,6 @@ private struct CuerpoFoco: View {
     }
 }
 
-/// Fila de lista con foco (Arena): sin relleno de botón, el contenido manda.
-struct EstiloFila: ButtonStyle {
-    var marco: CGFloat = Trazo.hairline
-
-    func makeBody(configuration: Configuration) -> some View {
-        CuerpoFila(configuration: configuration, marco: marco)
-    }
-}
-
-private struct CuerpoFila: View {
-    let configuration: ButtonStyle.Configuration
-    let marco: CGFloat
-    @Environment(\.isFocused) private var enfocado
-
-    var body: some View {
-        configuration.label
-            .background(enfocado ? Tinta.i2 : Tinta.i1, ignoresSafeAreaEdges: [])
-            .overlay(Rectangle().strokeBorder(enfocado ? Tinta.i10 : Tinta.i3, lineWidth: enfocado ? Trazo.rule : marco))
-            .scaleEffect(enfocado ? 1.03 : 1)
-            .animation(.easeOut(duration: Foco.duracion), value: enfocado)
-    }
-}
-
 /// Rótulo de sección (`label`): Outfit 700, mayúsculas, tracking 2.
 struct Rotulo: View {
     let texto: String
@@ -76,7 +53,6 @@ struct Rotulo: View {
             .textCase(.uppercase)
             .foregroundStyle(Tinta.i6)
             .lineLimit(1)
-            .minimumScaleFactor(0.7)
     }
 }
 
@@ -112,7 +88,7 @@ struct EncabezadoTV: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
             if let subtitulo {
-                Text(subtitulo).font(Tipo.cuerpo).foregroundStyle(Tinta.i8)
+                Text(subtitulo).font(Tipo.cuerpo).foregroundStyle(Tinta.i8).lineLimit(1)
             }
             Meandro().frame(width: 220, height: 14).padding(.top, Hueco.s2)
         }
@@ -131,7 +107,7 @@ struct Cifra: View {
             Rotulo(texto: rotulo)
             HStack(alignment: .firstTextBaseline, spacing: Hueco.s2) {
                 Text(valor).font(Tipo.cifra).foregroundStyle(Tinta.i10).monospacedDigit()
-                    .lineLimit(1).minimumScaleFactor(0.4)
+                    .lineLimit(1).minimumScaleFactor(0.5)
                 if let unidad {
                     Text(unidad).font(Tipo.cuerpoSm).foregroundStyle(Tinta.i6)
                 }

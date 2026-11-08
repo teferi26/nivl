@@ -1,6 +1,6 @@
 # Contrato de la TV con el servidor
 
-Migraciones `0125_tv_enlace`, `0126_tv_datos` y `0127_tv_export`. Prueba: `scripts/test-tv-enlace.mjs`.
+Migraciones `0125_tv_enlace`, `0126_tv_datos`, `0127_tv_export` y `0128_tv_proxima`. Pruebas: `scripts/test-tv-enlace.mjs` y `scripts/test-tv-proxima.mjs`.
 
 ## Transporte
 
@@ -61,6 +61,9 @@ Con `"estado":"ok"`:
 | `arena` | array | Ya ordenada. Solo filas visibles. Siempre incluye la propia |
 | `ludus` | objeto o null | null si no está en un ludus. Sin puesto ni orden por puntos |
 | `semana` | objeto | Ver abajo |
+| `proxima` | objeto o null | 0128. El primer día con entreno de los siete siguientes. null sin consentimiento o sin nada programado. La TV lo trata como opcional |
+
+`proxima`: `nombre` string, `dia_semana` int (1 lunes a 7 domingo), `en_dias` int (1 = mañana, hasta 7), `ejercicios` int (nunca 0).
 
 `perfil`:
 
@@ -86,7 +89,7 @@ Con `"estado":"ok"`:
 | `ejercicios[].nombre` | string | |
 | `ejercicios[].series` | int | |
 | `ejercicios[].reps` | string | «8», «8-10», «AMRAP» |
-| `ejercicios[].carga_kg` | number o null | null = peso corporal |
+| `ejercicios[].carga_kg` | number o null | null o 0 = sin carga prescrita. Puede ser peso corporal o que no se haya apuntado: la TV no lo pinta ni lo adivina |
 | `ejercicios[].descanso_seg` | int | Siempre 90: no se guarda en ninguna tabla |
 
 El servidor **no** da figura, músculos ni técnica: son del catálogo cliente de IRON. La TV debe tolerar que falten.

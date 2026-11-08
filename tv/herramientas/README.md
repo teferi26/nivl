@@ -17,7 +17,7 @@ Simular el iPhone y los fallos, con el servidor en marcha:
 
 | Comando | Qué hace |
 |---|---|
-| `node tv/herramientas/servidor-pruebas.mjs aprobar [CODIGO] --cuenta llena` | Aprueba el código (o el último pendiente). Cuentas: `llena`, `vacia` (sin rutina ni amigos) y `sinsalud` (sin consentimiento de salud) |
+| `node tv/herramientas/servidor-pruebas.mjs aprobar [CODIGO] --cuenta llena` | Aprueba el código (o el último pendiente). Cuentas: `llena`, `vacia` (sin rutina ni amigos), `sinsalud` (sin consentimiento de salud) y `descanso` (hoy no toca, próxima sesión pasado mañana) |
 | `... rechazar [CODIGO]` | La TV pasa a `denegado` |
 | `... caducar-codigo` | Caduca los códigos pendientes |
 | `... revocar` | Borra todas las sesiones: la TV pasa a sesión caducada |
@@ -31,3 +31,5 @@ xcodebuild -project tv/NIVLTV.xcodeproj -scheme NIVLTVPuntaAPunta \
   -destination 'platform=tvOS Simulator,name=Apple TV 4K (4th generation)' \
   -derivedDataPath tv/.build CODE_SIGNING_ALLOWED=NO test
 ```
+
+`SalonUITests`, en el mismo scheme, recorre la sesión guiada y el foco con la demo y no necesita servidor; `testRefrescarNoPierdeFoco` sí, y tarda algo más de un minuto porque respeta el tope de un refresco por minuto.

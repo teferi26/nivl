@@ -1,342 +1,181 @@
-// NIVL TV · Entrenamiento del día de IRON a pantalla grande.
+// NIVL TV · La pestaña Entreno: la rutina de hoy o por qué no la hay.
 //
-// Tres columnas: la rutina (qué va hecho), el ejercicio con su reloj enorme y
-// la técnica con su figura. Con el mando: clic = serie hecha (o saltar el
-// descanso), Play/Pausa congela el descanso. La TV es de solo lectura: el
-// registro real sigue siendo del iPhone.
+// La sesión guiada se abre a pantalla completa (SesionVista). La pestaña no
+// marca nada ni escribe nada: enseña lo prescrito y da paso.
 
 import SwiftUI
 
-/// La pestaña: el entreno de hoy o por qué no lo hay.
+/// Una sesión abierta: lleva su propia copia de la rutina, así un refresco de
+/// datos o el cambio de día nunca le cambia el entreno a quien está sudando.
+private struct SesionAbierta: Identifiable {
+    let id = UUID()
+    let rutina: RutinaTV
+    let estadoInicial: String?
+}
+
 struct EntrenoPantalla: View {
     let rutina: RutinaTV?
     let saludActiva: Bool
+    var proxima: ProximaSesion?
     var estadoInicial: String?
 
-    var body: some View {
-        if let rutina, !rutina.ejercicios.isEmpty {
-            EntrenoVista(rutina: rutina, estadoInicial: estadoInicial)
-                .id(rutina.clave)
-        } else {
-            VStack(alignment: .leading, spacing: Hueco.s8) {
-                EncabezadoTV(ceja: "IRON · hoy", titulo: rutina?.nombre ?? "Sin entreno")
-                Text(mensaje)
-                    .font(Tipo.cuerpo)
-                    .foregroundStyle(Tinta.i8)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(.top, Hueco.bajoPestanas)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        }
-    }
-
-    private var mensaje: String {
-        if !saludActiva { return "Activa los datos de salud en tu iPhone para ver tu rutina aquí." }
-        if rutina != nil { return "Tu rutina de hoy no tiene ejercicios. Añádelos en el iPhone." }
-        return "Hoy no tienes entreno programado."
-    }
-}
-
-struct EntrenoVista: View {
-    @State private var maquina: MaquinaSesion
-    @State private var ahora = Date()
+    @State private var sesion: SesionAbierta?
     @Namespace private var espacioFoco
-    @State private var aviso = Aviso()
 
-    init(rutina: RutinaTV, estadoInicial: String? = nil) {
-        var m = MaquinaSesion(rutina: rutina)
-        // `-estado descanso` en la demo: deja la sesión en el primer descanso
-        // (solo para capturas; el simulador de tvOS no simula el mando).
-        // `serie` deja la primera serie en marcha y `fin` cierra la sesión
-        // entera. Con datos reales llega siempre nil.
-        let t = Date()
-        switch estadoInicial {
-        case "descanso":
-            m.pulsar(ahora: t.addingTimeInterval(-40))
-            m.pulsar(ahora: t.addingTimeInterval(-38))
-        case "serie":
-            m.pulsar(ahora: t.addingTimeInterval(-24))
-        case "fin":
-            var vueltas = 0
-            while m.fase != .terminada && vueltas < 500 {
-                m.pulsar(ahora: t)
-                vueltas += 1
-            }
-        default:
-            break
-        }
-        _maquina = State(initialValue: m)
+    private var estado: EstadoEntreno {
+        EstadoEntreno.decidir(rutina: rutina, saludActiva: saludActiva, proxima: proxima)
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: Hueco.s14) {
-            ColumnaRutina(maquina: maquina)
-                .frame(width: 500)
-            centro
-                .frame(maxWidth: .infinity)
-            // Con la sesión cerrada no tiene sentido la técnica del último
-            // ejercicio: la columna resume lo trabajado hoy.
-            ColumnaTecnica(ejercicio: maquina.fase == .terminada ? nil : maquina.ejercicio, rutina: maquina.rutina)
-                .frame(width: 460)
+        Group {
+            switch estado {
+            case .sinSalud:
+                aviso(titulo: Textos.sinSaludTitulo, texto: Textos.sinSaludEntreno)
+            case .rutinaVacia(let nombre):
+                aviso(titulo: nombre, texto: Textos.rutinaVacia)
+            case .descanso(let proxima):
+                descanso(proxima)
+            case .rutina(let r):
+                resumen(r)
+            }
         }
-        .padding(.horizontal, Hueco.margenLateral)
-        .padding(.top, Hueco.bajoPestanas)
-        .padding(.bottom, Hueco.s8)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .modifier(MargenPestana())
         .focusScope(espacioFoco)
-        .onPlayPauseCommand { maquina.alternarPausa(ahora: Date()) }
-        .task {
-            // Reloj de 4 Hz: basta para un segundero y no despierta a nadie.
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 250_000_000)
-                let t = Date()
-                if maquina.tic(ahora: t) { aviso.sonar() }
-                ahora = t
+        // Fuera del switch: si cambia el estado, la sesión abierta no se cierra.
+        .fullScreenCover(item: $sesion) { s in
+            SesionVista(rutina: s.rutina, estadoInicial: s.estadoInicial) { sesion = nil }
+        }
+        .onAppear {
+            // Solo capturas (`-estado descanso|serie|fin`); con datos reales llega nil.
+            if ["descanso", "serie", "fin"].contains(estadoInicial), sesion == nil, let rutina, !rutina.ejercicios.isEmpty {
+                sesion = SesionAbierta(rutina: rutina, estadoInicial: estadoInicial)
             }
         }
     }
 
-    // MARK: Centro
+    // MARK: Sin entreno
 
-    private var centro: some View {
-        VStack(alignment: .leading, spacing: Hueco.s6) {
-            if let ej = maquina.ejercicio, maquina.fase != .terminada {
-                VStack(alignment: .leading, spacing: Hueco.s3) {
-                    Rotulo(texto: "Ejercicio \(maquina.indice + 1) de \(maquina.rutina.ejercicios.count)")
-                    Text(ej.nombre)
-                        .font(Tipo.titulo)
-                        .foregroundStyle(Tinta.i10)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                }
-                HStack(spacing: Hueco.s14) {
-                    Cifra(rotulo: "Serie", valor: "\(maquina.serie)", unidad: "de \(ej.series)")
-                    Cifra(rotulo: "Repeticiones", valor: ej.reps)
-                    Cifra(rotulo: "Carga", valor: ej.cargaKg.map(Formato.kg) ?? "Corporal", unidad: ej.cargaKg == nil ? nil : "kg")
-                }
-                reloj(ej)
-            } else {
-                cierre
-            }
-            Spacer(minLength: 0)
-            botones
-            Barra(fraccion: maquina.progreso, alto: 10)
+    private func aviso(titulo: String, texto: String) -> some View {
+        VStack(alignment: .leading, spacing: Hueco.s8) {
+            EncabezadoTV(ceja: Textos.entrenoCeja, titulo: titulo)
+            Text(texto)
+                .font(Tipo.cuerpo)
+                .foregroundStyle(Tinta.i8)
+                .lineLimit(3)
         }
+        .frame(maxWidth: 1200, alignment: .leading)
     }
 
-    @ViewBuilder
-    private func reloj(_ ej: EjercicioTV) -> some View {
-        switch maquina.fase {
-        case .inicio:
-            bloqueReloj(rotulo: "Preparado", cifra: Formato.reloj(TimeInterval(ej.descansoSeg)), pie: "Descanso entre series: \(Formato.reloj(TimeInterval(ej.descansoSeg)))", fraccion: nil)
-        case .serie:
-            bloqueReloj(rotulo: "Serie en curso", cifra: Formato.reloj(maquina.transcurrido(ahora: ahora) ?? 0), pie: "Pulsa al terminar la serie", fraccion: nil)
-        case .descanso, .pausa:
-            let pausado: Bool = { if case .pausa = maquina.fase { return true }; return false }()
-            bloqueReloj(
-                rotulo: pausado ? "Descanso en pausa" : "Descanso",
-                cifra: Formato.reloj(maquina.restante(ahora: ahora) ?? 0),
-                pie: siguientePie,
-                fraccion: maquina.fraccionDescanso(ahora: ahora)
-            )
-        case .terminada:
-            EmptyView()
-        }
-    }
-
-    private var siguientePie: String {
-        guard let ej = maquina.ejercicio else { return "" }
-        if maquina.serie == 1 { return "A continuación: \(ej.nombre)" }
-        return "A continuación: serie \(maquina.serie) de \(ej.series)"
-    }
-
-    private func bloqueReloj(rotulo: String, cifra: String, pie: String, fraccion: Double?) -> some View {
-        Tarjeta(marco: Trazo.rule, relleno: Hueco.s6) {
-            VStack(alignment: .leading, spacing: Hueco.s2) {
-                Inscripcion(texto: rotulo)
-                Text(cifra)
-                    .font(Tipo.monumento(150))
-                    .foregroundStyle(Tinta.i10)
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .contentTransition(.numericText())
-                if let fraccion {
-                    Barra(fraccion: fraccion, alto: 14)
+    private func descanso(_ proxima: ProximaSesion?) -> some View {
+        VStack(alignment: .leading, spacing: Hueco.s10) {
+            EncabezadoTV(ceja: Textos.entrenoCeja, titulo: Textos.hoyNoToca)
+            Text(proxima == nil ? Textos.descansoSinProxima : Textos.descansoConProxima)
+                .font(Tipo.cuerpo)
+                .foregroundStyle(Tinta.i8)
+                .lineLimit(3)
+            if let proxima {
+                Tarjeta(marco: Trazo.rule, relleno: Hueco.s8) {
+                    VStack(alignment: .leading, spacing: Hueco.s4) {
+                        Rotulo(texto: Textos.proximaRotulo)
+                        Text(Formato.cuando(enDias: proxima.enDias, diaSemana: proxima.diaSemana))
+                            .font(Tipo.rango)
+                            .tracking(6)
+                            .textCase(.uppercase)
+                            .foregroundStyle(Tinta.i10)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
+                        Text(proxima.nombre)
+                            .font(Tipo.titular)
+                            .foregroundStyle(Tinta.i9)
+                            .lineLimit(2)
+                        Text(Textos.numeroEjercicios(proxima.ejercicios))
+                            .font(Tipo.cuerpo)
+                            .foregroundStyle(Tinta.i8)
+                    }
                 }
-                Text(pie).font(Tipo.cuerpo).foregroundStyle(Tinta.i8)
+                .accessibilityElement(children: .combine)
+                .frame(maxWidth: 900)
             }
         }
-        .accessibilityElement(children: .combine)
+        .frame(maxWidth: 1200, alignment: .leading)
     }
 
-    private var cierre: some View {
-        Tarjeta(marco: Trazo.frame, relleno: Hueco.s14) {
-            VStack(alignment: .leading, spacing: Hueco.s6) {
-                Inscripcion(texto: "Sesión cerrada")
-                Text("\(maquina.hechas)")
-                    .font(Tipo.monumento())
-                    .foregroundStyle(Tinta.i10)
-                Text("series hechas de \(maquina.rutina.nombre.lowercased())")
-                    .font(Tipo.titular)
-                    .foregroundStyle(Tinta.i9)
-                Text("Regístrala en el iPhone: la misión enlazada se marca sola.")
-                    .font(Tipo.cuerpo)
+    // MARK: La rutina antes de empezar
+
+    private func resumen(_ r: RutinaTV) -> some View {
+        HStack(alignment: .top, spacing: Hueco.s14) {
+            VStack(alignment: .leading, spacing: Hueco.s8) {
+                EncabezadoTV(ceja: Textos.entrenoCeja, titulo: r.nombre, subtitulo: r.dia)
+                HStack(spacing: Hueco.s8) {
+                    Cifra(rotulo: "Ejercicios", valor: "\(r.ejercicios.count)")
+                    Cifra(rotulo: "Series", valor: "\(r.seriesTotales)")
+                }
+                Text(Textos.entrenoAyuda)
+                    .font(Tipo.cuerpoSm)
                     .foregroundStyle(Tinta.i8)
-                    // Sin esto la frase salía cortada con puntos suspensivos.
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-    }
-
-    // MARK: Botones
-
-    private var textoPrincipal: String {
-        switch maquina.fase {
-        case .inicio: return "Empezar"
-        case .serie: return "Serie hecha"
-        case .descanso, .pausa: return "Saltar descanso"
-        case .terminada: return "Otra vez"
-        }
-    }
-
-    private var botones: some View {
-        HStack(spacing: Hueco.s8) {
-            Button(textoPrincipal) {
-                if maquina.fase == .terminada {
-                    maquina = MaquinaSesion(rutina: maquina.rutina)
-                } else {
-                    maquina.pulsar(ahora: Date())
+                    .lineLimit(3)
+                Button(r.hecha ? "Repetir sesión" : "Empezar") {
+                    sesion = SesionAbierta(rutina: r, estadoInicial: nil)
                 }
+                .buttonStyle(EstiloFoco(invertido: true))
+                .prefersDefaultFocus(in: espacioFoco)
+                .accessibilityIdentifier("empezarSesion")
+                Text(Textos.entrenoNoRegistra)
+                    .font(Tipo.cuerpoSm)
+                    .foregroundStyle(Tinta.i6)
+                    .lineLimit(3)
             }
-            .buttonStyle(EstiloFoco(invertido: true))
-            .prefersDefaultFocus(in: espacioFoco)
+            .frame(width: 640, alignment: .leading)
 
-            if case .descanso = maquina.fase {
-                Button("Pausa") { maquina.alternarPausa(ahora: Date()) }
-                    .buttonStyle(EstiloFoco())
-            } else if case .pausa = maquina.fase {
-                Button("Seguir") { maquina.alternarPausa(ahora: Date()) }
-                    .buttonStyle(EstiloFoco())
-            }
+            ListaPrescrita(ejercicios: r.ejercicios)
         }
     }
 }
 
-// MARK: Columna de la rutina
+/// Lo prescrito de un vistazo. No tiene foco porque no hay nada que hacer en ella.
+private struct ListaPrescrita: View {
+    let ejercicios: [EjercicioTV]
 
-private struct ColumnaRutina: View {
-    let maquina: MaquinaSesion
+    /// Más de lo que cabe no se aprieta: se dice cuánto queda fuera.
+    private static let capacidad = 14
+    private var visibles: ArraySlice<EjercicioTV> { ejercicios.prefix(Self.capacidad) }
+    private var columnas: [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: Hueco.s4, alignment: .top), count: ejercicios.count > 6 ? 2 : 1)
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Hueco.s6) {
-            EncabezadoTV(ceja: "IRON · hoy", titulo: maquina.rutina.nombre, subtitulo: maquina.rutina.dia)
-            VStack(spacing: Hueco.s3) {
-                ForEach(Array(maquina.rutina.ejercicios.enumerated()), id: \.element.id) { i, ej in
-                    fila(i: i, ej: ej)
+        VStack(alignment: .leading, spacing: Hueco.s4) {
+            LazyVGrid(columns: columnas, spacing: Hueco.s3) {
+                ForEach(Array(visibles.enumerated()), id: \.element.id) { i, ej in
+                    HStack(alignment: .firstTextBaseline, spacing: Hueco.s4) {
+                        Text("\(i + 1)")
+                            .font(Tipo.inscripcion)
+                            .foregroundStyle(Tinta.i6)
+                            .frame(width: 44, alignment: .leading)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(ej.nombre)
+                                .font(Tipo.cuerpo)
+                                .foregroundStyle(Tinta.i10)
+                                .lineLimit(1)
+                            Text(Formato.prescripcion(series: ej.series, reps: ej.reps, cargaKg: ej.cargaKg))
+                                .font(Tipo.cuerpoSm)
+                                .foregroundStyle(Tinta.i8)
+                                .lineLimit(1)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    .padding(Hueco.s4)
+                    .background(Tinta.i1, ignoresSafeAreaEdges: [])
+                    .overlay(Rectangle().strokeBorder(Tinta.i3, lineWidth: Trazo.hairline))
+                    .accessibilityElement(children: .combine)
                 }
             }
-            Text("\(maquina.hechas) de \(maquina.rutina.seriesTotales) series. Se registra en tu iPhone.")
-                .font(Tipo.rotulo)
-                .foregroundStyle(Tinta.i6)
-        }
-    }
-
-    private func estado(_ i: Int) -> (hecho: Bool, actual: Bool) {
-        if maquina.fase == .terminada { return (true, false) }
-        return (i < maquina.indice, i == maquina.indice)
-    }
-
-    private func fila(i: Int, ej: EjercicioTV) -> some View {
-        let (hecho, actual) = estado(i)
-        return HStack(spacing: Hueco.s4) {
-            Image(systemName: hecho ? "checkmark.square.fill" : (actual ? "square.inset.filled" : "square"))
-                .font(.system(size: 30, weight: .semibold))
-                .foregroundStyle(hecho || actual ? Tinta.i10 : Tinta.i6)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(ej.nombre)
-                    .font(Tipo.cuerpo)
-                    .foregroundStyle(actual ? Tinta.i10 : (hecho ? Tinta.i8 : Tinta.i9))
-                    .strikethrough(hecho, color: Tinta.i6)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                Text("\(ej.series) × \(ej.reps)\(ej.cargaKg.map { " · \(Formato.kg($0)) kg" } ?? "")")
-                    .font(Tipo.rotulo)
+            if ejercicios.count > Self.capacidad {
+                Text(Textos.yMas(ejercicios.count - Self.capacidad))
+                    .font(Tipo.cuerpoSm)
                     .foregroundStyle(Tinta.i6)
             }
-            Spacer(minLength: 0)
         }
-        .padding(Hueco.s4)
-        .background(Tinta.i1, ignoresSafeAreaEdges: [])
-        // El actual se dice con el trazo (frame), no con color.
-        .overlay(Rectangle().strokeBorder(actual ? Tinta.i10 : Tinta.i3, lineWidth: actual ? Trazo.frame : Trazo.hairline))
-        .accessibilityElement(children: .combine)
-        .accessibilityValue(hecho ? "Hecho" : (actual ? "En curso" : "Pendiente"))
-    }
-}
-
-// MARK: Columna de técnica
-
-private struct ColumnaTecnica: View {
-    let ejercicio: EjercicioTV?
-    let rutina: RutinaTV
-
-    /// Músculos de toda la rutina, sin repetir y en orden de aparición.
-    private var musculosDelDia: [String] {
-        var vistos = Set<String>()
-        return rutina.ejercicios.flatMap(\.musculos).filter { vistos.insert($0).inserted }
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: Hueco.s6) {
-            if ejercicio == nil {
-                Tarjeta(marco: Trazo.hairline, relleno: Hueco.s8) {
-                    Image(systemName: "checkmark.seal")
-                        .font(.system(size: 180, weight: .light))
-                        .foregroundStyle(Tinta.i9)
-                        .frame(maxWidth: .infinity, minHeight: 240)
-                        .accessibilityHidden(true)
-                }
-                if !musculosDelDia.isEmpty {
-                    VStack(alignment: .leading, spacing: Hueco.s3) {
-                        Rotulo(texto: "Trabajado hoy")
-                        Text(musculosDelDia.joined(separator: " · "))
-                            .font(Tipo.cuerpoSm)
-                            .foregroundStyle(Tinta.i8)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                // Cinzel no tiene minúsculas: «de» va en Outfit, como en Cifra.
-                Cifra(rotulo: "Ejercicios", valor: "\(rutina.ejercicios.count)", unidad: "de \(rutina.ejercicios.count)")
-            }
-            if let ej = ejercicio {
-                Tarjeta(marco: Trazo.hairline, relleno: Hueco.s8) {
-                    Image(systemName: ej.figura)
-                        .font(.system(size: 180, weight: .light))
-                        .foregroundStyle(Tinta.i9)
-                        .frame(maxWidth: .infinity, minHeight: 240)
-                        .accessibilityHidden(true)
-                }
-                // Con datos reales no llegan: son del catálogo cliente de IRON.
-                if !ej.musculos.isEmpty {
-                    VStack(alignment: .leading, spacing: Hueco.s3) {
-                        Rotulo(texto: "Músculos")
-                        Text(ej.musculos.joined(separator: " · "))
-                            .font(Tipo.cuerpoSm)
-                            .foregroundStyle(Tinta.i8)
-                    }
-                }
-                if !ej.tecnica.isEmpty {
-                    VStack(alignment: .leading, spacing: Hueco.s3) {
-                        Rotulo(texto: "Técnica")
-                        ForEach(ej.tecnica, id: \.self) { pista in
-                            HStack(alignment: .firstTextBaseline, spacing: Hueco.s3) {
-                                Rectangle().fill(Tinta.i10).frame(width: 10, height: 10)
-                                Text(pista).font(Tipo.cuerpoSm).foregroundStyle(Tinta.i9)
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

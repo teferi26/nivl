@@ -11,11 +11,13 @@ struct EjercicioTV: Identifiable, Equatable {
     let series: Int
     /// Repeticiones prescritas («8» o «8 a 10»).
     let reps: String
-    /// Carga prescrita; nil = peso corporal.
+    /// Carga prescrita; nil = sin carga prescrita, y entonces no se pinta.
     let cargaKg: Double?
+    /// 0 = encadena las series sin descanso.
     let descansoSeg: Int
-    /// Símbolo del sistema para la figura de técnica (monocromo).
-    let figura: String
+    /// Símbolo del sistema para la figura de técnica. nil con datos reales:
+    /// el servidor no la da y la vista no se inventa una.
+    let figura: String?
     /// El servidor no los da: quedan vacíos con datos reales y la vista los omite.
     let musculos: [String]
     let tecnica: [String]
@@ -25,11 +27,25 @@ struct RutinaTV: Equatable {
     let nombre: String
     let dia: String
     let ejercicios: [EjercicioTV]
+    /// Ya hay una sesión registrada hoy (en el iPhone).
+    var hecha = false
 
     var seriesTotales: Int { ejercicios.reduce(0) { $0 + $1.series } }
 
-    /// Cambia solo si cambia el entreno: un refresco del mismo día no reinicia la sesión en curso.
-    var clave: String { nombre + "|" + ejercicios.map(\.id).joined(separator: ",") }
+    /// Con algo que enseñar en la columna de técnica. Si no, la columna no existe.
+    var tieneTecnica: Bool {
+        ejercicios.contains { $0.figura != nil || !$0.tecnica.isEmpty || !$0.musculos.isEmpty }
+    }
+}
+
+/// El siguiente día con entreno, para cuando hoy no toca.
+struct ProximaSesion: Equatable {
+    let nombre: String
+    /// 1 lunes a 7 domingo.
+    let diaSemana: Int
+    /// 1 = mañana.
+    let enDias: Int
+    let ejercicios: Int
 }
 
 struct FilaArena: Identifiable, Equatable {
@@ -112,4 +128,5 @@ struct DatosTV: Equatable {
     let arena: [FilaArena]
     let ludus: LudusTV?
     let semana: SemanaTV
+    var proxima: ProximaSesion?
 }

@@ -49,6 +49,8 @@ struct Lanzamiento: Equatable {
     var demo = false
     var pestana: String?
     var estado: String?
+    /// Solo con la demo: vacia, sinsalud, descanso, real o larga.
+    var variante: String?
     var servidor: String?
     var clave: String?
 
@@ -69,6 +71,7 @@ struct Lanzamiento: Equatable {
             case "-nivlDemo": r.demo = valor == "1"
             case "-pestana": r.pestana = valor
             case "-estado": r.estado = valor
+            case "-variante": r.variante = valor
             case "-nivlServidor": r.servidor = valor
             case "-nivlClave": r.clave = valor
             default: break
