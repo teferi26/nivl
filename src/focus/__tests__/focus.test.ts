@@ -2,12 +2,13 @@
 import { deHhmm, diaSemana, diasEntre, esFecha, hhmm, lunesDe, sumarDias } from '@/focus/fechas';
 import { clasesDelDia, diasSeguidos, errorDeClase, finUltimaClase, minutosSemana, siguienteClase, solapes } from '@/focus/horario';
 import { METODOS, metodoPorId } from '@/focus/metodos';
-import { cumpleMision, enlazables, misionPropuesta } from '@/focus/mision';
+import { enlazables, misionPropuesta } from '@/focus/mision';
 import { formatoNota, leerNumero, media, mediaGlobal, notaNecesaria } from '@/focus/notas';
-import { horasDeBloques, inicioEstudio, planDeHoy, planHaciaExamen, progresoTemario } from '@/focus/planEstudio';
+import { horasDeBloques, inicioEstudio, planHaciaExamen, progresoTemario } from '@/focus/planEstudio';
 import {
   CONFIG_POR_DEFECTO,
   ESTADO_INICIAL,
+  OBJETIVO_LIBRE,
   acabada,
   arrancar,
   cerrarFase,
@@ -91,7 +92,7 @@ describe('pomodoro', () => {
     expect(acabada(e, t0 + 3 * 60 * MIN)).toBe(true);
     const fin = cerrarFase(e, C, t0 + 3 * 60 * MIN);
     expect(fin.focoCompleto?.minutos).toBe(25);
-    expect(fin.estado).toMatchObject({ fase: 'descanso', bloque: 1, finEn: null });
+    expect(fin.estado).toMatchObject({ fase: 'descanso', bloque: 1, finEn: null, objetivo: OBJETIVO_LIBRE });
     const saltado = cerrarFase(e, C, t0 + 10 * MIN, true);
     expect(saltado.focoCompleto).toBeNull();
     expect(saltado.estado.fase).toBe('descanso');
@@ -155,48 +156,32 @@ describe('plan de estudio automático', () => {
   const temas = (n: number, estado: 'pendiente' | 'repasando' | 'dominado' = 'pendiente') =>
     Array.from({ length: n }, (_, i) => ({ id: `t${i + 1}`, estado }));
 
-  it('reparte los temas en orden y deja el último día para el simulacro', () => {
-    const plan = planHaciaExamen({ examenId: 'e', fecha: '2026-10-28', temas: temas(6), hoy: '2026-10-21' });
+  it('reparte los temas en orden y la víspera, simulacro', () => {
+    const plan = planHaciaExamen({ examenId: 'e', fecha: '2026-10-28', temas: temas(6), hoy: '2026-10-21', minutosDia: 120 });
     expect(plan).toHaveLength(7);
     expect(plan[0]!.fecha).toBe('2026-10-21');
-    expect(plan[6]!.items).toEqual([{ examenId: 'e', temaId: null, tipo: 'simulacro' }]);
-    const estudiar = plan.map((d) => d.items.filter((i) => i.tipo === 'estudiar').map((i) => i.temaId));
-    expect(estudiar.flat()).toEqual(['t1', 't2', 't3', 't4', 't5', 't6']);
-    expect(estudiar.slice(0, 6).every((d) => d.length === 1)).toBe(true);
+    expect(plan[6]!.items.some((i) => i.tipo === 'simulacro')).toBe(true);
+    const estudiar = plan.flatMap((d) => d.items.filter((i) => i.tipo === 'estudiar').map((i) => i.temaId));
+    expect(estudiar).toEqual(['t1', 't2', 't3', 't4', 't5', 't6']);
   });
 
-  it('cada tema vuelve como repaso al día siguiente y a los tres días', () => {
-    const plan = planHaciaExamen({ examenId: 'e', fecha: '2026-10-31', temas: temas(2), hoy: '2026-10-21' });
-    const dia = (t: string, tipo: string) => plan.findIndex((d) => d.items.some((i) => i.temaId === t && i.tipo === tipo));
-    const d1 = dia('t1', 'estudiar');
-    expect(plan[d1 + 1]!.items.some((i) => i.temaId === 't1' && i.tipo === 'repasar')).toBe(true);
-    expect(plan[d1 + 3]!.items.some((i) => i.temaId === 't1' && i.tipo === 'repasar')).toBe(true);
-    // Con más días que temas, quedan separados.
-    expect(dia('t2', 'estudiar') - d1).toBeGreaterThan(1);
+  it('lo estudiado vuelve solo cuando vence su repaso (1, 3, 7...)', () => {
+    const plan = planHaciaExamen({ examenId: 'e', fecha: '2026-11-10', temas: temas(1), hoy: '2026-10-21', minutosDia: 120 });
+    const repasos = plan.filter((d) => d.items.some((i) => i.tipo === 'repasar')).map((d) => d.fecha);
+    expect(repasos.slice(0, 3)).toEqual(['2026-10-22', '2026-10-25', '2026-11-01']);
   });
 
-  it('más temas que días: varios por día, equilibrado por peso', () => {
-    const plan = planHaciaExamen({ examenId: 'e', fecha: '2026-10-25', temas: temas(9), hoy: '2026-10-21' });
-    const nuevos = plan.map((d) => d.items.filter((i) => i.tipo === 'estudiar').length);
-    expect(nuevos).toEqual([3, 3, 3, 0]);
-  });
-
-  it('lo dominado no se estudia (solo un repaso) y lo que se repasa pesa la mitad', () => {
+  it('lo visto no se estudia otra vez', () => {
     const t = [
       { id: 'a', estado: 'dominado' as const },
       { id: 'b', estado: 'repasando' as const },
       { id: 'c', estado: 'pendiente' as const },
     ];
     const plan = planHaciaExamen({ examenId: 'e', fecha: '2026-10-25', temas: t, hoy: '2026-10-21' });
-    const todos = plan.flatMap((d) => d.items);
-    expect(todos.filter((i) => i.temaId === 'a').map((i) => i.tipo)).toEqual(['repasar']);
-    expect(todos.filter((i) => i.tipo === 'estudiar').map((i) => i.temaId)).toEqual(['b', 'c']);
+    expect(plan.flatMap((d) => d.items).filter((i) => i.tipo === 'estudiar').map((i) => i.temaId)).toEqual(['c']);
   });
 
-  it('examen mañana: todo hoy y sin simulacro; examen hoy o pasado: nada', () => {
-    const p = planHaciaExamen({ examenId: 'e', fecha: '2026-10-22', temas: temas(3), hoy: '2026-10-21' });
-    expect(p).toHaveLength(1);
-    expect(p[0]!.items.map((i) => i.tipo)).toEqual(['estudiar', 'estudiar', 'estudiar']);
+  it('examen hoy o pasado: nada que proyectar', () => {
     expect(planHaciaExamen({ examenId: 'e', fecha: '2026-10-21', temas: temas(3), hoy: '2026-10-21' })).toEqual([]);
     expect(planHaciaExamen({ examenId: 'e', fecha: '2026-10-01', temas: temas(3), hoy: '2026-10-21' })).toEqual([]);
   });
@@ -204,19 +189,6 @@ describe('plan de estudio automático', () => {
   it('sin temas: solo el simulacro', () => {
     const p = planHaciaExamen({ examenId: 'e', fecha: '2026-10-24', temas: [], hoy: '2026-10-21' });
     expect(p.flatMap((d) => d.items)).toEqual([{ examenId: 'e', temaId: null, tipo: 'simulacro' }]);
-  });
-
-  it('el plan de hoy junta los exámenes, el más cercano primero', () => {
-    const hoy = planDeHoy(
-      [
-        { examenId: 'lejos', fecha: '2026-11-16', temas: temas(4) },
-        { examenId: 'cerca', fecha: '2026-11-02', temas: temas(6) },
-        { examenId: 'pasado', fecha: '2026-10-01', temas: temas(2) },
-      ],
-      '2026-10-21',
-    );
-    expect(hoy[0]!.examenId).toBe('cerca');
-    expect(hoy.some((i) => i.examenId === 'pasado')).toBe(false);
   });
 
   it('progreso del temario', () => {
@@ -247,10 +219,10 @@ describe('notas y media', () => {
       sinPeso: 0,
     });
   });
-  it('ponderada con pesos; las sin peso se reparten lo que falta', () => {
+  it('ponderada con pesos; las sin peso no se comen lo que falta por evaluar', () => {
     expect(media([{ nota: 9, sobre: 10, peso: 30 }, { nota: 5, sobre: 10, peso: 20 }]).media).toBe(7.4);
     const m = media([{ nota: 9, sobre: 10, peso: 30 }, { nota: 5, sobre: 10, peso: null }]);
-    expect(m).toMatchObject({ ponderada: true, pesoEvaluado: 100, media: 6.2 });
+    expect(m).toMatchObject({ ponderada: true, pesoEvaluado: 30, media: 9, sinPeso: 1 });
     const lleno = media([{ nota: 9, sobre: 10, peso: 100 }, { nota: 1, sobre: 10, peso: null }]);
     expect(lleno).toMatchObject({ media: 9, sinPeso: 1 });
   });
@@ -260,7 +232,15 @@ describe('notas y media', () => {
   });
   it('qué nota hace falta en lo que queda', () => {
     expect(notaNecesaria([{ nota: 4, sobre: 10, peso: 40 }], 5)).toEqual({ tipo: 'necesaria', necesaria: 5.67 });
-    expect(notaNecesaria([{ nota: 10, sobre: 10, peso: 60 }], 5)).toEqual({ tipo: 'asegurado' });
+    // Sin arrastrar el redondeo: 6 (40 %) y 7 (20 %) piden un 3 justo.
+    expect(notaNecesaria([{ nota: 6, sobre: 10, peso: 40 }, { nota: 7, sobre: 10, peso: 20 }], 5)).toEqual({ tipo: 'necesaria', necesaria: 3 });
+    // Con algo por evaluar nunca se dice «asegurado»: puede haber nota mínima.
+    expect(notaNecesaria([{ nota: 10, sobre: 10, peso: 60 }], 5)).toEqual({ tipo: 'encaminada' });
+    expect(notaNecesaria([{ nota: 8, sobre: 10, peso: 100 }], 5)).toEqual({ tipo: 'asegurado' });
+    // Una nota sin peso no borra lo que queda.
+    expect(notaNecesaria([{ nota: 6, sobre: 10, peso: 40 }, { nota: 9, sobre: 10, peso: null }], 5)).toEqual({ tipo: 'necesaria', necesaria: 4.33 });
+    // Objetivo propio.
+    expect(notaNecesaria([{ nota: 9, sobre: 10, peso: 40 }], 9)).toEqual({ tipo: 'necesaria', necesaria: 9 });
     expect(notaNecesaria([{ nota: 0, sobre: 10, peso: 70 }], 5).tipo).toBe('imposible');
     expect(notaNecesaria([{ nota: 7, sobre: 10, peso: null }], 5)).toEqual({ tipo: 'sin_datos' });
   });
@@ -322,14 +302,10 @@ describe('misión que paga el bloque (un solo gesto)', () => {
   ];
   it('propone la que nombra la asignatura, sin tildes', () => {
     expect(misionPropuesta(ms, 'calculo ii')?.id).toBe('2');
-    expect(misionPropuesta(ms, 'Historia')?.id).toBe('1');
+    // «Leer 20 páginas» no se adjunta sola: la que habla de estudiar.
+    expect(misionPropuesta(ms, 'Historia')?.id).toBe('2');
     expect(misionPropuesta([ms[2]!, ms[3]!], 'Estructuras')).toBeNull();
     expect(enlazables(ms).map((m) => m.id)).toEqual(['1', '2']);
-  });
-  it('solo un bloque completo con misión paga', () => {
-    expect(cumpleMision({ minutos: 25 }, 'm')).toBe(true);
-    expect(cumpleMision(null, 'm')).toBe(false);
-    expect(cumpleMision({ minutos: 25 }, null)).toBe(false);
   });
 });
 

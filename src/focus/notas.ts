@@ -2,10 +2,9 @@
 //
 // Todas las notas se pasan a la escala de 10 (`nota / sobre × 10`).
 //   · Ninguna lleva peso → media simple.
-//   · Alguna lleva peso (porcentaje de la nota final) → media PONDERADA:
-//     las que no lo llevan se reparten a partes iguales lo que falte hasta
-//     100; si los pesos ya suman 100 o más, las que no lo llevan no cuentan
-//     (y se dice: `sinPeso`).
+//   · Alguna lleva peso (porcentaje de la nota final) → media PONDERADA de
+//     las que lo llevan. Las que no lo llevan no cuentan y se dice (`sinPeso`):
+//     nunca se quedan con lo que aún no se ha evaluado.
 // Además, cuánto queda por evaluar y qué nota hace falta en lo que queda para
 // llegar a un objetivo (el 5 para aprobar, o la que sea).
 
@@ -39,41 +38,39 @@ export function media(notas: readonly NotaParaMedia[]): Media {
   if (conPeso.length === 0) {
     return { media: dos(v.reduce((s, n) => s + sobre10(n), 0) / v.length), ponderada: false, pesoEvaluado: 0, sinPeso: 0 };
   }
-  const sinPeso = v.filter((n) => !pesoValido(n.peso));
-  const suma = conPeso.reduce((s, n) => s + (n.peso as number), 0);
-  const resto = Math.max(0, 100 - suma);
-  const pesoCadaSin = sinPeso.length > 0 && resto > 0 ? resto / sinPeso.length : 0;
-  const partes = [
-    ...conPeso.map((n) => ({ x: sobre10(n), p: n.peso as number })),
-    ...(pesoCadaSin > 0 ? sinPeso.map((n) => ({ x: sobre10(n), p: pesoCadaSin })) : []),
-  ];
-  const pesoTotal = partes.reduce((s, q) => s + q.p, 0);
+  const pesoTotal = conPeso.reduce((s, n) => s + (n.peso as number), 0);
   return {
-    media: dos(partes.reduce((s, q) => s + q.x * q.p, 0) / pesoTotal),
+    media: dos(conPeso.reduce((s, n) => s + sobre10(n) * (n.peso as number), 0) / pesoTotal),
     ponderada: true,
     pesoEvaluado: Math.min(100, dos(pesoTotal)),
-    sinPeso: pesoCadaSin > 0 ? 0 : sinPeso.length,
+    sinPeso: v.length - conPeso.length,
   };
 }
 
 export type Necesaria =
+  /** Ya no queda nada por evaluar y el objetivo está. */
   | { tipo: 'asegurado' }
+  /** Con lo evaluado ya se llega, pero queda por evaluar: puede haber nota mínima. */
+  | { tipo: 'encaminada' }
   | { tipo: 'imposible'; necesaria: number }
   | { tipo: 'necesaria'; necesaria: number }
   | { tipo: 'sin_datos' };
 
 /**
- * Con la media ponderada de lo evaluado y el porcentaje que queda por evaluar,
- * la nota (sobre 10) que hace falta en lo que queda para acabar con `objetivo`.
+ * Con lo evaluado y el porcentaje que queda por evaluar, la nota (sobre 10) que
+ * hace falta en lo que queda para acabar con `objetivo`. Se calcula con las
+ * notas sin redondear. «Asegurado» solo si ya no queda nada por evaluar.
  */
 export function notaNecesaria(notas: readonly NotaParaMedia[], objetivo = 5): Necesaria {
-  const m = media(notas);
-  if (m.media === null || !m.ponderada) return { tipo: 'sin_datos' };
-  const queda = 100 - m.pesoEvaluado;
-  if (queda <= 0) return { tipo: 'sin_datos' };
-  const llevo = (m.media * m.pesoEvaluado) / 100;
+  const conPeso = notas.filter(valida).filter((n) => pesoValido(n.peso));
+  if (conPeso.length === 0) return { tipo: 'sin_datos' };
+  const suma = conPeso.reduce((s, n) => s + (n.peso as number), 0);
+  const escala = suma > 100 ? 100 / suma : 1;
+  const llevo = conPeso.reduce((s, n) => s + (sobre10(n) * (n.peso as number) * escala) / 100, 0);
+  const queda = 100 - Math.min(100, suma);
+  if (queda <= 0) return llevo >= objetivo ? { tipo: 'asegurado' } : { tipo: 'sin_datos' };
   const falta = ((objetivo - llevo) * 100) / queda;
-  if (falta <= 0) return { tipo: 'asegurado' };
+  if (falta <= 0) return { tipo: 'encaminada' };
   const necesaria = Math.round(falta * 100) / 100;
   return necesaria > 10 ? { tipo: 'imposible', necesaria } : { tipo: 'necesaria', necesaria };
 }

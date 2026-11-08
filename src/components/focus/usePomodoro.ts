@@ -6,9 +6,13 @@
 //   de segundo plano (AppState) aunque la fase acabara fuera.
 // · Al arrancar o reanudar, notificación local para el final; al pausar,
 //   parar o cerrar, se cancela.
+// · Con un foco en marcha la pantalla no se apaga, y se cuentan las salidas de
+//   la app (informativo: nunca toca el pago).
 // · Al acabar una fase: campana (si está activada) y `onFin` con lo que se
 //   cerró. Un foco terminado entero lo registra y lo paga quien llama
 //   (useFocusHoy), UNA vez por `idFase`.
+// · Una fase acabada no se cierra hasta `puedeCerrar` (en frío, los datos de
+//   FOCUS aún no han llegado): sigue guardada en el teléfono y no se pierde.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
@@ -16,11 +20,15 @@ import { vibrar } from '@/design/haptics';
 import {
   CONFIG_POR_DEFECTO,
   ESTADO_INICIAL,
+  OBJETIVO_LIBRE,
   acabada,
   arrancar,
   cerrarFase,
   detener,
+  marcarSalida,
+  marcarVuelta,
   pausar,
+  situacion,
   type Cierre,
   type ConfigPomodoro,
   type EstadoPomodoro,
@@ -28,6 +36,7 @@ import {
 } from '@/focus/pomodoro';
 import { avisarFin, cancelarAvisoFin, guardarConfig, guardarEstado, leerConfig, leerEstado } from '@/focus/temporizador';
 import { t } from '@/i18n';
+import { mantenerDespierto } from './keepAwake';
 import { sonarFin } from './sonidoFin';
 
 export interface UsePomodoro {
@@ -35,7 +44,8 @@ export interface UsePomodoro {
   config: ConfigPomodoro;
   estado: EstadoPomodoro;
   ahora: number;
-  empezar: (objetivo?: Objetivo) => void;
+  /** `minutos`: una duración distinta a la de los ajustes (el simulacro). Solo al arrancar de cero. */
+  empezar: (objetivo?: Objetivo, minutos?: number) => void;
   pausar: () => void;
   saltar: () => void;
   parar: () => void;
@@ -48,7 +58,7 @@ function textoAviso(e: EstadoPomodoro): { titulo: string; cuerpo: string } {
   return { titulo: t('focus:aviso.descansoTitulo'), cuerpo: t('focus:aviso.descansoCuerpo') };
 }
 
-export function usePomodoro(uid: string | null, onFin: (c: Cierre, config: ConfigPomodoro) => void): UsePomodoro {
+export function usePomodoro(uid: string | null, onFin: (c: Cierre, config: ConfigPomodoro) => void, puedeCerrar = true): UsePomodoro {
   const [listo, setListo] = useState(false);
   const [config, setConfig] = useState<ConfigPomodoro>(CONFIG_POR_DEFECTO);
   const [estado, setEstado] = useState<EstadoPomodoro>(ESTADO_INICIAL);
@@ -57,6 +67,8 @@ export function usePomodoro(uid: string | null, onFin: (c: Cierre, config: Confi
   ref.current = { estado, config };
   const onFinRef = useRef(onFin);
   onFinRef.current = onFin;
+  const puedeCerrarRef = useRef(puedeCerrar);
+  puedeCerrarRef.current = puedeCerrar;
 
   // Cargar lo guardado.
   useEffect(() => {
@@ -66,8 +78,10 @@ export function usePomodoro(uid: string | null, onFin: (c: Cierre, config: Confi
       const c = await leerConfig(uid);
       const e = await leerEstado(uid, c);
       if (!vivo) return;
+      // Lo elegido y no empezado no sobrevive a cerrar la app: mañana manda el plan.
+      const limpio = situacion(e) === 'parado' && e.fase === 'foco' ? { ...e, objetivo: OBJETIVO_LIBRE } : e;
       setConfig(c);
-      setEstado(e);
+      setEstado(marcarVuelta(limpio, Date.now()));
       setAhora(Date.now());
       setListo(true);
     })();
@@ -76,10 +90,19 @@ export function usePomodoro(uid: string | null, onFin: (c: Cierre, config: Confi
     };
   }, [uid]);
 
-  const poner = useCallback(
+  // Guarda sin tocar el aviso programado (salir y volver no cambian `finEn`).
+  const guardar = useCallback(
     (e: EstadoPomodoro) => {
+      ref.current = { ...ref.current, estado: e };
       setEstado(e);
       if (uid) void guardarEstado(uid, e);
+    },
+    [uid],
+  );
+
+  const poner = useCallback(
+    (e: EstadoPomodoro) => {
+      guardar(e);
       if (e.finEn !== null) {
         const { titulo, cuerpo } = textoAviso(e);
         void avisarFin(e.finEn, titulo, cuerpo);
@@ -87,7 +110,7 @@ export function usePomodoro(uid: string | null, onFin: (c: Cierre, config: Confi
         void cancelarAvisoFin();
       }
     },
-    [uid],
+    [guardar],
   );
 
   // Cerrar la fase si ha acabado (al repintar o al volver a la app).
@@ -95,7 +118,7 @@ export function usePomodoro(uid: string | null, onFin: (c: Cierre, config: Confi
     const n = Date.now();
     setAhora(n);
     const { estado: e, config: c } = ref.current;
-    if (!acabada(e, n)) return;
+    if (!puedeCerrarRef.current || !acabada(e, n)) return;
     const cierre = cerrarFase(e, c, n);
     poner(cierre.estado);
     // La campana solo si acaba con la app delante (fuera ya sonó el aviso).
@@ -111,19 +134,41 @@ export function usePomodoro(uid: string | null, onFin: (c: Cierre, config: Confi
     return () => clearInterval(reloj);
   }, [enMarcha, revisar]);
 
+  const concentrado = enMarcha && estado.fase === 'foco';
+  useEffect(() => {
+    if (!concentrado) return;
+    mantenerDespierto(true);
+    return () => mantenerDespierto(false);
+  }, [concentrado]);
+
   useEffect(() => {
     if (!listo) return;
     revisar();
     const sub = AppState.addEventListener('change', (s) => {
-      if (s === 'active') revisar();
+      const e = ref.current.estado;
+      if (s === 'background') {
+        const fuera = marcarSalida(e, Date.now());
+        if (fuera !== e) guardar(fuera);
+      } else if (s === 'active') {
+        const vuelta = marcarVuelta(e, Date.now());
+        if (vuelta !== e) guardar(vuelta);
+        revisar();
+      }
     });
     return () => sub.remove();
-  }, [listo, revisar]);
+  }, [listo, revisar, guardar]);
+
+  // La fase acabada mientras cargaban los datos se cierra en cuanto llegan.
+  useEffect(() => {
+    if (listo && puedeCerrar) revisar();
+  }, [listo, puedeCerrar, revisar]);
 
   const empezar = useCallback(
-    (objetivo?: Objetivo) => {
+    (objetivo?: Objetivo, minutos?: number) => {
       vibrar('seleccion');
-      poner(arrancar(ref.current.estado, ref.current.config, Date.now(), objetivo));
+      const e = ref.current.estado;
+      const base = minutos !== undefined && e.idFase === null && e.pausaRestante === null ? { ...e, minutosFase: minutos } : e;
+      poner(arrancar(base, ref.current.config, Date.now(), objetivo));
       setAhora(Date.now());
     },
     [poner],
@@ -136,7 +181,7 @@ export function usePomodoro(uid: string | null, onFin: (c: Cierre, config: Confi
     const cierre = cerrarFase(ref.current.estado, ref.current.config, Date.now(), true);
     poner(cierre.estado);
   }, [poner]);
-  const parar = useCallback(() => poner(detener(ref.current.estado)), [poner]);
+  const parar = useCallback(() => poner({ ...detener(ref.current.estado), objetivo: OBJETIVO_LIBRE }), [poner]);
   const fijarObjetivo = useCallback((o: Objetivo) => poner({ ...ref.current.estado, objetivo: o }), [poner]);
   const fijarConfig = useCallback(
     (c: ConfigPomodoro) => {

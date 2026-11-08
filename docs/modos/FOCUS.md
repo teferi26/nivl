@@ -37,16 +37,29 @@ Rama `nivl-1011/focus-v2`. Encargo: punto 5 de `coordinacion-winter-arc/FEEDBACK
 | Seis idiomas (es, en, de, fr, it, pt) | `src/i18n/*/focus.json` |
 | Tablas con RLS de dueño, referencias de la misma cuenta, dueño fijo, topes por cuenta, exportación v11 y borrado en cascada | 0076 (probada en PGlite con `scripts/test-export-full-schema.mjs`) |
 
+## Tanda «completo» (1.1): lo que se añadió
+
+Auditado con tres perfiles (opositora, universitario, bachillerato). Galería: `/kit/focus` → Personas.
+
+- **Plan v2** (`planEstudio.ts`, `resumen.ts`): lo visto no vuelve a «estudiar»; un solo calendario de repasos; tope de minutos al día (`prefs.minutosDia`), prioridad por urgencia × peso × pendiente, lo que no cabe va a `fuera` con aviso; simulacro la víspera; cada bloque lleva su motivo.
+- **Primeros 30 s**: arranque guiado en tres pasos (`ArranqueGuiado`, `arranqueFlujo.ts`), con misión automática fácil de lunes a viernes.
+- **Ciclo del bloque**: pantalla de concentración, hoja «¿Cómo te ha ido?», `cierreBloque.ts`, vuelta tras un hueco (`hueco.ts`).
+- **Agenda** (pestaña Exámenes): semana, entregas y deberes (`kind='entrega'`), examen sin fecha o estimado, editar, notas con objetivo, simulacro tipo test (título `Test · `, fuera de la media).
+- **Temario**: lotes, secciones, vueltas, renombrar, flashcards en lote o con IA (Pro), horario rápido, estadísticas.
+- **Un solo gesto**: `actoEstudio.ts` + `propagarActo(…, 'estudio', …, { soloMisiones })`. Paga por minutos reales (`minutosObjetivo`, `misionesCumplidas`); FOCUS sigue sin XP propio. Lo dictado al coach no paga.
+- **Coach**: `_shared/academico.ts` y `academico_datos.ts`, solo con `x-nivl-modo: focus`; herramientas `marcar_tema` y `apuntar_estudio`.
+- **Offline**: `colaSesiones.ts` guarda el bloque y reintenta por `clientId`.
+
+**Orden de despliegue:** aplicar la 0112 (columnas) con `node scripts/apply-migrations.mjs --hasta=0112`, publicar la OTA, esperar a que esté adoptada y aplicar la 0113 (link `estudio`). Antes de la OTA, Edge Functions del coach.
+
 ## No hecho (y por qué)
 
-- **Bloquear distracciones de verdad**: en iOS exige la API de Screen Time (Family Controls, con permiso especial de Apple y binario nuevo). Se ofrece el recordatorio honesto de No molestar.
-- **Sonido propio en la notificación**: pide registrar el archivo en `app.json` (binario nuevo). La notificación suena con el sonido del sistema; la campana propia suena con la app delante.
-- **Que el coach lea temario, exámenes y notas**: tocar el coach por dentro (contexto y herramientas en `supabase/functions/`) estaba fuera de este encargo. Siguiente paso natural: un estudio `_shared/estudio.ts` con exámenes, progreso del temario, horas y repasos pendientes, y una herramienta para marcar temas.
-- **Importar el temario desde un PDF o una foto**: útil, pero es trabajo de IA con coste; mejor detrás del coach.
-- **Calendario del sistema y avisos de clase**: el horario vive en FOCUS; avisar antes de cada clase pediría otra familia de avisos en `notifications.ts`.
-- **Widget o Live Activity con el reloj**: nativo, binario nuevo.
-- **Estadísticas largas (horas por mes, rachas de estudio)**: la lógica de días seguidos está (`diasSeguidos`), falta pantalla; sin XP.
-- **Compartir mazos entre compañeros**: social, con moderación: fuera de alcance.
+- **Bloquear otras apps**: en iOS exige Screen Time (Family Controls, permiso especial de Apple, extensiones y binario nuevo). Hay pantalla de concentración, keep-awake, recuento informativo de salidas y la guía de No molestar y Acceso guiado.
+- **Sonido propio en la notificación, widget o Live Activity**: nativo, binario nuevo.
+- **Importar temario desde PDF o foto**: mejor detrás del coach, con coste medido.
+- **Avisos antes de clases y entregas, y calendario del sistema**: otra familia de avisos en `notifications.ts`.
+- **Nota de admisión sobre 14**: el objetivo por asignatura llega a 10.
+- **Compartir mazos**: social, con moderación.
 
 ## Riesgos
 

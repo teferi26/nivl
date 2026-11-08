@@ -264,7 +264,7 @@ Deno.test('L1 consultar_dia: fecha explícita y vacía (= hoy del turno)', async
     ok(manana.includes(`Registrado el ${HOY} (día anterior)`) && manana.includes('Sentadilla 100×5'));
     const def = TOOL_DEFS.find((t) => t.name === 'consultar_dia')!;
     ok(def && !('strict' in def), 'sin strict');
-    equal(TOOL_DEFS.length, 26);
+    equal(TOOL_DEFS.length, 28);
   } finally {
     fake.restaurar();
   }

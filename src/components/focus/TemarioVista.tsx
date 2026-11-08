@@ -1,24 +1,27 @@
 // NIVL · Mundo FOCUS: Temario (pestaña 2 de la lámina: «Hoy · Temario ·
 // Exámenes · Coach»). Pura. Todo lo que se estudia y cómo:
-//   · Asignaturas (chips) y el temario de la elegida, con su estado.
+//   · Asignaturas (chips) y el temario de la elegida: por secciones plegables,
+//     con filtro por estado y vueltas.
 //   · Repasos de hoy (repetición espaciada 1, 3, 7, 14, 30) y flashcards.
-//   · Horas de estudio de la semana por asignatura.
+//   · Horas de estudio de la semana por asignatura (el detalle, en su hoja).
 //   · Horario de clases.
 //   · Métodos de estudio explicados.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Entrada, ErrorSistema } from '@/components/arena';
 import { Screen, Skeleton } from '@/components/ui';
 import { space, type as tipo } from '@/design/tokens';
 import { formatoHoras } from '@/focus/horario';
 import { METODOS, type Metodo } from '@/focus/metodos';
 import type { HorasAsignatura } from '@/focus/resumen';
+import { agruparPorSeccion, conteoPorEstado, FILTROS_TEMA, filtrarTemas, numeroDeTema, puedeEmpezarVuelta, seccionQueToca, type FiltroTema } from '@/focus/temarioLista';
 import type { Asignatura, Clase, Mazo, Tema } from '@/focus/tipos';
 import { t } from '@/i18n';
 import { F } from './estilo';
-import { FilaTema, horaClase, nombreDia } from './HojasFocus';
-import { BarraFocus, BotonFocus, ChipFocus, FilaFocus, Rotulo, TarjetaFocus, TituloFocus, VacioFocus, textoFocus } from './Piezas';
+import { casillaDe, horaClase, nombreDia } from './HojasFocus';
+import { BarraFocus, BotonFocus, Casilla, ChipFocus, FilaFocus, Rotulo, TarjetaFocus, TituloFocus, VacioFocus, textoFocus } from './Piezas';
 
 export interface TemarioVistaProps {
   estado: 'cargando' | 'listo' | 'error';
@@ -39,13 +42,18 @@ export interface TemarioVistaProps {
     onAnadirAsignatura: () => void;
     onAnadirTemas: () => void;
     onAlternarTema: (t: Tema) => void;
-    onBorrarTema: (t: Tema) => void;
+    onEditarTema: (t: Tema) => void;
+    onVuelta: (a: Asignatura) => void;
     onRepasar: () => void;
     onNuevoMazo: () => void;
     onNuevaTarjeta: (mazoId: string | null) => void;
+    onPegarTarjetas: (mazoId: string | null) => void;
+    onTarjetasIa: (mazoId: string | null) => void;
+    onHoras: () => void;
     onDia: (d: number) => void;
     onAnadirClase: () => void;
-    onBorrarClase: (c: Clase) => void;
+    onEditarClase: (c: Clase) => void;
+    onCopiarDia: () => void;
     onMetodo: (m: Metodo) => void;
     onReintentar: () => void;
   };
@@ -69,28 +77,113 @@ function Asignaturas({ p }: { p: TemarioVistaProps }) {
   );
 }
 
+/** Sin secciones, cuántos temas se ven antes de «Ver todos». */
+const TEMAS_A_LA_VISTA = 15;
+/** Por debajo de esto el filtro estorba más que ayuda. */
+const MIN_PARA_FILTRAR = 6;
+
+function FilaTemaLista({ tema, numero, primera, onAlternar, onEditar }: { tema: Tema; numero: number | null; primera: boolean; onAlternar: () => void; onEditar: () => void }) {
+  const estado = t(`focus:estado.${tema.estado}`);
+  return (
+    <FilaFocus
+      primera={primera}
+      onPress={onAlternar}
+      onLongPress={onEditar}
+      accessibilityLabel={t('focus:hoy.temaA11y', { nombre: tema.nombre, estado })}
+      accessibilityHint={t('focus:hoy.temaHint')}
+      accessibilityActions={[{ name: 'longpress', label: t('focus:fondo.temas.editar') }]}
+      onAccessibilityAction={(e) => e.nativeEvent.actionName === 'longpress' && onEditar()}
+    >
+      <View style={styles.izq}>
+        <Casilla estado={casillaDe(tema.estado)} />
+        <Text style={[textoFocus.fila, styles.flex]} maxFontSizeMultiplier={1.35} numberOfLines={2}>
+          {numero === null ? tema.nombre : t('focus:fondo.temas.numerado', { n: numero, nombre: tema.nombre })}
+        </Text>
+      </View>
+      <Text style={textoFocus.detalle} maxFontSizeMultiplier={1.35}>
+        {estado}
+      </Text>
+      <Pressable onPress={onEditar} hitSlop={14} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.lapiz}>
+        <Ionicons name="create-outline" size={16} color={F.rotulo} />
+      </Pressable>
+    </FilaFocus>
+  );
+}
+
 function Temario({ p }: { p: TemarioVistaProps }) {
+  const [filtro, setFiltro] = useState<FiltroTema>('todos');
+  const [abiertas, setAbiertas] = useState<Record<string, boolean>>({});
+  const [verTodos, setVerTodos] = useState(false);
   const a = p.asignaturas.find((x) => x.id === p.elegida);
   if (!a) return null;
   const dominados = p.temas.filter((x) => x.estado === 'dominado').length;
+  const conteo = conteoPorEstado(p.temas);
+  const numeros = new Map(p.temas.map((x, i) => [x.id, numeroDeTema(x.nombre, i + 1)]));
+  const grupos = agruparPorSeccion(filtrarTemas(p.temas, filtro));
+  const conSecciones = grupos.some((g) => g.seccion !== null);
+  const laQueToca = seccionQueToca(grupos);
+  const abierta = (k: string | null) => abiertas[k ?? ''] ?? (filtro !== 'todos' || k === laQueToca);
+  const fila = (x: Tema, primera: boolean) => (
+    <FilaTemaLista key={x.id} tema={x} numero={numeros.get(x.id) ?? null} primera={primera} onAlternar={() => p.acciones.onAlternarTema(x)} onEditar={() => p.acciones.onEditarTema(x)} />
+  );
+  const sinSeccion = grupos[0]?.temas ?? [];
+  const recortar = !conSecciones && !verTodos && sinSeccion.length > TEMAS_A_LA_VISTA;
   return (
     <TarjetaFocus>
       <Rotulo texto={t('focus:hoy.temarioRotulo', { asignatura: a.nombre })} derecha={t('focus:temario.dominados', { n: dominados, total: p.temas.length })} />
       {p.temas.length > 0 ? (
         <View style={styles.progreso}>
           <BarraFocus ratio={p.progreso / 100} style={styles.flex} />
-          <Text style={textoFocus.detalle}>{t('focus:hoy.temarioPct', { pct: p.progreso })}</Text>
+          <Text style={textoFocus.detalle}>{a.vuelta > 1 ? t('focus:fondo.temas.pctVuelta', { pct: p.progreso, n: a.vuelta }) : t('focus:hoy.temarioPct', { pct: p.progreso })}</Text>
         </View>
       ) : (
         <Text style={[textoFocus.cuerpo, styles.arriba]} maxFontSizeMultiplier={1.5}>
           {t('focus:temario.vacio')}
         </Text>
       )}
+      {p.temas.length >= MIN_PARA_FILTRAR ? (
+        <View style={styles.filtros}>
+          {FILTROS_TEMA.map((f) => (
+            <ChipFocus key={f} titulo={t(`focus:fondo.temas.filtro.${f}`, { n: conteo[f] })} activo={f === filtro} onPress={() => setFiltro(f)} />
+          ))}
+        </View>
+      ) : null}
       <View style={styles.arriba}>
-        {p.temas.map((x, i) => (
-          <FilaTema key={x.id} tema={x} primera={i === 0} onPress={() => p.acciones.onAlternarTema(x)} onLongPress={() => p.acciones.onBorrarTema(x)} />
-        ))}
+        {grupos.length === 0 && p.temas.length > 0 ? (
+          <Text style={textoFocus.cuerpo} maxFontSizeMultiplier={1.5}>
+            {t('focus:fondo.temas.nadaConFiltro')}
+          </Text>
+        ) : conSecciones ? (
+          grupos.map((g, i) => {
+            const k = g.seccion;
+            const open = abierta(k);
+            return (
+              <View key={k ?? ''}>
+                <FilaFocus
+                  primera={i === 0}
+                  onPress={() => setAbiertas((m) => ({ ...m, [k ?? '']: !open }))}
+                  accessibilityLabel={t('focus:fondo.temas.seccionA11y', { nombre: k ?? t('focus:fondo.temas.sinSeccion'), vistos: g.vistos, total: g.temas.length })}
+                >
+                  <View style={styles.izq}>
+                    <Ionicons name={open ? 'chevron-down' : 'chevron-forward'} size={16} color={F.rotulo} />
+                    <Text style={[textoFocus.filaFuerte, styles.flex]} maxFontSizeMultiplier={1.35} numberOfLines={2}>
+                      {k ?? t('focus:fondo.temas.sinSeccion')}
+                    </Text>
+                  </View>
+                  <Text style={textoFocus.detalle} maxFontSizeMultiplier={1.35}>
+                    {t('focus:hoy.deTotal', { n: g.vistos, total: g.temas.length })}
+                  </Text>
+                </FilaFocus>
+                {open ? g.temas.map((x) => fila(x, false)) : null}
+              </View>
+            );
+          })
+        ) : (
+          (recortar ? sinSeccion.slice(0, TEMAS_A_LA_VISTA) : sinSeccion).map((x, i) => fila(x, i === 0))
+        )}
       </View>
+      {recortar ? <BotonFocus titulo={t('focus:fondo.temas.verTodos', { count: sinSeccion.length })} variante="texto" pequeno onPress={() => setVerTodos(true)} style={styles.arribaPoco} /> : null}
+      {puedeEmpezarVuelta(p.temas) ? <BotonFocus titulo={t('focus:fondo.temas.vueltaBoton', { n: a.vuelta + 1 })} variante="contorno" onPress={() => p.acciones.onVuelta(a)} style={styles.arriba} /> : null}
       <View style={styles.botones}>
         <BotonFocus titulo={t('focus:temario.anadirTemas')} icono="add" variante="contorno" pequeno onPress={p.acciones.onAnadirTemas} style={styles.flex} />
         <BotonFocus titulo={t('focus:temario.archivar')} variante="texto" pequeno onPress={() => p.acciones.onArchivar(a)} />
@@ -154,7 +247,13 @@ function Flashcards({ p }: { p: TemarioVistaProps }) {
         </View>
       )}
       {p.mazos.length > 0 ? (
-        <BotonFocus titulo={t('focus:temario.anadirTarjeta')} icono="add" variante="contorno" pequeno onPress={() => p.acciones.onNuevaTarjeta(null)} style={styles.arriba} />
+        <>
+          <View style={styles.botones}>
+            <BotonFocus titulo={t('focus:temario.anadirTarjeta')} icono="add" variante="contorno" pequeno onPress={() => p.acciones.onNuevaTarjeta(null)} style={styles.flex} />
+            <BotonFocus titulo={t('focus:fondo.tarjetas.pegarBoton')} variante="contorno" pequeno onPress={() => p.acciones.onPegarTarjetas(null)} style={styles.flex} />
+          </View>
+          <BotonFocus titulo={t('focus:fondo.tarjetas.iaBoton')} variante="texto" pequeno onPress={() => p.acciones.onTarjetasIa(null)} style={styles.arribaPoco} />
+        </>
       ) : null}
     </TarjetaFocus>
   );
@@ -187,6 +286,7 @@ function Horas({ p }: { p: TemarioVistaProps }) {
           </View>
         ))
       )}
+      <BotonFocus titulo={t('focus:fondo.horas.verDetalle')} variante="texto" pequeno onPress={p.acciones.onHoras} style={styles.arribaPoco} />
     </TarjetaFocus>
   );
 }
@@ -209,8 +309,7 @@ function Horario({ p }: { p: TemarioVistaProps }) {
           <FilaFocus
             key={c.id}
             primera={i === 0}
-            onLongPress={() => p.acciones.onBorrarClase(c)}
-            onPress={() => p.acciones.onBorrarClase(c)}
+            onPress={() => p.acciones.onEditarClase(c)}
             accessibilityLabel={t('focus:temario.claseA11y', { horas: horaClase(c), asignatura: c.aula ? `${c.asignatura}, ${c.aula}` : c.asignatura })}
             accessibilityHint={t('focus:temario.claseHint')}
           >
@@ -230,6 +329,7 @@ function Horario({ p }: { p: TemarioVistaProps }) {
           </FilaFocus>
         ))
       )}
+      {p.clases.length > 0 ? <BotonFocus titulo={t('focus:fondo.horario.copiarBoton')} variante="texto" pequeno onPress={p.acciones.onCopiarDia} style={styles.arribaPoco} /> : null}
     </TarjetaFocus>
   );
 }
@@ -302,10 +402,10 @@ export function TemarioVista(p: TemarioVistaProps) {
             <Asignaturas p={p} />
           </Entrada>
           <Entrada indice={i++} style={styles.bloque}>
-            <Temario p={p} />
+            <Repasos p={p} />
           </Entrada>
           <Entrada indice={i++} style={styles.bloque}>
-            <Repasos p={p} />
+            <Temario key={p.elegida ?? ''} p={p} />
           </Entrada>
           <Entrada indice={i++} style={styles.bloque}>
             <Flashcards p={p} />
@@ -336,6 +436,8 @@ const styles = StyleSheet.create({
   chips: { gap: space.s2, paddingHorizontal: space.s5 },
   progreso: { flexDirection: 'row', alignItems: 'center', gap: space.s3, marginTop: space.s3 },
   botones: { flexDirection: 'row', alignItems: 'center', gap: space.s2, marginTop: space.s3 },
+  filtros: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2, marginTop: space.s3 },
+  lapiz: { paddingLeft: space.s2 },
   izq: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: space.s3 },
   acento: { color: F.acento },
   minus: { textTransform: 'none' },

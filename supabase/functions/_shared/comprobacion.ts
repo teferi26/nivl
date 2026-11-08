@@ -15,11 +15,15 @@
 //   · Las tablas de salud (gimnasio, cardio, peso, nutrición, diario) solo se
 //     leen con el permiso de salud vigente. Sin él se dice «sin acceso por
 //     consentimiento», nunca «ninguna sesión»: no haber mirado no es no haber.
+//   · El estudio (FOCUS) no es dato de salud: se lee siempre y solo se menciona
+//     si hay filas. Sin FOCUS, las líneas del día son las de siempre.
 //   · Un módulo que falla al leerse dice «no se ha podido leer», tampoco
 //     «ninguno»: el coach no puede negar algo que no ha llegado a ver.
 
 import type { Db } from './db.ts';
 import { healthConsent } from './health.ts';
+import { esTablaAusente } from './academico_datos.ts';
+import { enUnaLinea } from './academico.ts';
 
 const SIN_CONSENTIMIENTO = 'sin acceso por consentimiento de salud (no se ha leído)';
 const FALLO = 'no se ha podido leer ahora (no lo des por inexistente)';
@@ -40,6 +44,7 @@ export interface Registros {
   nutricion: Modulo<Fila>;
   diario: Modulo<{ date: string }>;
   completadas: Modulo<{ date: string; titulo: string }>;
+  estudio: Modulo<{ date: string; minutos: number; asignatura: string | null }>;
 }
 
 /** El día anterior a una fecha YYYY-MM-DD. */
@@ -67,9 +72,37 @@ function modulo<T>(f: T[] | null): Modulo<T> {
 
 const vedado = <T>(): Modulo<T> => ({ estado: 'sin_consentimiento', filas: [] });
 
+/** Los bloques de estudio del rango. Sin FOCUS en la base no hay nada que decir: ni fallo ni línea. */
+async function leerEstudio(sb: Db, userId: string, desde: string, hasta: string): Promise<Registros['estudio']> {
+  type F = Registros['estudio']['filas'][number];
+  try {
+    const { data, error } = await sb.from('focus_sessions').select('session_date, minutes, subject_id').eq('user_id', userId)
+      .gte('session_date', desde).lte('session_date', hasta).order('session_date', { ascending: false }).limit(100);
+    if (esTablaAusente(error)) return modulo<F>([]);
+    if (error) return modulo<F>(null);
+    const sesiones = (data ?? []) as Fila[];
+    const ids = [...new Set(sesiones.map((s) => s.subject_id).filter(Boolean).map(String))];
+    const nombres = new Map<string, string>();
+    if (ids.length) {
+      const asignaturas = await filas(sb.from('focus_subjects').select('id, name').eq('user_id', userId).in('id', ids).limit(60));
+      for (const a of asignaturas ?? []) nombres.set(String(a.id), enUnaLinea(a.name, 40));
+    }
+    return modulo(
+      sesiones.map((s) => ({
+        date: String(s.session_date),
+        minutos: Number(s.minutes) || 0,
+        asignatura: s.subject_id ? nombres.get(String(s.subject_id)) ?? null : null,
+      })),
+    );
+  } catch {
+    return modulo<F>(null);
+  }
+}
+
 /** Lee lo registrado entre `desde` y `hasta` (ambos incluidos, pocos días). */
 export async function leerRegistros(sb: Db, userId: string, desde: string, hasta: string): Promise<Registros> {
   const salud = (await healthConsent(sb, userId)) === true;
+  const estudioP = leerEstudio(sb, userId, desde, hasta);
 
   const completadasP = (async () => {
     const hechas = await filas(
@@ -97,6 +130,7 @@ export async function leerRegistros(sb: Db, userId: string, desde: string, hasta
       nutricion: vedado(),
       diario: vedado(),
       completadas: await completadasP,
+      estudio: await estudioP,
     };
   }
 
@@ -146,7 +180,7 @@ export async function leerRegistros(sb: Db, userId: string, desde: string, hasta
     );
   })();
 
-  const [gym, cardio, peso, nutricion, diario, completadas] = await Promise.all([
+  const [gym, cardio, peso, nutricion, diario, completadas, estudio] = await Promise.all([
     gymP,
     filas(
       sb.from('cardio_sessions').select('date, kind, distance_km, duration_min, zone').eq('user_id', userId)
@@ -163,9 +197,10 @@ export async function leerRegistros(sb: Db, userId: string, desde: string, hasta
       sb.from('journal_entries').select('date').eq('user_id', userId).gte('date', desde).lte('date', hasta).limit(10),
     ).then((f) => modulo(f === null ? null : f.map((x) => ({ date: String(x.date) })))),
     completadasP,
+    estudioP,
   ]);
 
-  return { desde, hasta, gym, cardio, peso, nutricion, diario, completadas };
+  return { desde, hasta, gym, cardio, peso, nutricion, diario, completadas, estudio };
 }
 
 /** Las líneas de UN día, módulo a módulo. Cada módulo dice algo, también si está vacío. */
@@ -183,7 +218,7 @@ export function lineasDelDia(r: Registros, fecha: string): string[] {
     return suyas.length ? `${nombre}: ${pinta(suyas)}` : `${nombre}: ${vacio} con fecha ${fecha}.`;
   };
 
-  return [
+  const lineas = [
     linea('Gimnasio', r.gym, 'ninguna sesión', (ss) =>
       ss.map((s) => {
         const cabeza = s.dia ? `sesión «${s.dia}»` : 'sesión';
@@ -213,6 +248,22 @@ export function lineasDelDia(r: Registros, fecha: string): string[] {
     linea('Diario', r.diario, 'no hay entrada', () => 'sí, hay entrada.'),
     linea('Misiones completadas', r.completadas, 'ninguna', (cs) => cs.map((c) => `"${c.titulo}"`).join(', ')),
   ];
+  const estudio = lineaEstudio(r.estudio, fecha);
+  return estudio ? [...lineas, estudio] : lineas;
+}
+
+/** Cuánto estudió ese día. Sin bloques no hay línea: quien no usa FOCUS no ve nada nuevo. */
+function lineaEstudio(m: Registros['estudio'], fecha: string): string | null {
+  if (m.estado === 'fallo') return `Estudio: ${FALLO}.`;
+  const suyas = m.filas.filter((f) => f.date === fecha);
+  if (!suyas.length) return null;
+  const porAsignatura = new Map<string, number>();
+  for (const s of suyas) {
+    const k = s.asignatura ?? 'sin asignatura';
+    porAsignatura.set(k, (porAsignatura.get(k) ?? 0) + s.minutos);
+  }
+  const total = suyas.reduce((n, s) => n + s.minutos, 0);
+  return `Estudio: ${total} min en ${suyas.length} ${suyas.length === 1 ? 'bloque' : 'bloques'} (${[...porAsignatura].map(([a, n]) => `${a} ${n} min`).join(', ')}).`;
 }
 
 /** Texto compacto de una fecha Y la anterior: lo que devuelve `consultar_dia`. */

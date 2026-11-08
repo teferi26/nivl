@@ -15,7 +15,7 @@ import {
   temasDeExamen,
   ventanaTemario,
 } from '@/focus/resumen';
-import { DATOS_VACIOS, type DatosFocus, type Tema } from '@/focus/tipos';
+import { DATOS_VACIOS, type DatosFocus, type Examen, type Tema } from '@/focus/tipos';
 
 const HOY = '2026-10-21';
 const tema = (id: string, asignaturaId: string, estado: Tema['estado'], posicion: number, extra: Partial<Tema> = {}): Tema => ({
@@ -27,20 +27,35 @@ const tema = (id: string, asignaturaId: string, estado: Tema['estado'], posicion
   posicion,
   etapa: 0,
   repasoEl: null,
+  seccion: null,
+  repasadoEl: null,
   ...extra,
 });
+const examen = (id: string, asignaturaId: string, titulo: string, fecha: string | null, extra: Partial<Examen> = {}): Examen => ({
+  id,
+  asignaturaId,
+  titulo,
+  fecha,
+  peso: null,
+  hora: null,
+  tipo: 'examen',
+  estimada: false,
+  hechaEl: null,
+  ...extra,
+});
+const sesion = (id: string, asignaturaId: string, fecha: string, minutos: number) => ({ id, asignaturaId, temaId: null, fecha, minutos, metodo: null, salidas: 0 });
 
 const D: DatosFocus = {
   ...DATOS_VACIOS,
   asignaturas: [
-    { id: 'a', nombre: 'Cálculo', posicion: 0 },
-    { id: 'b', nombre: 'Datos', posicion: 1 },
+    { id: 'a', nombre: 'Cálculo', posicion: 0, notaObjetivo: null, vuelta: 1 },
+    { id: 'b', nombre: 'Datos', posicion: 1, notaObjetivo: null, vuelta: 1 },
   ],
   examenes: [
-    { id: 'xa', asignaturaId: 'a', titulo: 'P2', fecha: '2026-11-02', peso: null },
-    { id: 'xb', asignaturaId: 'b', titulo: 'F', fecha: '2026-11-16', peso: null },
-    { id: 'xv', asignaturaId: 'a', titulo: 'P1', fecha: '2026-10-01', peso: null },
-    { id: 'xh', asignaturaId: 'borrada', titulo: 'X', fecha: '2026-10-30', peso: null },
+    examen('xa', 'a', 'P2', '2026-11-02'),
+    examen('xb', 'b', 'F', '2026-11-16'),
+    examen('xv', 'a', 'P1', '2026-10-01'),
+    examen('xh', 'borrada', 'X', '2026-10-30'),
   ],
   temas: [
     tema('a1', 'a', 'dominado', 0),
@@ -51,9 +66,9 @@ const D: DatosFocus = {
   ],
   clases: [{ id: 'k', asignaturaId: 'a', dia: 3, inicio: 9 * 60, fin: 14 * 60, aula: null }],
   sesiones: [
-    { id: 's1', asignaturaId: 'a', temaId: null, fecha: '2026-10-20', minutos: 25, metodo: null },
-    { id: 's2', asignaturaId: 'a', temaId: null, fecha: HOY, minutos: 50, metodo: null },
-    { id: 's3', asignaturaId: 'b', temaId: null, fecha: '2026-10-12', minutos: 99, metodo: null },
+    sesion('s1', 'a', '2026-10-20', 25),
+    sesion('s2', 'a', HOY, 50),
+    sesion('s3', 'b', '2026-10-12', 99),
   ],
   notas: [
     { id: 'n', asignaturaId: 'a', titulo: 'P1', nota: 4, sobre: 10, peso: 40, fecha: HOY },
@@ -71,8 +86,8 @@ describe('resumen de FOCUS', () => {
     expect(examenesPasados(D, HOY).map((x) => x.id)).toEqual(['xv']);
   });
 
-  it('un examen con temas propios usa esos; sin ellos, el temario general', () => {
-    expect(temasDeExamen(D, D.examenes[1]!).map((x) => x.id)).toEqual(['b1']);
+  it('un examen suma sus temas y el temario general; sin ninguno, todo el de la asignatura', () => {
+    expect(temasDeExamen(D, D.examenes[1]!).map((x) => x.id)).toEqual(['b1', 'b2']);
     expect(temasDeExamen(D, D.examenes[0]!).map((x) => x.id)).toEqual(['a1', 'a2', 'a3']);
   });
 
@@ -81,9 +96,11 @@ describe('resumen de FOCUS', () => {
     expect(asignaturaFoco(DATOS_VACIOS, HOY)).toBeNull();
   });
 
-  it('el plan de hoy con horas tras la última clase y un bloque de repaso espaciado', () => {
+  it('el plan de hoy con horas tras la última clase: primero repasos y luego temas', () => {
     const plan = planDeHoyConHoras(D, HOY, 10 * 60, CONFIG_POR_DEFECTO);
-    expect(plan[0]).toMatchObject({ hora: 14 * 60 + 30, asignaturaId: 'a', tipo: 'estudiar' });
+    expect(plan[0]).toMatchObject({ hora: 14 * 60 + 30, tipo: 'repasar', minutos: 2 });
+    expect(plan[1]).toMatchObject({ tipo: 'repasar', temaId: 'a2', minutos: 10 });
+    expect(plan[2]).toMatchObject({ tipo: 'estudiar', asignaturaId: 'a', temaId: 'a3' });
     expect(plan.every((b, i) => i === 0 || (b.hora ?? 0) > (plan[i - 1]!.hora ?? 0))).toBe(true);
   });
 

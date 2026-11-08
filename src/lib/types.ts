@@ -65,7 +65,7 @@ export interface Quest {
 }
 
 /** Los actos reales que pueden marcar solos una misión, una regla o un bloque. */
-export type ActLink = 'gym' | 'cardio' | 'nutricion' | 'peso' | 'diario';
+export type ActLink = 'gym' | 'cardio' | 'nutricion' | 'peso' | 'diario' | 'estudio';
 
 export interface Completion {
   id: string;

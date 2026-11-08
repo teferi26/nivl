@@ -6,7 +6,10 @@
 // objetos que crean, de modo que es seguro ejecutarlo varias veces.
 //
 // Uso:
-//   SUPABASE_ACCESS_TOKEN=sbp_... node scripts/apply-migrations.mjs [--dry]
+//   SUPABASE_ACCESS_TOKEN=sbp_... node scripts/apply-migrations.mjs [--dry] [--hasta=NNNN]
+//
+// --hasta para en esa migración (incluida). Hace falta cuando una OTA tiene que
+// salir entre dos migraciones (0112 → OTA → 0113).
 //
 // El token se saca en: supabase.com/dashboard/account/tokens
 
@@ -19,6 +22,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
 const MIGRATIONS = join(ROOT, 'supabase', 'migrations');
 const DRY = process.argv.includes('--dry');
+const HASTA = process.argv.find((a) => a.startsWith('--hasta='))?.slice('--hasta='.length) ?? null;
 
 function readEnv() {
   const out = {};
@@ -67,6 +71,8 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0113': `coalesce(obj_description(to_regprocedure('public.titulo_de_estudio(text)'), 'pg_proc') like '%nivl:link-estudio-0113%', false)`,
+  '0112': `coalesce(col_description(to_regclass('public.focus_exams'), (select attnum from pg_attribute where attrelid = to_regclass('public.focus_exams') and attname = 'kind')::int) like '%nivl:focus-entregas-0112%', false)`,
   '0090': `coalesce(obj_description('public.ai_topes_funcion'::regclass, 'pg_class') like '%nivl:freno-antiabuso-0090%', false)`,
   '0089': `to_regprocedure('public.admin_cola()') is null`,
   '0088': `coalesce(obj_description(to_regprocedure('public.admin_moderacion_bandeja(integer)'), 'pg_proc') like '%nivl:panel-moderacion-0088%', false)`,
@@ -172,6 +178,7 @@ async function applyPendingMigrations() {
   const sinHuella = archivos.filter((f) => !HUELLAS[f.slice(0, 4)]);
   const pendientes = archivos.filter((f) => {
     const n = f.slice(0, 4);
+    if (HASTA !== null && n > HASTA) return false;
     return !HUELLAS[n] || estado[`m${n}`] === false;
   });
 

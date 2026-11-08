@@ -46,3 +46,48 @@ export function vencido(vence: string | null | undefined, hoy: string): boolean 
 export function pendientesDeHoy<T extends { vence: string | null }>(items: readonly T[], hoy: string): T[] {
   return items.filter((i) => vencido(i.vence, hoy)).sort((a, b) => (a.vence ?? '').localeCompare(b.vence ?? ''));
 }
+
+export const TOPE_MIN_TARJETA = 2;
+export const TOPE_MIN_TEMA = 10;
+
+/** Minutos que cuenta una tanda de repaso: los reales, con tope por ítem. */
+export function minutosDeTanda(msReales: number, tarjetas: number, temas: number): number {
+  const tope = Math.max(0, tarjetas) * TOPE_MIN_TARJETA + Math.max(0, temas) * TOPE_MIN_TEMA;
+  if (tope <= 0) return 0;
+  const reales = Number.isFinite(msReales) && msReales > 0 ? Math.ceil(msReales / 60_000) : 1;
+  return Math.min(Math.max(1, reales), tope);
+}
+
+export interface TandaRepaso {
+  msReales: number;
+  /** Asignatura de cada tarjeta repasada (null: mazo suelto). */
+  tarjetas: readonly (string | null)[];
+  /** Asignatura de cada tema repasado. */
+  temas: readonly string[];
+}
+
+export interface SesionDeTanda {
+  sufijo: 'flashcards' | 'espaciada';
+  metodo: 'flashcards' | 'espaciada';
+  asignaturaId: string | null;
+  minutos: number;
+}
+
+const unica = (xs: readonly (string | null)[]) => (new Set(xs).size === 1 ? (xs[0] ?? null) : null);
+
+/**
+ * Las sesiones que deja una tanda de repaso: una por método, con los minutos
+ * reales repartidos según lo que pesa cada parte. La asignatura solo se apunta
+ * si toda esa parte es de la misma.
+ */
+export function sesionesDeTanda(t: TandaRepaso): SesionDeTanda[] {
+  const total = minutosDeTanda(t.msReales, t.tarjetas.length, t.temas.length);
+  if (total === 0) return [];
+  const pesoT = t.tarjetas.length * TOPE_MIN_TARJETA;
+  const pesoR = t.temas.length * TOPE_MIN_TEMA;
+  const out: SesionDeTanda[] = [];
+  const paraTarjetas = pesoT === 0 ? 0 : pesoR === 0 ? total : Math.max(1, Math.min(total - 1, Math.round((total * pesoT) / (pesoT + pesoR))));
+  if (t.tarjetas.length > 0 && paraTarjetas > 0) out.push({ sufijo: 'flashcards', metodo: 'flashcards', asignaturaId: unica(t.tarjetas), minutos: paraTarjetas });
+  if (t.temas.length > 0 && total - paraTarjetas > 0) out.push({ sufijo: 'espaciada', metodo: 'espaciada', asignaturaId: unica(t.temas), minutos: total - paraTarjetas });
+  return out;
+}
