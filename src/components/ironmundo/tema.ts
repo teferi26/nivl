@@ -22,7 +22,7 @@ export function px(n: number): number {
 
 /** Un tamaño de letra de la lámina en la app: nunca por debajo de 10. */
 export function fs(n: number): number {
-  return Math.max(10, px(n));
+  return Math.max(11, px(n));
 }
 
 export const A = modoAcento.iron;

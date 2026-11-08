@@ -45,7 +45,7 @@ const HOY = '2026-10-20';
 const MARTES = 2;
 
 const NIVEL = nivelesDeModos(['iron'], { iron: 17260, focus: 0, work: 0, founder: 0 })[0] ?? null;
-const cabecera = <CabeceraMundo modo="iron" nivel={NIVEL} emblema={EMBLEMA_DEMO} />;
+const cabecera = <CabeceraMundo modo="iron" nivel={NIVEL} emblema={EMBLEMA_DEMO} conNivel={false} />;
 
 const DIAS: GymDay[] = [
   { id: 'd2', user_id: U, day_of_week: MARTES, name: 'Pierna A · Fuerza' },

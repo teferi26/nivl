@@ -5,7 +5,7 @@
 import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Campo, EncabezadoArena, Entrada, TarjetaArena } from '@/components/arena';
+import { Campo, EncabezadoArena, Entrada, ErrorSistema, TarjetaArena } from '@/components/arena';
 import { useHealthConsent } from '@/components/ConsentimientoSalud';
 import { HoldToSign } from '@/components/HoldToSign';
 import { TablillaContrato } from '@/components/onboarding/TablillaContrato';
@@ -30,6 +30,10 @@ export default function Firma() {
   const userId = session?.user.id;
   const health = useHealthConsent();
   const [cargado, setCargado] = useState(false);
+  const [fallo, setFallo] = useState(false);
+  const [intento, setIntento] = useState(0);
+  // Fijado al cargar: si dependiera de `goal`, el campo se iría con la primera letra.
+  const [objetivoEscrito, setObjetivoEscrito] = useState(false);
   const [name, setName] = useState('');
   const [goal, setGoal] = useState('');
   const [healthGoal, setHealthGoal] = useState(false);
@@ -50,10 +54,12 @@ export default function Firma() {
         setName(perfil.name ?? '');
         setGoal(objetivo?.goal ?? '');
         setHealthGoal(objetivo?.healthData ?? false);
+        setObjetivoEscrito(!objetivo);
+        setFallo(false);
       })
-      .catch(() => {})
+      .catch(() => setFallo(true))
       .finally(() => setCargado(true));
-  }, [userId]);
+  }, [userId, intento]);
 
   const hoy = dateKey();
   const abreEl = addDays(hoy, horizonte.days);
@@ -126,13 +132,31 @@ export default function Firma() {
       </Entrada>
       {!cargado ? (
         <Skeleton height={220} />
+      ) : fallo ? (
+        <ErrorSistema mensaje={t('comun:sistemaNoResponde')} onReintentar={() => setIntento((n) => n + 1)} compacto />
       ) : (
         <Entrada indice={1}>
-          {goal ? null : (
+          {objetivoEscrito ? (
             <TarjetaArena variante="contorno" style={styles.bloque}>
               <Campo etiqueta={t('onboarding:objetivo.etiqueta')} value={goal} onChangeText={setGoal} maxLength={GOAL_MAX_LENGTH} multiline accessibilityLabel={t('onboarding:objetivo.a11y')} />
+              <Pressable
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: healthGoal }}
+                accessibilityLabel={t('onboarding:objetivo.salud')}
+                onPress={() => {
+                  if (!health.accepted && !healthGoal) {
+                    health.ask();
+                    return;
+                  }
+                  setHealthGoal((v) => !v);
+                }}
+                style={styles.salud}
+              >
+                <View style={[styles.marca, healthGoal && styles.marcaOn]} />
+                <Text style={styles.saludTexto}>{t('onboarding:objetivo.salud')}</Text>
+              </Pressable>
             </TarjetaArena>
-          )}
+          ) : null}
           <View style={styles.horizontes} accessibilityRole="radiogroup">
             {HORIZONTES.map((h) => (
               <View key={h.years} style={styles.horizonte}>
@@ -182,6 +206,10 @@ export default function Firma() {
 
 const styles = StyleSheet.create({
   bloque: { marginVertical: space.s3 },
+  salud: { flexDirection: 'row', alignItems: 'center', gap: space.s3, minHeight: 44, marginTop: space.s2 },
+  marca: { width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: ink.ink6 },
+  marcaOn: { backgroundColor: ink.ink10, borderColor: ink.ink10 },
+  saludTexto: { flex: 1, minWidth: 0, fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink8 },
   horizontes: { flexDirection: 'row', gap: 10, marginBottom: 14 },
   horizonte: { flex: 1, alignItems: 'stretch' },
   horizonteChip: { justifyContent: 'center' },

@@ -25,7 +25,7 @@ export default function IronHoy() {
 function Contenido() {
   const { gym, mundo, vista } = useInicioIron();
   const entrenando = useEntrenando(gym.vista);
-  const cabecera = <CabeceraMundo modo="iron" nivel={mundo.nivel} emblema={<EmblemaMundo modo="iron" />} />;
+  const cabecera = <CabeceraMundo modo="iron" nivel={mundo.nivel} emblema={<EmblemaMundo modo="iron" />} conNivel={false} />;
   if (gym.vista.entrenando) return <EntrenandoIronVista cabecera={cabecera} {...entrenando} />;
   return <InicioIronVista cabecera={cabecera} {...vista} />;
 }

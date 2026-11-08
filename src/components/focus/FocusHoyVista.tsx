@@ -25,6 +25,7 @@ import type { EstadoTema, PerfilFocus } from '@/focus/tipos';
 import { t } from '@/i18n';
 import type { NivelModo } from '@/modos/niveles';
 import { NOMBRE_MODO } from '@/modos/tipos';
+import { TarjetasPrimerUso } from '@/components/hoy/TarjetasPrimerUso';
 import { ArranqueGuiado } from './ArranqueGuiado';
 import { F } from './estilo';
 import { AnilloReloj, BarraFocus, BotonFocus, Casilla, ChipFocus, Etiqueta, FilaFocus, Rotulo, TarjetaFocus, VacioFocus, textoFocus } from './Piezas';
@@ -570,6 +571,7 @@ function Contenido({ p, indice }: { p: FocusHoyVistaProps; indice: number }) {
   const horaToca = p.plan.bloques.find((f) => f.bloque.hora !== null && f.bloque.asignaturaId === p.toca.asignaturaId && f.bloque.temaId === p.toca.temaId)?.hora ?? null;
   return (
     <>
+      <TarjetasPrimerUso />
       {p.examenes.length > 0 || p.nivel ? (
         <Entrada indice={i++} style={styles.bloque}>
           <Heroe examen={p.examenes[0]} nivel={p.nivel} />
@@ -713,9 +715,9 @@ const styles = StyleSheet.create({
   sesion: { flexDirection: 'row', alignItems: 'center', gap: space.s4, marginTop: space.s2 },
   sesionTextos: { flex: 1, minWidth: 0, gap: 1 },
   sesionMeta: { fontFamily: tipo.bodySm.family, fontSize: 13, lineHeight: 17, color: F.meta },
-  silencio: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: space.s2, alignSelf: 'center', minHeight: 22 },
+  silencio: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: space.s2, alignSelf: 'center', minHeight: 44 },
   silencioTexto: { fontFamily: tipo.micro.family, fontSize: 13, lineHeight: 17, color: F.meta },
-  mision: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 20, marginTop: space.s1 },
+  mision: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 44, marginTop: space.s1 },
   misionXp: { fontFamily: tipo.micro.family, color: F.acento },
   misionTexto: { fontFamily: tipo.bodySm.family, fontSize: 12, lineHeight: 17, color: F.rotulo },
   botonGrande: { marginTop: space.s3 - 2 },

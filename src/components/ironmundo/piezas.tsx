@@ -417,8 +417,8 @@ export const estilosIron = StyleSheet.create({
   delta: { fontFamily: F.b, fontSize: 11, lineHeight: 14, color: A },
   etiqueta: {
     fontFamily: F.b,
-    fontSize: 10,
-    lineHeight: 13,
+    fontSize: 11,
+    lineHeight: 14,
     letterSpacing: 1.4,
     color: A,
     backgroundColor: O.tenue,

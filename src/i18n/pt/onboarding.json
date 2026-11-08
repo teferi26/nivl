@@ -114,11 +114,12 @@
     "tuPerfil": "O teu perfil",
     "tuPerfilA11y": "O teu perfil, {{pct}} por cento",
     "portada": {
-      "crear": "Criar o meu plano em 2 minutos",
+      "crear": "Criar o meu plano",
       "yaTengo": "Já tenho conta",
       "lema": "A tua melhor versão já tem treinador",
       "texto": "Treino, estudo, trabalho e negócio. Um coach que te diz o que fazer hoje e não te deixa fugir.",
-      "tarjeta": "Cria o teu plano em 2 minutos"
+      "tarjeta": "Cria o teu plano",
+      "edad": "Para maiores de 16 anos."
     },
     "preguntas": {
       "mejora": {
@@ -191,7 +192,7 @@
       },
       "mom": {
         "t": "Quando rendes mais?",
-        "p": "É aí que vou pôr o mais difícil.",
+        "p": "Para organizar o teu dia.",
         "o": {
           "primera": "Logo de manhã",
           "media": "A meio da manhã",
@@ -243,7 +244,7 @@
     },
     "curva": {
       "titulo": "1 % por dia não parece nada.",
-      "cuerpo": "É matemática, não uma promessa. O difícil é não falhar. É para isso que eu cá estou.",
+      "cuerpo": "1 % por dia composto são +35 % em 30 dias e +145 % em 90. É matemática, não uma promessa. O difícil é não falhar.",
       "seguir": "Já estou a ver",
       "a11y": "Curva a subir: mais 35 por cento em 30 dias, mais 145 por cento em 90 dias",
       "hoy": "Hoje",
@@ -257,7 +258,7 @@
     "bienvenida": {
       "rotulo": "A tua conta está pronta",
       "titulo": "Só um par de coisas e começamos.",
-      "texto": "O teu plano já está em marcha. Antes de o guardares, tens de saber isto:"
+      "texto": "Antes de continuares, tens de saber isto:"
     },
     "salud": {
       "rotulo": "A tua saúde",
@@ -272,11 +273,11 @@
       "leyendo": "A ler as tuas respostas",
       "calculando": "A calcular os teus 90 dias",
       "eligiendo": "A escolher a tua primeira missão",
-      "preparando": "A preparar o teu coach"
+      "preparando": "A preparar o teu primeiro dia"
     },
     "plan": {
       "rotulo": "O teu plano de 90 dias · perfil a 100 %",
-      "veredicto": "O veredito do teu coach",
+      "veredicto": "O veredito",
       "sinMeta": "O teu plano de 90 dias",
       "empezar": "Quero começar",
       "cuando": {
@@ -369,6 +370,7 @@
       "firmaTitulo": "Assina o teu compromisso",
       "firmaTexto": "Já começaste. Agora escreve-o: uma carta para ti que se abre daqui a uns anos.",
       "firmaBoton": "Assinar"
-    }
+    },
+    "descargo": "O NIVL não é um serviço médico, nutricional ou psicológico. Em caso de dor, lesão ou problema de saúde, consulta um profissional."
   }
 }

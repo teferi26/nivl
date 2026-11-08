@@ -114,11 +114,12 @@
     "tuPerfil": "Il tuo profilo",
     "tuPerfilA11y": "Il tuo profilo, {{pct}} per cento",
     "portada": {
-      "crear": "Crea il mio piano in 2 minuti",
+      "crear": "Crea il mio piano",
       "yaTengo": "Ho già un account",
       "lema": "La tua versione migliore ha già un coach",
       "texto": "Allenamento, studio, lavoro e business. Un coach che ti dice cosa fare oggi e non ti lascia scappare.",
-      "tarjeta": "Crea il tuo piano in 2 minuti"
+      "tarjeta": "Crea il tuo piano",
+      "edad": "Per chi ha almeno 16 anni."
     },
     "preguntas": {
       "mejora": {
@@ -191,7 +192,7 @@
       },
       "mom": {
         "t": "Quando rendi di più?",
-        "p": "Lì metterò la parte più difficile.",
+        "p": "Per organizzare la tua giornata.",
         "o": {
           "primera": "Prima cosa al mattino",
           "media": "Metà mattina",
@@ -243,7 +244,7 @@
     },
     "curva": {
       "titulo": "Un 1% al giorno sembra niente.",
-      "cuerpo": "È matematica, non una promessa. Il difficile è non mollare. Per questo ci sono io.",
+      "cuerpo": "L'1 % al giorno composto fa +35 % in 30 giorni e +145 % in 90. È matematica, non una promessa. Il difficile è non mollare.",
       "seguir": "Lo vedo",
       "a11y": "Curva che sale: più 35 per cento in 30 giorni, più 145 per cento in 90 giorni",
       "hoy": "Oggi",
@@ -257,7 +258,7 @@
     "bienvenida": {
       "rotulo": "Il tuo account è pronto",
       "titulo": "Un paio di cose e iniziamo.",
-      "texto": "Il tuo piano è già partito. Prima di salvarlo, devi sapere questo:"
+      "texto": "Prima di continuare, devi sapere questo:"
     },
     "salud": {
       "rotulo": "La tua salute",
@@ -272,11 +273,11 @@
       "leyendo": "Leggo le tue risposte",
       "calculando": "Calcolo i tuoi 90 giorni",
       "eligiendo": "Scelgo la tua prima missione",
-      "preparando": "Preparo il tuo coach"
+      "preparando": "Preparo il tuo primo giorno"
     },
     "plan": {
       "rotulo": "Il tuo piano di 90 giorni · profilo al 100%",
-      "veredicto": "Il verdetto del tuo coach",
+      "veredicto": "Il verdetto",
       "sinMeta": "Il tuo piano di 90 giorni",
       "empezar": "Voglio iniziare",
       "cuando": {
@@ -369,6 +370,7 @@
       "firmaTitulo": "Firma il tuo impegno",
       "firmaTexto": "Hai già iniziato. Ora mettilo per iscritto: una lettera per te che si apre tra qualche anno.",
       "firmaBoton": "Firma"
-    }
+    },
+    "descargo": "NIVL non è un servizio medico, nutrizionale o psicologico. In caso di dolore, infortunio o problemi di salute, rivolgiti a un professionista."
   }
 }

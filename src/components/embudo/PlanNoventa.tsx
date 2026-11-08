@@ -6,7 +6,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useMovimientoReducido } from '@/components/ui/motion';
 import { ink, oro, radio, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
-import { hitos, textoMeta, tx, veredicto, type Respuestas } from '@/lib/embudo';
+import { hitos, metaEsSalud, textoMeta, tx, veredicto, type Respuestas } from '@/lib/embudo';
 
 const LINEAS = ['leyendo', 'calculando', 'eligiendo', 'preparando'] as const;
 const MS_LINEA = 620;
@@ -36,8 +36,10 @@ export function CargaPlan({ onFin }: { onFin: () => void }) {
   );
 }
 
-export function PlanNoventa({ respuestas }: { respuestas: Respuestas }) {
-  const titulo = textoMeta(respuestas) || t('onboarding:embudo.plan.sinMeta');
+export function PlanNoventa({ respuestas, conSalud = true }: { respuestas: Respuestas; conSalud?: boolean }) {
+  // Sin permiso de salud no se enseña una meta ni unos hitos de salud que no se han guardado.
+  const sinSalud = !conSalud && metaEsSalud(respuestas);
+  const titulo = sinSalud ? t('onboarding:embudo.plan.sinMeta') : textoMeta(respuestas) || t('onboarding:embudo.plan.sinMeta');
   return (
     <View style={styles.plan}>
       <Text style={styles.rotulo}>{t('onboarding:embudo.plan.rotulo')}</Text>
@@ -46,7 +48,7 @@ export function PlanNoventa({ respuestas }: { respuestas: Respuestas }) {
         <Text style={styles.rotuloOro}>{t('onboarding:embudo.plan.veredicto')}</Text>
         <Text style={styles.veredictoTexto}>{veredicto(respuestas)}</Text>
       </View>
-      {hitos(respuestas.kind).map((h) => (
+      {hitos(sinSalud ? 'general' : respuestas.kind).map((h) => (
         <View key={h.cuando} style={styles.hito}>
           <Text style={styles.cuando}>{h.cuando}</Text>
           <View style={styles.hitoTexto}>

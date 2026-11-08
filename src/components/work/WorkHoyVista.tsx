@@ -6,6 +6,7 @@
 // día, la carga cuando importa, el dinero en una línea y los enlaces.
 // Sin atributos de RPG. El XP se ve, discreto.
 
+import { TarjetasPrimerUso } from '@/components/hoy/TarjetasPrimerUso';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRef, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -228,6 +229,7 @@ export function WorkHoyVista(p: WorkHoyVistaProps) {
   return (
     <Screen refreshing={refrescando} onRefresh={acciones.onRefrescar}>
       {cabecera}
+      <TarjetasPrimerUso />
 
       {error ? (
         <View style={styles.bloque}>

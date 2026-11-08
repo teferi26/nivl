@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { cerrarSesion } from '@/lib/authFlow';
 import { reintentarCodigoPendiente } from '@/lib/creators';
 import { ensureProfile } from '@/lib/data';
+import { olvidarRespuestas } from '@/lib/embudoGuardado';
 import { mensajeSistema } from '@/lib/validation';
 import { useModo } from '@/modos/ModoProvider';
 import { rutaDeArranque } from '@/modos/rutasModo';
@@ -34,7 +35,11 @@ export default function Index() {
         // Un código de creador pendiente (del enlace, o de un onboarding sin
         // red) se reintenta aquí, en silencio. Antes del onboarding no: allí
         // se precarga en "¿Quién te trajo?" y lo manda el propio paso.
-        if (p.onboarding_done) reintentarCodigoPendiente();
+        if (p.onboarding_done) {
+          reintentarCodigoPendiente();
+          // Quien ya entró no debe dejar sus respuestas en este teléfono.
+          void olvidarRespuestas();
+        }
       })
       .catch((e) => {
         // Sin leer onboarding_done no se decide nada: entrar a ciegas en las

@@ -395,6 +395,16 @@ export default function Onboarding() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- solo al conceder el permiso
   }, [step, health.accepted]);
 
+  // Aceptar el permiso desde las misiones: se vuelve a preparar la selección y el objetivo.
+  useEffect(() => {
+    if (step === 4 && health.accepted) {
+      void withLock(async () => {
+        await prepararMisiones();
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo al conceder el permiso
+  }, [step, health.accepted]);
+
   // El botón físico sigue el mismo recorrido que la flecha.
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -659,7 +669,7 @@ export default function Onboarding() {
           {step === 5 ? (
             planListo && respuestas ? (
               <Entrada key="paso-plan" indice={0}>
-                <PlanNoventa respuestas={respuestas} />
+                <PlanNoventa respuestas={respuestas} conSalud={health.accepted} />
               </Entrada>
             ) : (
               <CargaPlan key="paso-carga" onFin={terminarCarga} />
@@ -731,13 +741,19 @@ export default function Onboarding() {
               </View>
             ) : null}
             {step === 4 ? (
-              <Button
-                title={chosen.size > 0 ? t('onboarding:misiones.crear', { count: chosen.size }) : t('onboarding:misiones.sinMisiones')}
-                size="lg"
-                variant={chosen.size > 0 ? 'primary' : 'secondary'}
-                onPress={saveStarters}
-                loading={busy}
-              />
+              <View style={styles.dosBotones}>
+                {/* Sin ninguna posible (todas piden salud): lo primero es poder elegir, no empezar vacío. */}
+                {chosen.size === 0 && !health.accepted && meta?.starterQuests.every((q) => q.health_data) ? (
+                  <Button title={t('onboarding:embudo.salud.revisar')} size="lg" onPress={health.ask} disabled={busy} />
+                ) : null}
+                <Button
+                  title={chosen.size > 0 ? t('onboarding:misiones.crear', { count: chosen.size }) : t('onboarding:misiones.sinMisiones')}
+                  size="lg"
+                  variant={chosen.size > 0 ? 'primary' : 'secondary'}
+                  onPress={saveStarters}
+                  loading={busy}
+                />
+              </View>
             ) : null}
             {step === 5 && planListo ? (
               <Button title={t('onboarding:embudo.plan.empezar')} size="lg" onPress={trasPlan} loading={busy} />

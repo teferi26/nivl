@@ -14,6 +14,8 @@
 
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { DescargoSalud } from '@/components/DescargoSalud';
+import { TarjetasPrimerUso } from '@/components/hoy/TarjetasPrimerUso';
 import { formatoMiles, ratioSeguro } from '@/components/arena';
 import { EscudoNivel, estiloNivelEscudo } from '@/components/arena/EscudoNivel';
 import { kgTexto } from '@/components/iron/HistorialIron';
@@ -442,6 +444,7 @@ export function InicioIronVista({ cabecera, nivel, fecha, cierre, entreno, pesos
   return (
     <PantallaIron>
       {cabecera}
+      <TarjetasPrimerUso />
 
       {cierre ? (
         <TarjetaIron>
@@ -488,6 +491,7 @@ export function InicioIronVista({ cabecera, nivel, fecha, cierre, entreno, pesos
           </Text>
         </TarjetaIron>
       ) : null}
+      <DescargoSalud />
     </PantallaIron>
   );
 }
@@ -515,7 +519,7 @@ const styles = StyleSheet.create({
   botonCatalogo: { marginTop: px(7) },
   dieta: { flexDirection: 'row', alignItems: 'center', gap: px(9), marginTop: px(6) },
   macro: { marginBottom: px(5) },
-  macroNombre: { fontFamily: F.sb, fontSize: fs(8.5), color: C.meta },
+  macroNombre: { fontFamily: F.sb, fontSize: Math.max(11, fs(8.5)), color: C.meta },
   macroBarra: { marginTop: px(2) },
   linea: { marginTop: px(4) },
 });

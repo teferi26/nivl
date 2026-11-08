@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Linking, Platform } from 'react-native';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
+import { avisar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
 import { t } from '@/i18n';
 import { registrar } from '@/lib/analitica';
@@ -132,8 +133,12 @@ export function useOfertaModos({ modoInicial, kind, empezarEnTodos, actual, onCo
       });
       if (r === 'cancelada') return;
       registrar('compra_ok', { plan: producto.id, resultado: r });
-      if (r === 'pendiente') setAviso(t('oferta:pago.aviso.pendiente'));
-      if (r === 'programada') setAviso(t('oferta:pago.aviso.programada'));
+      // Con `onComprado` la pantalla se va: el aviso tiene que verse igual.
+      const texto = r === 'pendiente' ? t('oferta:pago.aviso.pendiente') : r === 'programada' ? t('oferta:pago.aviso.programada') : null;
+      if (texto) {
+        if (onComprado) avisar('NIVL', texto); // i18n-ok: marca
+        else setAviso(texto);
+      }
       vibrar('mision');
       onComprado?.();
     });

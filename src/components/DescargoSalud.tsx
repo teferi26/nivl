@@ -2,11 +2,11 @@
 // cuerpo: gimnasio, cardio, nutrición y dieta. Una línea, sin alarma.
 
 import { StyleSheet, Text } from 'react-native';
-import { DESCARGO_SALUD } from '@/lib/consentmath';
+import { t } from '@/i18n';
 import { ink, type as tipo } from '@/design/tokens';
 
 export function DescargoSalud() {
-  return <Text style={styles.texto} maxFontSizeMultiplier={1.6}>{DESCARGO_SALUD}</Text>;
+  return <Text style={styles.texto} maxFontSizeMultiplier={1.6}>{t('onboarding:embudo.descargo')}</Text>;
 }
 
 const styles = StyleSheet.create({

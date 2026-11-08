@@ -106,7 +106,7 @@ jest.mock('expo-image', () => ({ Image: { clearMemoryCache: jest.fn(), clearDisk
 
 test('confirmed erasure removes the same private device traces as logout', async () => {
   await deleteAccount();
-  expect(AsyncStorage.multiRemove).toHaveBeenCalledWith(['nivl:duelos:vistos', 'nivl.ofertas.v1']);
+  expect(AsyncStorage.multiRemove).toHaveBeenCalledWith(['nivl:duelos:vistos', 'nivl.ofertas.v1', 'nivl.embudo.v1', 'nivl.hoy.firma.ahora_no', 'nivl.hoy.avisos.ahora_no']);
   expect(Notifications.dismissAllNotificationsAsync).toHaveBeenCalledTimes(1);
   expect(olvidarCodigoPendiente).toHaveBeenCalledTimes(1);
   expect(olvidarRedDictado).toHaveBeenCalledTimes(1);

@@ -325,7 +325,7 @@ describe('cerrarSesion', () => {
     await cerrarSesion();
     expect(mockOrden.slice(0, -1).sort()).toEqual([
       'consentimiento', 'creador', 'locales', 'oraculo:', 'push', 'dictado',
-      'claves:nivl:duelos:vistos+nivl.ofertas.v1', 'avisos-mostrados', 'fotos-temporales', 'imagenes-memoria', 'imagenes-disco',
+      'claves:nivl:duelos:vistos+nivl.ofertas.v1+nivl.embudo.v1+nivl.hoy.firma.ahora_no+nivl.hoy.avisos.ahora_no', 'avisos-mostrados', 'fotos-temporales', 'imagenes-memoria', 'imagenes-disco',
     ].sort());
     expect(mockOrden[mockOrden.length - 1]).toBe('signOut');
     expect(mockAuth.signOut).toHaveBeenCalledTimes(1);

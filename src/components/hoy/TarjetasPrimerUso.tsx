@@ -2,13 +2,15 @@
 // cuando la persona ya ha hecho algo: el permiso de avisos (N4) y la firma.
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { Button, Card } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
+import { useAuth } from '@/lib/auth';
 import { fetchLetter } from '@/lib/contract';
+import { ensureProfile } from '@/lib/data';
 import { estadoAvisos, inicializarAvisos } from '@/lib/notifications';
 import { registrarDispositivo } from '@/lib/push';
 
@@ -31,15 +33,26 @@ async function apuntar(clave: string): Promise<void> {
   }
 }
 
-/** `listo`: ya ha completado algo hoy o lleva racha. */
-export function TarjetasPrimerUso({ listo }: { listo: boolean }) {
+/**
+ * `listo`: ya ha hecho algo hoy. Sin el dato (mundos de modo), vale haber ganado
+ * algo de XP alguna vez. Se relee cada vez que se vuelve a la pantalla.
+ */
+export function TarjetasPrimerUso({ listo: listoProp }: { listo?: boolean }) {
+  const { session } = useAuth();
+  const userId = session?.user.id;
   const [pedirAvisos, setPedirAvisos] = useState(false);
   const [pedirFirma, setPedirFirma] = useState(false);
 
-  useEffect(() => {
-    if (!listo) return;
+  const [listo, setListo] = useState(false);
+
+  useFocusEffect(useCallback(() => {
+    if (listoProp === false || !userId) return;
     let vivo = true;
     (async () => {
+      const haHecho = listoProp ?? ((await ensureProfile(userId).catch(() => null))?.xp_total ?? 0) > 0;
+      if (!vivo) return;
+      setListo(haHecho);
+      if (!haHecho) return;
       const [avisosNo, firmaNo, estado, carta] = await Promise.all([
         leer(AVISOS_NO),
         leer(FIRMA_NO),
@@ -53,7 +66,7 @@ export function TarjetasPrimerUso({ listo }: { listo: boolean }) {
     return () => {
       vivo = false;
     };
-  }, [listo]);
+  }, [listoProp, userId]));
 
   if (!listo || (!pedirAvisos && !pedirFirma)) return null;
 

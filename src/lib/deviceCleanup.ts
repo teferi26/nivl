@@ -20,7 +20,7 @@ export async function limpiarDatosDelDispositivo(desvincularPush = true): Promis
   await Promise.allSettled(steps.map((step) => Promise.resolve().then(step)));
 }
 /** Claves del dispositivo sin usuario que no deben pasar a la cuenta siguiente. */
-export const CLAVES_DEL_USUARIO = ['nivl:duelos:vistos', 'nivl.ofertas.v1'];
+export const CLAVES_DEL_USUARIO = ['nivl:duelos:vistos', 'nivl.ofertas.v1', 'nivl.embudo.v1', 'nivl.hoy.firma.ahora_no', 'nivl.hoy.avisos.ahora_no'];
 
 /**
  * Lo que queda de la cuenta en el móvil fuera de la sesión (auditoría 1.0.8,

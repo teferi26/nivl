@@ -114,11 +114,12 @@
     "tuPerfil": "Ton profil",
     "tuPerfilA11y": "Ton profil, {{pct}} pour cent",
     "portada": {
-      "crear": "Créer mon plan en 2 minutes",
+      "crear": "Créer mon plan",
       "yaTengo": "J'ai déjà un compte",
       "lema": "Ta meilleure version a déjà un coach",
       "texto": "Entraînement, études, travail et business. Un coach qui te dit quoi faire aujourd'hui et ne te laisse pas filer.",
-      "tarjeta": "Crée ton plan en 2 minutes"
+      "tarjeta": "Crée ton plan",
+      "edad": "Réservé aux 16 ans et plus."
     },
     "preguntas": {
       "mejora": {
@@ -191,7 +192,7 @@
       },
       "mom": {
         "t": "Quand es-tu au top ?",
-        "p": "C'est là que je mettrai le plus dur.",
+        "p": "Pour organiser ta journée.",
         "o": {
           "primera": "Tôt le matin",
           "media": "Milieu de matinée",
@@ -243,7 +244,7 @@
     },
     "curva": {
       "titulo": "1 % par jour, ça ne paraît rien.",
-      "cuerpo": "C'est des maths, pas une promesse. Le plus dur, c'est de ne pas lâcher. C'est pour ça que je suis là.",
+      "cuerpo": "1 % par jour composé, c'est +35 % en 30 jours et +145 % en 90. C'est des maths, pas une promesse. Le plus dur, c'est de ne pas lâcher.",
       "seguir": "Je vois",
       "a11y": "Courbe qui monte : plus 35 pour cent en 30 jours, plus 145 pour cent en 90 jours",
       "hoy": "Aujourd'hui",
@@ -257,7 +258,7 @@
     "bienvenida": {
       "rotulo": "Ton compte est prêt",
       "titulo": "Deux ou trois choses et on commence.",
-      "texto": "Ton plan est déjà lancé. Avant de l'enregistrer, tu dois savoir ceci :"
+      "texto": "Avant de continuer, tu dois savoir ceci :"
     },
     "salud": {
       "rotulo": "Ta santé",
@@ -272,11 +273,11 @@
       "leyendo": "Lecture de tes réponses",
       "calculando": "Calcul de tes 90 jours",
       "eligiendo": "Choix de ta première mission",
-      "preparando": "Préparation de ton coach"
+      "preparando": "Préparation de ton premier jour"
     },
     "plan": {
       "rotulo": "Ton plan de 90 jours · profil à 100 %",
-      "veredicto": "Le verdict de ton coach",
+      "veredicto": "Le verdict",
       "sinMeta": "Ton plan de 90 jours",
       "empezar": "Je veux commencer",
       "cuando": {
@@ -369,6 +370,7 @@
       "firmaTitulo": "Signe ton engagement",
       "firmaTexto": "Tu as déjà commencé. Maintenant, écris-le : une lettre pour toi qui s'ouvre dans quelques années.",
       "firmaBoton": "Signer"
-    }
+    },
+    "descargo": "NIVL n'est pas un service médical, nutritionnel ou psychologique. En cas de douleur, de blessure ou de problème de santé, consulte un professionnel."
   }
 }

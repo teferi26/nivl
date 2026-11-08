@@ -1,7 +1,8 @@
 // NIVL · La primera pantalla (Ónix): qué es NIVL y por dónde se empieza. Sin
 // cuenta. En ventana ancha, marca a la izquierda y acción a la derecha.
 
-import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { DescargoSalud } from '@/components/DescargoSalud';
 import { Button } from '@/components/ui';
 import { ink, oro, space, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
@@ -12,6 +13,13 @@ const MIN_DOS_COLUMNAS = 1024;
 export function Portada({ onCrear, onEntrar }: { onCrear: () => void; onEntrar: () => void }) {
   const { width } = useWindowDimensions();
   const ancha = width >= MIN_DOS_COLUMNAS;
+  // Antes de preguntar nada: para quién es y qué no es.
+  const aviso = (
+    <View style={styles.aviso}>
+      <DescargoSalud />
+      <Text style={styles.edad} maxFontSizeMultiplier={1.35}>{t('onboarding:embudo.portada.edad')}</Text>
+    </View>
+  );
   const acciones = (
     <>
       <Button title={t('onboarding:embudo.portada.crear')} size="lg" onPress={onCrear} />
@@ -23,9 +31,9 @@ export function Portada({ onCrear, onEntrar }: { onCrear: () => void; onEntrar: 
   const marca = (
     <>
       <Escudo ancho={ancha ? 104 : 120} />
-      <Text style={[styles.marca, ancha && styles.marcaAncha]} accessibilityRole="header">NIVL{/* i18n-ok: marca */}</Text>
-      <Text style={[styles.lema, ancha && styles.lemaAncho]}>{t('onboarding:embudo.portada.lema')}</Text>
-      <Text style={[styles.texto, ancha && styles.textoAncho]}>{t('onboarding:embudo.portada.texto')}</Text>
+      <Text style={[styles.marca, ancha && styles.marcaAncha]} accessibilityRole="header" maxFontSizeMultiplier={1}>NIVL{/* i18n-ok: marca */}</Text>
+      <Text style={[styles.lema, ancha && styles.lemaAncho]} maxFontSizeMultiplier={1.35}>{t('onboarding:embudo.portada.lema')}</Text>
+      <Text style={[styles.texto, ancha && styles.textoAncho]} maxFontSizeMultiplier={1.35}>{t('onboarding:embudo.portada.texto')}</Text>
     </>
   );
   if (ancha) {
@@ -34,6 +42,7 @@ export function Portada({ onCrear, onEntrar }: { onCrear: () => void; onEntrar: 
         <View style={styles.izquierda}>{marca}</View>
         <View style={styles.tarjeta}>
           <Text style={styles.tarjetaTitulo}>{t('onboarding:embudo.portada.tarjeta')}</Text>
+          {aviso}
           {acciones}
         </View>
       </View>
@@ -41,15 +50,20 @@ export function Portada({ onCrear, onEntrar }: { onCrear: () => void; onEntrar: 
   }
   return (
     <View style={styles.columna}>
-      <View style={styles.centro}>{marca}</View>
-      <View style={styles.pie}>{acciones}</View>
+      <ScrollView contentContainerStyle={styles.centro} showsVerticalScrollIndicator={false}>{marca}</ScrollView>
+      <View style={styles.pie}>
+        {aviso}
+        {acciones}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   columna: { flex: 1, width: '100%', maxWidth: 560, alignSelf: 'center', paddingHorizontal: space.s6, paddingBottom: space.s6 },
-  centro: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.s2 },
+  centro: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', gap: space.s2 },
+  aviso: { gap: space.s1, paddingBottom: space.s2 },
+  edad: { fontFamily: tipo.bodySm.family, fontSize: 13, lineHeight: 18, color: ink.ink8, textAlign: 'center' },
   pie: { gap: space.s1 },
   marca: { fontFamily: tipo.display.family, fontSize: 60, lineHeight: 66, letterSpacing: 8, color: oro.claro, marginRight: -8 },
   marcaAncha: { fontSize: 72, lineHeight: 80, letterSpacing: 6, marginRight: 0, color: ink.ink9 },

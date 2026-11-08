@@ -13,6 +13,7 @@
 //   4 · El orden del día (los bloques del plan: foco, trabajo profundo).
 // FUERA: hábitos, campañas, Winter Arc, Hero de rango y duelo: viven en NIVL.
 
+import { TarjetasPrimerUso } from '@/components/hoy/TarjetasPrimerUso';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Entrada, formatoMiles, ratioSeguro, TarjetaArena } from '@/components/arena';
@@ -57,6 +58,7 @@ export function MundoHoyVista({ modo, cabecera, nivel, hoy, onCoach }: MundoHoyV
       <DosColumnas
         principal={
           <>
+            <TarjetasPrimerUso />
             {error ? (
               <Entrada indice={1} style={styles.bloque}>
                 <TarjetaArena variante="contorno">
@@ -121,7 +123,7 @@ export function MundoHoyVista({ modo, cabecera, nivel, hoy, onCoach }: MundoHoyV
               </Entrada>
             ) : null}
 
-            {!cargando && nivel ? (
+            {!cargando && !error && nivel ? (
               <Entrada indice={6} style={styles.bloque}>
                 <TresCifras
                   cifras={[

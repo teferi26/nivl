@@ -110,7 +110,7 @@ export function HoyGeneralVista({ hoy, emblema, arsenal, campana, ir }: HoyGener
       <TarjetasPrimerUso listo={d.hechas > 0} />
       <Entrada indice={2}>
         <TarjetaGeneral onPress={ir.coach} accessibilityLabel={t('general:coach.a11y')}>
-          <RotuloGeneral texto={t('general:coach.rotulo')} em={t('general:coach.enLinea')} oro />
+          <RotuloGeneral texto={t('general:coach.rotulo')} em={d.esPro === true ? t('general:coach.enLinea') : undefined} oro />
           <Text style={styles.coachTexto} maxFontSizeMultiplier={1.6}>
             {h?.linea || t('general:coach.porDefecto')}
           </Text>

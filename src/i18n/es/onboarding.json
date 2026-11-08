@@ -114,11 +114,12 @@
     "tuPerfil": "Tu perfil",
     "tuPerfilA11y": "Tu perfil, {{pct}} por ciento",
     "portada": {
-      "crear": "Crear mi plan en 2 minutos",
+      "crear": "Crear mi plan",
       "yaTengo": "Ya tengo cuenta",
       "lema": "Tu mejor versión ya tiene entrenador",
       "texto": "Entrenador, estudio, trabajo y negocio. Un coach que te dice qué hacer hoy y no te deja escapar.",
-      "tarjeta": "Crea tu plan en 2 minutos"
+      "tarjeta": "Crea tu plan",
+      "edad": "Para mayores de 16 años."
     },
     "preguntas": {
       "mejora": {
@@ -191,7 +192,7 @@
       },
       "mom": {
         "t": "¿Cuándo rindes mejor?",
-        "p": "Ahí pondré lo más difícil.",
+        "p": "Para ordenar tu día.",
         "o": {
           "primera": "Primera hora",
           "media": "Media mañana",
@@ -243,7 +244,7 @@
     },
     "curva": {
       "titulo": "Un 1 % al día no parece nada.",
-      "cuerpo": "Es matemática, no una promesa. Lo difícil es no fallar. Para eso estoy yo.",
+      "cuerpo": "Un 1 % diario compuesto son +35 % en 30 días y +145 % en 90. Es matemática, no una promesa. Lo difícil es no fallar.",
       "seguir": "Ya lo veo",
       "a11y": "Curva que sube: un 35 por ciento en 30 días, un 145 por ciento en 90 días",
       "hoy": "Hoy",
@@ -257,7 +258,7 @@
     "bienvenida": {
       "rotulo": "Tu cuenta está lista",
       "titulo": "Un par de cosas y empezamos.",
-      "texto": "Tu plan ya está en marcha. Antes de guardarlo, esto tienes que saberlo:"
+      "texto": "Antes de seguir, esto tienes que saberlo:"
     },
     "salud": {
       "rotulo": "Tu salud",
@@ -272,11 +273,11 @@
       "leyendo": "Leyendo tus respuestas",
       "calculando": "Calculando tus 90 días",
       "eligiendo": "Eligiendo tu primera misión",
-      "preparando": "Preparando a tu coach"
+      "preparando": "Preparando tu primer día"
     },
     "plan": {
       "rotulo": "Tu plan de 90 días · perfil al 100 %",
-      "veredicto": "El veredicto de tu coach",
+      "veredicto": "El veredicto",
       "sinMeta": "Tu plan de 90 días",
       "empezar": "Quiero empezar",
       "cuando": {
@@ -369,6 +370,7 @@
       "firmaTitulo": "Firma tu compromiso",
       "firmaTexto": "Ya has empezado. Ahora escríbetelo: una carta para ti que se abre dentro de unos años.",
       "firmaBoton": "Firmar"
-    }
+    },
+    "descargo": "NIVL no es un servicio médico, nutricional ni psicológico. Ante dolor, lesión o un problema de salud, consulta a un profesional."
   }
 }
