@@ -71,6 +71,7 @@ import type { ProfileKind } from '@/lib/kinds';
 import { cosmeticosDe, estadoDe, type LogroInfo } from '@/lib/progression';
 import type { Profile } from '@/lib/types';
 import { fetchEsAdmin } from '@/lib/moderacion';
+import { pasarFiltroPerfil, permitirFiltroFoto } from '@/lib/filtroPerfil';
 import { mensajeSistema } from '@/lib/validation';
 import { voice } from '@/lib/voice';
 import type { PerfilAjustesProps } from './PerfilAjustes';
@@ -186,6 +187,8 @@ export function usePerfil(): UsePerfil {
   const freezeLock = useRef(false);
   const [freezeBusy, setFreezeBusy] = useState(false);
   const [avisoFreeze, setAvisoFreeze] = useState<string | null>(null);
+  // La hoja que pide permiso para enviar la foto al filtro: su respuesta resuelve `pickAvatar`.
+  const [permisoFoto, setPermisoFoto] = useState<((r: boolean | null) => void) | null>(null);
   const [busy, setBusy] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [avisos, setAvisos] = useState<EstadoAvisos | null>(null);
@@ -329,6 +332,8 @@ export function usePerfil(): UsePerfil {
       if (prof.avatar_url) {
         setAvatarUri(await signedUrlCached('avatars', prof.avatar_url));
       }
+      // Lo que quedó sin filtrar (sin red, app cerrada a medias): no espera a nada.
+      void pasarFiltroPerfil();
       setStats(await completionStats());
       setUnlocked(await fetchUnlocked());
       setSubscription(await fetchSubscription(userId).catch(() => null));
@@ -360,6 +365,9 @@ export function usePerfil(): UsePerfil {
       if (result.canceled) return;
       const b64 = result.assets[0]?.base64;
       if (!b64) return;
+      const permitido = await new Promise<boolean | null>((resolver) => setPermisoFoto(() => resolver));
+      setPermisoFoto(null);
+      if (permitido === null) return;
       const path = await uploadAvatar(userId, b64);
       try {
         await updateProfile(userId, { avatar_url: path });
@@ -373,6 +381,9 @@ export function usePerfil(): UsePerfil {
       }
       olvidarFirma('avatars', path);
       setAvatarUri(await signedUrlCached('avatars', path));
+      if (permitido) await permitirFiltroFoto(path);
+      const filtro = await pasarFiltroPerfil();
+      if (filtro?.foto === 'rechazado') avisar(t('perfil:filtro.avisoTitulo'), t('perfil:filtro.fotoRechazada'));
     } catch (e) {
       avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
@@ -387,6 +398,8 @@ export function usePerfil(): UsePerfil {
     try {
       await updateProfile(userId, { name: trimmed });
       setProfile({ ...profile, name: trimmed });
+      const filtro = await pasarFiltroPerfil();
+      if (filtro?.nombre === 'rechazado') avisar(t('perfil:filtro.avisoTitulo'), t('perfil:filtro.nombreRechazado'));
     } catch (error) {
       setName(profile.name);
       avisar(t('perfil:nombreNoGuardado'), mensajeSistema(error));
@@ -444,6 +457,7 @@ export function usePerfil(): UsePerfil {
     try {
       await updateProfile(userId, { equipped_title: next });
       setProfile({ ...profile, equipped_title: next });
+      void pasarFiltroPerfil();
     } catch (e) {
       avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
@@ -639,6 +653,7 @@ export function usePerfil(): UsePerfil {
       onNombre: setName,
       onGuardarNombre: saveName,
       onAvatar: pickAvatar,
+      permisoFoto: permisoFoto ? { onResponder: permisoFoto } : null,
       onCompartir: abrirCompartir,
       onCodigo: abrirCodigo,
       onLogro: onAchievementTap,

@@ -209,5 +209,15 @@
     "fila": "Medição de utilização",
     "activada": "Ativada. Só os passos do percurso, nunca o que escreves.",
     "desactivada": "Desativada. Não se guarda nem se envia nada."
+  },
+  "filtro": {
+    "titulo": "Enviar a tua foto para o filtro?",
+    "eyebrow": "Antes de outros a verem",
+    "cuerpo": "Para a mostrares aos teus amigos, um filtro automático verifica-a. Só esta foto é enviada à Anthropic, que trata a imagem para este fim. Também podes aguardar uma revisão manual: entretanto, os outros verão uma imagem neutra.",
+    "permitir": "Enviar para o filtro",
+    "manual": "Revisão manual",
+    "avisoTitulo": "Só tu a verás",
+    "fotoRechazada": "Esta foto não passou no filtro. Os outros verão uma imagem neutra. Se achas que é um erro, escreve ao suporte.",
+    "nombreRechazado": "Este nome não passou no filtro. Os outros verão um pseudónimo neutro. Se achas que é um erro, escreve ao suporte."
   }
 }

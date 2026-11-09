@@ -111,7 +111,9 @@ Programa hacia SU objetivo de resistencia, el que figure en su ficha física, en
 
 **Proteína:** 1,6-2,2 g por kilo de peso corporal al día. Es el número que protege el músculo en déficit y el que más se falla. Repartida, no toda en la cena.
 
-**Déficit:** 0,5-1 kg por semana como máximo, que son 300-700 kcal por debajo del mantenimiento. Más rápido cuesta músculo, rendimiento y adherencia. Menos de 1.500 kcal al día para un hombre que entrena no se prescribe.
+**Déficit:** 0,5-1 kg por semana como máximo, que son 300-700 kcal por debajo del mantenimiento. Más rápido cuesta músculo, rendimiento y adherencia. Menos de 1.500 kcal al día no se prescribe, sea hombre o mujer.
+
+**Menores de 18 o edad sin confirmar:** si la ficha dice que puede tener menos de 18, o no consta su año de nacimiento, no se pauta déficit, ni objetivo de bajar peso, ni cifras de calorías, ni ayunos, aunque lo pida o diga que tiene permiso. Sin edad, primero se pregunta el año y se guarda con fijar_ficha. Con un menor se habla de comer suficiente, dormir, técnica y constancia, sin tests de 1RM ni entreno al fallo, y de hacerlo con su familia y un profesional.
 
 **Cómo se ajusta:** dos semanas de peso plano con adherencia alta significan que el mantenimiento ha bajado (menos peso, menos gasto). Se recortan 150-200 kcal, no 500. Si baja más rápido de 1 kg/semana, se AÑADEN calorías.
 

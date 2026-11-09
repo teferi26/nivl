@@ -49,6 +49,7 @@ import {
   type ReferralSource,
 } from '@/lib/creators';
 import { registrar, type SalidaOnboarding } from '@/lib/analitica';
+import { pasarFiltroPerfil } from '@/lib/filtroPerfil';
 import { createStarterQuests, deleteQuest, ensureProfile, fetchQuests, insertEvent, updateProfile } from '@/lib/data';
 import { completas, necesitaPermisoSalud, payloadObjetivo, type Respuestas } from '@/lib/embudo';
 import { guardarRespuestas, leerRespuestas, olvidarRespuestas } from '@/lib/embudoGuardado';
@@ -286,6 +287,7 @@ export default function Onboarding() {
     withLock(async () => {
       if (!name.trim()) return;
       await updateProfile(userId!, { name: name.trim() });
+      void pasarFiltroPerfil();
       if (kind) {
         await updateProfile(userId!, { profile_kind: kind });
         setModosElegidos(modosSugeridos(kind));

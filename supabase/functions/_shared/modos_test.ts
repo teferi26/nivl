@@ -2,8 +2,8 @@
 //
 // Lo que se comprueba:
 //   · Sin cabeceras, el sistema montado es IDÉNTICO byte a byte al de antes de Modos F1: hash SHA-256 del
-//     JSON de buildSystem / buildSystemRegistro con el mismo estado de ejemplo, calculado en 659714e (la
-//     base de la rama) y fijado aquí. Español y General tampoco cambian nada.
+//     JSON de buildSystem / buildSystemRegistro con el mismo estado de ejemplo, fijado aquí y recalculado solo
+//     cuando la doctrina cambia a propósito (última vez: freno de edad y suelo calórico). Español y General tampoco cambian nada.
 //   · Con idioma o modo, solo se añade un bloque en la parte dinámica: la fija sigue igual (caché).
 //   · El filtro «sin guiones largos» se aplica en todos los idiomas y el bloque no lleva ninguno.
 //   · El handler: cabeceras → bloque; sin cabeceras → el perfil (rituales); el tope diario de la prueba
@@ -33,9 +33,9 @@ async function sha256(v: unknown): Promise<string> {
 // 08/11/2026 (Resistencia): recalculados a propósito: doctrina de triatlón en knowledge.ts y mareos y
 // dolor al entrenar en AI_SAFETY_RULES. Después, la regla de la tirada y el cardio en la ruta de registro.
 const HASH_ANTES = {
-  chat: '5a7706c6311b8ea75bcaaad1eef8801c24854695728ca2826acf57dde3968e97',
-  brief: '9bfc045986c866a2b1907adf05e8414d74c40ec15133c29d9cda788bfeb2a3c2',
-  vacio: '723c55bcb3fd3ca8bcc8cc4ef7739b76f54a90f9b8997e7e680c2d778e262666',
+  chat: '63c5ad268079ca46be459d6f869323f11f3da5631a0dc583b48a1c9dfd7bf321',
+  brief: 'c280d966644ff26b892546a9fdbdda27446bd83868e6f1d9022b14c2f249dba3',
+  vacio: '764437181bbc6a3fa9fda3478938979cbeffc9c06029a05f62231827941d34da',
   registro: '7227aac804f09a2a007f696bbbbe6f7a0437c5c028129a6a2baf600073acde5f',
 };
 

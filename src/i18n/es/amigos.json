@@ -166,7 +166,7 @@
   },
   "convivencia": {
     "titulo": "Convivencia y seguridad",
-    "cuerpo": "No se permite acoso, amenazas, suplantación ni contenido ofensivo. Los nombres, títulos y fotos se revisan antes de mostrarse a otros: mientras tanto verán un alias y una imagen neutros. Tu perfil conserva tus datos.",
+    "cuerpo": "Un filtro automático revisa nombres, títulos y fotos antes de mostrarlos a otros. Si algo no pasa o sigue pendiente, verán un alias y una imagen neutros. Si no autorizas el filtro de una foto, espera a una revisión manual. Puedes denunciar y bloquear a cualquiera.",
     "bloqueado": "Usuario bloqueado",
     "desbloquear": "Desbloquear"
   },

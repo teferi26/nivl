@@ -235,6 +235,8 @@ export interface CallOptions {
   toolChoice?: { type: 'auto' | 'none' };
   maxTokens?: number;
   effort?: Effort;
+  /** Salida estructurada (`output_config.format`). */
+  formato?: Record<string, unknown>;
   /** Se invoca con cada fragmento de texto visible según llega. */
   onText?: (delta: string) => void;
   /** Se invoca cuando el modelo empieza a pensar (para pintar el indicador). */
@@ -272,7 +274,7 @@ async function callClaudeCrudo(opts: CallOptions): Promise<Turn> {
       // pensar y además responder. Haiku 5.5 no tiene reserva en servidor (nada
       // de `fallbacks`): el rechazo lo atiende quien llama (RefusalError).
       thinking: { type: 'adaptive', display: 'summarized' },
-      output_config: { effort: opts.effort ?? 'medium' },
+      output_config: { effort: opts.effort ?? 'medium', ...(opts.formato ? { format: opts.formato } : {}) },
       system: opts.system,
       messages: opts.messages,
       ...(opts.tools?.length
