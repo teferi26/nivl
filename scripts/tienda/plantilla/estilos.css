@@ -2,6 +2,7 @@
    Los números los pone maquetas.mjs como variables en <body>. */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { background: var(--colorFondo); }
+body { background-image: var(--fondoVelo), var(--fondoDegradado); }
 body {
   position: relative;
   width: var(--W);
@@ -53,6 +54,8 @@ body {
 }
 .linea { display: block; width: max-content; margin-inline: auto; white-space: nowrap; }
 .meandro { margin-top: var(--meandroGap); display: block; }
+.hilo { display: block; margin-top: var(--meandroGap); background: var(--colorHilo); }
+.dividida .hilo { margin-inline: 0; }
 .meandro path { fill: none; stroke: var(--colorMeandro); stroke-linecap: square; }
 
 .marco {

@@ -132,6 +132,9 @@ function prepararCopia(src, sha) {
   delete app.expo.owner;
   delete app.expo.runtimeVersion;
   app.expo.experiments = { ...app.expo.experiments, typedRoutes: false };
+  // El reloj se compila aparte (objetivos/watch.mjs): con -sdk iphonesimulator
+  // sus objetivos no compilan y la app de capturas no los necesita.
+  app.expo.plugins = (app.expo.plugins ?? []).filter((p) => (Array.isArray(p) ? p[0] : p) !== '@bacons/apple-targets');
   fs.writeFileSync(fApp, JSON.stringify(app, null, 2) + '\n');
 
   const fMetro = path.join(src, 'metro.config.js');

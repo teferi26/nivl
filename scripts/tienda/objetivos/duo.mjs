@@ -5,7 +5,6 @@
 // (su captura da «Timeout waiting for screen surfaces») y la interior sigue en
 // negro. Así que la interior queda pendiente en informe.json, sin reescalar ninguna
 // otra. Si un simulador futuro la enciende, sale sola: se comprueba en cada captura.
-import { grabarVideos } from '../video.mjs';
 import { TIPO, crearObjetivoIos } from './_apoyo/ios.mjs';
 
 export default crearObjetivoIos({
@@ -18,11 +17,11 @@ export default crearObjetivoIos({
     { salida: 'iphone-duo-interior', display: 3 },
   ],
   nota: 'La app no está optimizada para Duo: en la exterior corre en modo compatible, con una franja lateral del sistema a la derecha.',
-  // Apple solo admite 886x1920 en Duo y el simulador no da esa proporción: se graba
-  // en un iPhone 17 Pro Max, como decide video.mjs. Antes se libera el Duo.
+  // Apple solo admite 886x1920 en Duo y la pantalla exterior no da esa proporción.
+  // Grabarlo en otro iPhone sería presentar otro dispositivo como Duo: no se graba.
+  // En la ficha, si falta, Apple usa los vídeos de iPhone.
   async grabar(ctx) {
-    ctx.liberarSimuladores();
-    ctx.aviso('el vídeo de Duo sale de un iPhone 17 Pro Max, no del simulador de Duo');
-    return grabarVideos({ ...ctx, udid: undefined, salidaVideos: ctx.videosDe('iphone-duo-exterior') }, 'iphone-duo-exterior');
+    ctx.aviso('sin vídeo de Duo: 886x1920 no sale de su pantalla exterior; la ficha usa los de iPhone');
+    return [];
   },
 });

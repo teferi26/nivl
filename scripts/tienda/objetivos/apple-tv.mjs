@@ -27,6 +27,9 @@ function compilar(ctx, f) {
     return destino;
   }
   const dir = asegurarCopia('tv', f.sha, f.sha7, ctx.log);
+  // Release exige servidor configurado; las capturas usan la demo sin red (-nivlDemo),
+  // así que en esta copia desechable va una dirección que no existe y ninguna clave.
+  fs.writeFileSync(path.join(dir, 'tv/Config/Servidor.local.xcconfig'), 'NIVL_SUPABASE_URL = https:/$()/capturas.invalid\nNIVL_SUPABASE_CLAVE = capturas\n');
   const derivados = path.join(CACHE, `derived-tv-${f.sha7}`);
   const archivoLog = path.join(CACHE, `xcodebuild-tv-${f.sha7}.log`);
   ctx.log(`compilando Apple TV; registro en ${archivoLog}`);
@@ -69,7 +72,7 @@ export default {
       for (const [i, e] of ESCENAS.entries()) {
         const archivo = path.join(ctx.salida, `${String(i + 1).padStart(2, '0')}-${e.id}.png`);
         fs.mkdirSync(ctx.salida, { recursive: true });
-        await lanzarAsentada(udid, bundle, [...e.args, '-AppleLanguages', '(es)', '-AppleLocale', 'es_ES'], `${archivo}.espera.png`, { minMs: 4000, maxMs: 30000 });
+        await lanzarAsentada(udid, bundle, ['-nivlDemo', '1', ...e.args, '-AppleLanguages', '(es)', '-AppleLocale', 'es_ES'], `${archivo}.espera.png`, { minMs: 4000, maxMs: 30000 });
         const { ancho, alto } = fotoSimulador(udid, archivo);
         if (ancho !== 3840 || alto !== 2160) throw new Error(`Apple TV: ${ancho}x${alto}, se esperaba 3840x2160`);
         ctx.log(`${e.id}: ${ancho}x${alto}`);

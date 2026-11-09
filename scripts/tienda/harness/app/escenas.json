@@ -1,75 +1,332 @@
 {
   "escenas": [
-    { "id": "hoy", "titulo": "Hoy", "ruta": "/(tabs)" },
-    { "id": "coach", "titulo": "Coach", "ruta": "/(tabs)/coach" },
-    { "id": "habitos", "titulo": "Hábitos", "ruta": "/(tabs)/habitos" },
-    { "id": "campanas", "titulo": "Campañas", "ruta": "/(tabs)/mazmorras" },
-    { "id": "avance", "titulo": "Avance", "ruta": "/(tabs)/avance" },
-    { "id": "arena", "titulo": "Arena", "ruta": "/(tabs)/arena" },
-    { "id": "perfil", "titulo": "Perfil", "ruta": "/(tabs)/perfil" },
-    { "id": "agenda", "titulo": "Agenda", "ruta": "/(tabs)/agenda" },
-    { "id": "amigos", "titulo": "Amigos", "ruta": "/amigos" },
+    {
+      "id": "hoy",
+      "titulo": "Hoy",
+      "ruta": "/(tabs)"
+    },
+    {
+      "id": "coach",
+      "titulo": "Coach",
+      "ruta": "/(tabs)/coach"
+    },
+    {
+      "id": "habitos",
+      "titulo": "Hábitos",
+      "ruta": "/(tabs)/habitos"
+    },
+    {
+      "id": "campanas",
+      "titulo": "Campañas",
+      "ruta": "/(tabs)/mazmorras"
+    },
+    {
+      "id": "avance",
+      "titulo": "Avance",
+      "ruta": "/(tabs)/avance"
+    },
+    {
+      "id": "arena",
+      "titulo": "Arena",
+      "ruta": "/(tabs)/arena"
+    },
+    {
+      "id": "perfil",
+      "titulo": "Perfil",
+      "ruta": "/(tabs)/perfil"
+    },
+    {
+      "id": "agenda",
+      "titulo": "Agenda",
+      "ruta": "/(tabs)/agenda"
+    },
+    {
+      "id": "amigos",
+      "titulo": "Amigos",
+      "ruta": "/amigos"
+    },
     {
       "id": "amigos-seguridad",
       "titulo": "Amigos: denunciar y bloquear",
       "ruta": "/amigos",
-      "pasos": [{ "pulsar": { "etiqueta": "Más opciones con Lucía" } }],
-      "alSalir": [{ "pulsar": { "texto": "Cerrar" } }]
+      "pasos": [
+        {
+          "pulsar": {
+            "etiqueta": "Más opciones con Lucía"
+          }
+        }
+      ],
+      "alSalir": [
+        {
+          "pulsar": {
+            "texto": "Cerrar"
+          }
+        }
+      ]
     },
-    { "id": "pro", "titulo": "NIVL Pro con la tienda cerrada", "ruta": "/pro", "plan": "free" }
+    {
+      "id": "pro",
+      "titulo": "NIVL Pro con la tienda cerrada",
+      "ruta": "/pro",
+      "plan": "free"
+    },
+    {
+      "id": "iron-hoy",
+      "titulo": "IRON",
+      "ruta": "/(tabs)",
+      "pasos": [
+        {
+          "modo": "iron"
+        },
+        {
+          "ir": "/(iron)/iron-hoy"
+        }
+      ],
+      "alSalir": [
+        {
+          "modo": "general"
+        },
+        {
+          "ir": "/(tabs)"
+        }
+      ],
+      "asentar": 4000
+    },
+    {
+      "id": "focus-hoy",
+      "titulo": "FOCUS",
+      "ruta": "/(tabs)",
+      "pasos": [
+        {
+          "modo": "focus"
+        },
+        {
+          "ir": "/(focus)/focus-hoy"
+        }
+      ],
+      "alSalir": [
+        {
+          "modo": "general"
+        },
+        {
+          "ir": "/(tabs)"
+        }
+      ],
+      "asentar": 4000
+    },
+    {
+      "id": "work-hoy",
+      "titulo": "WORK",
+      "ruta": "/(tabs)",
+      "pasos": [
+        {
+          "modo": "work"
+        },
+        {
+          "ir": "/(work)/work-hoy"
+        }
+      ],
+      "alSalir": [
+        {
+          "modo": "general"
+        },
+        {
+          "ir": "/(tabs)"
+        }
+      ],
+      "asentar": 4000
+    },
+    {
+      "id": "founder-hoy",
+      "titulo": "FOUNDER",
+      "ruta": "/(tabs)",
+      "pasos": [
+        {
+          "modo": "founder"
+        },
+        {
+          "ir": "/(founder)/founder-hoy"
+        }
+      ],
+      "alSalir": [
+        {
+          "modo": "general"
+        },
+        {
+          "ir": "/(tabs)"
+        }
+      ],
+      "asentar": 4000
+    },
+    {
+      "id": "rueda",
+      "titulo": "Rueda de modos",
+      "ruta": "/(tabs)",
+      "pasos": [
+        {
+          "accion": {
+            "etiqueta": "Modo NIVL"
+          }
+        }
+      ],
+      "alSalir": [
+        {
+          "pulsar": {
+            "etiqueta": "Rueda de modos"
+          }
+        }
+      ],
+      "asentar": 2200
+    }
   ],
   "giras": {
     "corta": [
-      { "ir": "/(tabs)" },
-      { "espera": 2000 },
-      { "desplazar": 620, "ms": 3200 },
-      { "espera": 700 },
-      { "desplazar": 0, "ms": 1600 },
-      { "ir": "/(tabs)/coach" },
-      { "espera": 3600 },
-      { "ir": "/(tabs)/mazmorras" },
-      { "espera": 1400 },
-      { "desplazar": 320, "ms": 2000 },
-      { "ir": "/(tabs)/arena" },
-      { "espera": 1400 },
-      { "desplazar": 360, "ms": 2000 },
-      { "ir": "/(tabs)/perfil" },
-      { "espera": 2000 }
+      {
+        "ir": "/(tabs)",
+        "espera": 1800
+      },
+      {
+        "desplazar": 500,
+        "ms": 1800
+      },
+      {
+        "espera": 400
+      },
+      {
+        "ir": "/(tabs)/coach",
+        "espera": 2200
+      },
+      {
+        "modo": "iron"
+      },
+      {
+        "ir": "/(iron)/iron-hoy",
+        "espera": 2200
+      },
+      {
+        "desplazar": 400,
+        "ms": 1800
+      },
+      {
+        "espera": 400
+      },
+      {
+        "modo": "focus"
+      },
+      {
+        "ir": "/(focus)/focus-hoy",
+        "espera": 2400
+      },
+      {
+        "modo": "general"
+      },
+      {
+        "ir": "/(tabs)",
+        "espera": 1200
+      },
+      {
+        "accion": {
+          "etiqueta": "Modo NIVL"
+        },
+        "espera": 3200
+      }
     ],
     "larga": [
-      { "ir": "/(tabs)" },
-      { "espera": 2600 },
-      { "desplazar": 640, "ms": 4200 },
-      { "espera": 1200 },
-      { "desplazar": 1200, "ms": 3400 },
-      { "espera": 1000 },
-      { "desplazar": 0, "ms": 2400 },
-      { "ir": "/(tabs)/habitos" },
-      { "espera": 1800 },
-      { "desplazar": 500, "ms": 3000 },
-      { "espera": 800 },
-      { "ir": "/(tabs)/coach" },
-      { "espera": 5200 },
-      { "ir": "/(tabs)/agenda" },
-      { "espera": 2000 },
-      { "desplazar": 400, "ms": 2600 },
-      { "espera": 800 },
-      { "ir": "/(tabs)/mazmorras" },
-      { "espera": 1800 },
-      { "desplazar": 420, "ms": 2800 },
-      { "espera": 800 },
-      { "ir": "/(tabs)/avance" },
-      { "espera": 2000 },
-      { "desplazar": 700, "ms": 4000 },
-      { "espera": 800 },
-      { "ir": "/(tabs)/arena" },
-      { "espera": 1800 },
-      { "desplazar": 460, "ms": 2800 },
-      { "espera": 800 },
-      { "ir": "/(tabs)/perfil" },
-      { "espera": 2000 },
-      { "desplazar": 500, "ms": 3000 },
-      { "espera": 1600 }
+      {
+        "ir": "/(tabs)"
+      },
+      {
+        "espera": 2600
+      },
+      {
+        "desplazar": 640,
+        "ms": 4200
+      },
+      {
+        "espera": 1200
+      },
+      {
+        "desplazar": 1200,
+        "ms": 3400
+      },
+      {
+        "espera": 1000
+      },
+      {
+        "desplazar": 0,
+        "ms": 2400
+      },
+      {
+        "ir": "/(tabs)/habitos"
+      },
+      {
+        "espera": 1800
+      },
+      {
+        "desplazar": 500,
+        "ms": 3000
+      },
+      {
+        "espera": 800
+      },
+      {
+        "ir": "/(tabs)/coach"
+      },
+      {
+        "espera": 5200
+      },
+      {
+        "ir": "/(tabs)/agenda"
+      },
+      {
+        "espera": 2000
+      },
+      {
+        "desplazar": 400,
+        "ms": 2600
+      },
+      {
+        "espera": 800
+      },
+      {
+        "ir": "/(tabs)/mazmorras"
+      },
+      {
+        "espera": 1800
+      },
+      {
+        "desplazar": 420,
+        "ms": 2800
+      },
+      {
+        "espera": 800
+      },
+      {
+        "ir": "/(tabs)/arena"
+      },
+      {
+        "espera": 1800
+      },
+      {
+        "desplazar": 460,
+        "ms": 2800
+      },
+      {
+        "espera": 800
+      },
+      {
+        "ir": "/(tabs)/perfil"
+      },
+      {
+        "espera": 2000
+      },
+      {
+        "desplazar": 500,
+        "ms": 3000
+      },
+      {
+        "espera": 1600
+      }
     ]
   }
 }

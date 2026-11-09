@@ -381,8 +381,10 @@ export async function grabarVideos(ctx, objetivo, { preview = true, largo = true
   try {
     return await conSimulador(ctx, id, async (udid) => {
       const hechos = [];
-      if (preview) hechos.push(await hacerPreview(ctx, udid, id, tmp));
+      // El largo va primero: la gira corta acaba con la rueda de modos abierta y
+      // el arnés no puede cerrarla, así que se taparía todo lo que viniera detrás.
       if (largo) hechos.push(await hacerLargo(ctx, udid, id, tmp));
+      if (preview) hechos.unshift(await hacerPreview(ctx, udid, id, tmp));
       return hechos;
     });
   } finally {

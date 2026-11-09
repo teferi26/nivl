@@ -105,3 +105,9 @@ Resultado de la última tanda de muestra (2 escenas), validada con `validar.mjs`
 Colores, tipos, nombre de marca y textos están en `scripts/tienda/plantilla/tema.mjs`. Para un rediseño no hace falta tocar la plantilla: se escribe un módulo con solo lo que cambia y se pasa su ruta en `NIVL_TIENDA_TEMA` (el formato está en la cabecera de `tema.mjs`). Los textos por escena de ese módulo tienen preferencia sobre `plantilla/textos.mjs`. La composición (márgenes, marco, arcos) sigue en `plantilla/maquetas.mjs`.
 
 Las pantallas actuales van a cambiar con la 1.1: la tanda de esta rama es una prueba de la tubería y no material para subir.
+
+## Tanda 1.1 (cc95408)
+
+Tema Ónix en `plantilla/tema.mjs` (Playfair Display y Outfit, hilo de oro, sin arcos ni meandro). Escenas de ficha: Hoy, Coach, rueda, IRON, FOCUS, WORK, FOUNDER, Arena, Hábitos y Campañas. Quedan fuera Pro (con la tienda cerrada dice que no está disponible) y Avance (su rejilla de 28 días se pinta rota en la app: `celda` con ancho en % y `aspectRatio` en `AvanceVista.tsx`).
+
+`--final` no exige lo que no se puede capturar y lo escribe en `informe.json` (`noCapturables`): Mac sin app nativa y pantalla interior del Duo. El Duo no graba vídeo: hacerlo en otro iPhone sería presentar otro dispositivo como Duo.

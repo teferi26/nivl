@@ -10,7 +10,7 @@ import * as FS from 'expo-file-system/legacy';
 import { router } from 'expo-router';
 import guion from './escenas.json';
 
-type Paso = { ir?: string; espera?: number; desplazar?: number | 'fin'; ms?: number; pulsar?: Objetivo };
+type Paso = { accion?: Objetivo; modo?: string; ir?: string; espera?: number; desplazar?: number | 'fin'; ms?: number; pulsar?: Objetivo };
 type Objetivo = { etiqueta?: string; texto?: string };
 type Escena = { id: string; titulo: string; ruta: string; plan?: string; pasos?: Paso[]; alSalir?: Paso[]; asentar?: number };
 type Fibra = {
@@ -155,8 +155,44 @@ async function ir(ruta: string): Promise<void> {
   router.navigate(ruta as never);
 }
 
+/** Lanza la acción de accesibilidad «activate» de la vista con esa etiqueta (la rueda es un gesto). */
+async function activar(o: Objetivo): Promise<void> {
+  const visitar = (f: Fibra | null): Fibra | null => {
+    for (let n = f; n; n = n.sibling) {
+      const pr = n.memoizedProps;
+      if (pr?.onAccessibilityAction && pr.accessibilityLabel === o.etiqueta) return n;
+      const h = visitar(n.child);
+      if (h) return h;
+    }
+    return null;
+  };
+  const f = visitar(raiz());
+  if (!f) throw new Error(`Nada que activar: ${JSON.stringify(o)}`);
+  f.memoizedProps.onAccessibilityAction({ nativeEvent: { actionName: 'activate' } });
+  await dormir(700);
+}
+
+/** Cambia el modo con el `cambiar` real de ModoProvider (se busca en el árbol). */
+async function cambiarModo(modo: string): Promise<void> {
+  const visitar = (f: Fibra | null): ((m: string) => void) | null => {
+    for (let n = f; n; n = n.sibling) {
+      const v = n.memoizedProps?.value;
+      if (v && typeof v.cambiar === 'function' && typeof v.guardarActivados === 'function') return v.cambiar;
+      const hallado = visitar(n.child);
+      if (hallado) return hallado;
+    }
+    return null;
+  };
+  const cambiar = visitar(raiz());
+  if (!cambiar) throw new Error('No encuentro ModoProvider');
+  cambiar(modo);
+  await dormir(400);
+}
+
 async function correrPasos(pasos: Paso[]): Promise<void> {
   for (const p of pasos) {
+    if (p.modo) await cambiarModo(p.modo);
+    if (p.accion) await activar(p.accion);
     if (p.ir) {
       await ir(p.ir);
       await dormir(120);

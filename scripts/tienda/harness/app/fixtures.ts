@@ -65,6 +65,21 @@ quests.forEach((q, i) => {
   }
 });
 
+// Misiones de los modos: prioridades de WORK (duran el día) y lo de FOUNDER y FOCUS.
+([
+  ['Cerrar la propuesta del cliente', 'INT', 'dificil', ['work'], true],
+  ['Revisar el presupuesto del proyecto', 'INT', 'media', ['work'], true],
+  ['Preparar la reunión del jueves', 'AGI', 'media', ['work'], true],
+  ['Hablar con tres clientes', 'AGI', 'dificil', ['founder'], false],
+  ['Publicar la nueva página de precios', 'INT', 'media', ['founder'], false],
+  ['Repasar el Tema 4', 'INT', 'media', ['focus'], false],
+] as const).forEach(([title, stat, difficulty, modes, porDia], i) => {
+  quests.push({
+    ...quests[0], id: id(140 + i), title, stat, difficulty, modes: [...modes], link: 'ninguno',
+    ...(porDia ? { work_day: fecha() } : {}),
+  });
+});
+
 const PLAN = id(300);
 const bloques: Fila[] = ([
   [420, 440, 'Leer 20 minutos', 'estudio', 'Un capítulo antes de empezar.', id(100), true],
@@ -212,11 +227,25 @@ export const tablasArnes: Record<string, Fila[]> = {
     wins: ['Terminé un capítulo', 'Dejé mi espacio preparado'], lesson: 'Un paso pequeño es más fácil de empezar.',
     gratitude: 'Una conversación con un amigo.', sleep_hours: 7.5, created_at: en(-1, '21:30:00'),
   }],
-  journal_photos: [], quest_photos: [], recaps: [], letters: [], bonus_redemptions: [],
+  journal_photos: [], quest_photos: [], recaps: [], letters: [{ id: id(790), user_id: YO, body: 'Dentro de un año quiero seguir aquí, con la misma calma y la misma constancia.', sealed_at: en(-120), open_at: fecha(245), opened_at: null }], bonus_redemptions: [],
   cardio_sessions: [], nutrition_targets: [], nutrition_logs: [], meal_slots: [], shopping_items: [],
   progress_photos: [], push_tokens: [], subscriptions: [], app_feedback: [],
-  user_modes: [], mode_xp: [],
-  focus_subjects: [], focus_topics: [], focus_decks: [], focus_cards: [], focus_sessions: [], focus_exams: [], focus_classes: [], focus_grades: [],
+  user_modes: ['iron', 'focus', 'work', 'founder'].map((mode) => ({ user_id: YO, mode, enabled: true })),
+  mode_xp: [['iron', 2140], ['focus', 980], ['work', 1560], ['founder', 410]].map(([mode, xp]) => ({ user_id: YO, mode, xp })),
+  focus_subjects: [
+    { id: id(860), user_id: YO, name: 'Historia', position: 0, archived: false, target_grade: 8, lap: 1 },
+    { id: id(861), user_id: YO, name: 'Matemáticas', position: 1, archived: false, target_grade: 7, lap: 1 },
+    { id: id(862), user_id: YO, name: 'Lengua', position: 2, archived: false, target_grade: 9, lap: 1 },
+  ],
+  focus_topics: Array.from({ length: 12 }, (_, i) => ({
+    id: id(870 + i), user_id: YO, subject_id: id(860 + (i % 3)), exam_id: id(865 + (i % 2)), name: `Tema ${Math.floor(i / 3) + 1}`, status: i < 5 ? 'dominado' : i < 8 ? 'estudiando' : 'pendiente',
+    position: i, review_stage: i < 5 ? 2 : 0, review_due: i < 5 ? fecha(3) : null, section: null, last_reviewed_on: i < 5 ? fecha(-4) : null, created_at: en(-30),
+  })),
+  focus_decks: [], focus_cards: [], focus_sessions: [],
+  focus_exams: [
+    { id: id(865), user_id: YO, subject_id: id(860), title: 'Parcial de Historia', exam_date: fecha(9), weight: 40, exam_time: '09:00', date_estimated: false, kind: 'parcial', done_on: null },
+    { id: id(866), user_id: YO, subject_id: id(861), title: 'Examen de Matemáticas', exam_date: fecha(18), weight: 60, exam_time: '10:30', date_estimated: false, kind: 'final', done_on: null },
+  ], focus_classes: [], focus_grades: [],
 };
 
 const tablero: Fila[] = ([
@@ -256,7 +285,8 @@ const IA_GRATIS = {
 /** El resultado de cada RPC; undefined = sin fixture (como función inexistente). */
 export function rpcArnes(nombre: string, args: Fila): unknown {
   switch (nombre) {
-    case 'app_flags': return {};
+    case 'app_flags': return { modos_1011: true };
+    case 'mis_modos': return { modos: ['iron', 'focus', 'work', 'founder'], plan: 'todos_anual', producto: 'nivl_todos_anual', expira: fecha(200), trial: false };
     case 'my_age_confirmation': return true;
     case 'my_adult_confirmation': return true;
     case 'my_health_consent':

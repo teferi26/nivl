@@ -36,7 +36,8 @@ test('seleccionar acepta el id del objetivo y el de su salida, sin repetir', () 
 });
 
 test('faltanParaFinal nombra las salidas sin objetivo', () => {
-  assert.deepEqual(faltanParaFinal([duo], ['iphone-duo-exterior', 'mac']), ['mac']);
+  assert.deepEqual(faltanParaFinal([duo], ['iphone-duo-exterior', 'apple-tv']), ['apple-tv']);
+  assert.deepEqual(faltanParaFinal([duo], ['iphone-duo-exterior', 'mac']), [], 'lo no capturable no se exige');
   assert.deepEqual(faltanParaFinal([duo, mac], ['iphone-duo-exterior', 'mac']), []);
 });
 

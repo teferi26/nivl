@@ -66,8 +66,8 @@ test('los textos cumplen las reglas de la marca', () => {
     assert.doesNotMatch(todo, /[—–]/, `${id}: guion largo`);
     assert.doesNotMatch(todo, /cazador|mazmorra|solo leveling/i, `${id}: vocabulario`);
     assert.doesNotMatch(todo, /€|\beuros?\b|\bgratis\b|\bmejor que\b/i, `${id}: precio o comparativa`);
-    for (const l of titular) assert.equal(l, l.toUpperCase(), `${id}: titular en mayúsculas`);
-    for (const l of titular) assert.ok(l.length <= 16, `${id}: «${l}» demasiado largo`);
+    for (const l of titular) assert.notEqual(l, l.toUpperCase(), `${id}: titular en caja de frase (Ónix)`);
+    for (const l of titular) assert.ok(l.length <= 18, `${id}: «${l}» demasiado largo`);
   }
 });
 
@@ -83,15 +83,18 @@ test('el tema mezcla solo lo que cambia y llega al CSS', () => {
   assert.equal(tema.color.titular, '#eeeeee');
   assert.equal(tema.color.fondo, TEMA.color.fondo);
   assert.equal(tema.tipos.titular.peso, TEMA.tipos.titular.peso);
-  assert.equal(TEMA.color.titular, '#ffffff', 'no muta el tema base');
+  assert.equal(TEMA.color.titular, '#f5f2ec', 'no muta el tema base');
   const css = cssTema(tema);
   assert.match(css, /--colorTitular:#eeeeee/);
   assert.match(css, /--titularFamilia:'Otra'/);
 });
 
-test('el tema base es monocromo', () => {
-  for (const hex of Object.values(TEMA.color)) {
-    const [r, g, b] = hex.slice(1).match(/../g);
-    assert.ok(r === g && g === b, `${hex} no es gris`);
+test('el tema base usa solo colores de Ónix', () => {
+  const permitidos = ['#09090b', '#2a2a2c', '#4a494c', '#c9a961', '#f5f2ec', '#b8b4ab'];
+  for (const [clave, valor] of Object.entries(TEMA.color)) {
+    if (clave === 'degradado' || clave === 'velo') continue;
+    assert.ok(permitidos.includes(valor), `${clave}: ${valor}`);
   }
+  assert.equal(TEMA.motivos.arcos, false);
+  assert.equal(TEMA.motivos.meandro, false);
 });

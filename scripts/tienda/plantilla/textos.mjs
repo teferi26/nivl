@@ -9,72 +9,92 @@
 export const TEXTOS = {
   // Los cinco de la ficha 1.0.10.
   hoy: {
-    titular: ['SUBE DE NIVEL', 'CADA DÍA'],
+    titular: ['Sube de nivel', 'cada día'],
     sub: ['Misiones, racha y rango.', 'Tu vida, convertida en arena.'],
   },
   coach: {
-    titular: ['UN COACH QUE', 'MANDA EN TU DÍA'],
-    sub: ['Con NIVL Pro o Élite. Te escribe el plan', 'y ordena tus horas.'],
+    titular: ['Un coach que', 'manda en tu día'],
+    sub: ['Con suscripción. Te escribe el plan', 'y ordena tus horas.'],
   },
   habitos: {
-    titular: ['TUS REGLAS.', 'TU CONTRATO.'],
+    titular: ['Tus reglas.', 'Tu contrato.'],
     sub: ['Firma tus normas y cúmplelas.', 'Cada fallo tiene consecuencia.'],
   },
   campanas: {
-    titular: ['CONQUISTA', 'TUS METAS'],
+    titular: ['Conquista', 'tus metas'],
     sub: ['Campañas con fecha, jefe final', 'y botín al despejarlas.'],
   },
   perfil: {
-    titular: ['DE RANGO E', 'A RANGO S'],
+    titular: ['De rango E', 'a rango S'],
     sub: ['Cada día cuenta. Cada nivel se gana.', 'Nadie te lo regala.'],
   },
   // Nuevos, en la misma voz.
   agenda: {
-    titular: ['TU DÍA', 'EN ORDEN'],
+    titular: ['Tu día', 'en orden'],
     sub: ['Bloques, horas y misiones.', 'Cada hora tiene su batalla.'],
   },
   gym: {
-    titular: ['CADA SERIE', 'QUEDA ESCRITA'],
+    titular: ['Cada serie', 'queda escrita'],
     sub: ['Cargas, récords y progresión.', 'El hierro lleva la cuenta.'],
   },
   cardio: {
-    titular: ['CADA ZANCADA', 'QUEDA ESCRITA'],
+    titular: ['Cada zancada', 'queda escrita'],
     sub: ['Ritmo, distancia y zonas.', 'El camino también es arena.'],
   },
   nutricion: {
-    titular: ['LO QUE COMES', 'TAMBIÉN PELEA'],
+    titular: ['Lo que comes', 'también pelea'],
     sub: ['Comidas, proteína y objetivo.', 'Sin excusas en el plato.'],
   },
   finanzas: {
-    titular: ['TU DINERO', 'A LA VISTA'],
+    titular: ['Tu dinero', 'a la vista'],
     sub: ['Gasto, cargos y meses de aire.', 'Mides tú. Decides tú.'],
   },
   diario: {
-    titular: ['ESCRIBE', 'TU CRÓNICA'],
+    titular: ['Escribe', 'tu crónica'],
     sub: ['Cada noche, lo que hiciste.', 'La arena tiene memoria.'],
   },
   amigos: {
-    titular: ['NO LUCHAS', 'SOLO'],
-    sub: ['Amigos, clasificación y ludus.', 'Cada uno responde de lo suyo.'],
+    titular: ['No luchas', 'solo'],
+    sub: ['Amigos, clasificación y duelos.', 'Cada uno responde de lo suyo.'],
   },
   foco: {
-    titular: ['UNA BATALLA', 'CADA VEZ'],
+    titular: ['Una batalla', 'cada vez'],
     sub: ['Bloques de foco sin ruido.', 'Cierra lo que empiezas.'],
   },
+  rueda: {
+    titular: ['Un modo', 'para cada batalla'],
+    sub: ['IRON, FOCUS, WORK y FOUNDER.', 'Cada uno con su mundo.'],
+  },
+  'iron-hoy': {
+    titular: ['Tu cuerpo,', 'por escrito'],
+    sub: ['Sesiones, cargas y progresión.', 'Con su coach, por suscripción.'],
+  },
+  'focus-hoy': {
+    titular: ['Una batalla', 'cada vez'],
+    sub: ['Bloques, temario y exámenes.', 'Con su coach, por suscripción.'],
+  },
+  'work-hoy': {
+    titular: ['Tu jornada,', 'bajo control'],
+    sub: ['Bloques, proyectos y entregas.', 'Con su coach, por suscripción.'],
+  },
+  'founder-hoy': {
+    titular: ['Tu negocio,', 'a la vista'],
+    sub: ['Agenda, decisiones y números.', 'Con su coach, por suscripción.'],
+  },
   avances: {
-    titular: ['CADA MARCA', 'CUENTA'],
+    titular: ['Cada marca', 'cuenta'],
     sub: ['Peso, fotos y tendencias.', 'Tu historia, en cifras.'],
   },
   resumen: {
-    titular: ['CADA SEMANA', 'RINDES CUENTAS'],
+    titular: ['Cada semana', 'rindes cuentas'],
     sub: ['Lo hecho y lo pendiente.', 'El sistema no olvida.'],
   },
   pro: {
-    titular: ['EL COACH', 'EN TU ARENA'],
+    titular: ['El coach', 'en tu arena'],
     sub: ['NIVL Pro: el sistema te lee el día', 'y te dice qué toca.'],
   },
   onboarding: {
-    titular: ['ENTRA EN', 'LA ARENA'],
+    titular: ['Entra en', 'la arena'],
     sub: ['Eliges tu perfil y tus reglas.', 'Firmas. Empieza el combate.'],
   },
 };

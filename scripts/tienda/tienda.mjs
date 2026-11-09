@@ -23,9 +23,11 @@ import { grabarVideos, videoDisponible } from './video.mjs';
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const RAIZ_REPO = path.resolve(AQUI, '../..');
 
-// Las de la ficha, en orden, hasta 10. Fuera: amigos (su titular es el de arena) y
+// Las de la ficha, en orden, hasta 10. Fuera además: pro (con la tienda cerrada dice
+// «no disponible») y avance (su rejilla de 28 días se pinta rota en la app).
+// Fuera: amigos (su titular es el de arena) y
 // amigos-seguridad (denunciar y bloquear es para la revisión de Apple, no para vender).
-export const ESCENAS_TIENDA = Object.freeze(['hoy', 'coach', 'habitos', 'campanas', 'avance', 'arena', 'perfil', 'agenda', 'pro']);
+export const ESCENAS_TIENDA = Object.freeze(['hoy', 'coach', 'rueda', 'iron-hoy', 'focus-hoy', 'work-hoy', 'founder-hoy', 'arena', 'habitos', 'campanas']);
 export const ESCENAS_MUESTRA = Object.freeze(['hoy', 'coach']);
 
 const USO = 'Uso: node scripts/tienda/tienda.mjs --commit <sha> [--muestra] [--objetivos a,b] [--sin-video] [--final] [--fuente-tv <sha>] [--fuente-watch <sha>]';
@@ -69,10 +71,17 @@ export function seleccionar(objetivos, pedidos) {
   return objetivos.filter((o) => elegidos.has(o));
 }
 
-/** Puro. Los ids de specs que ningún objetivo disponible cubre. */
+// Lo que no se puede capturar de verdad en este Mac: no se sustituye por otro
+// dispositivo y --final no lo exige, pero queda escrito en informe.json.
+export const NO_CAPTURABLES = Object.freeze({
+  mac: 'NIVL no tiene app nativa de Mac y no hay simulador de macOS; la web a tamaño de escritorio sería otro producto. Una app de iPad en Mac usa las capturas de iPad.',
+  'iphone-duo-interior': 'El simulador de Duo arranca plegado y simctl no lo despliega: la pantalla interior sale en negro.',
+});
+
+/** Puro. Los ids de specs que ningún objetivo disponible cubre y que sí se pueden capturar. */
 export function faltanParaFinal(disponibles, ids = IDS_OBJETIVOS) {
   const cubiertos = new Set(disponibles.flatMap(salidasDe));
-  return ids.filter((id) => !cubiertos.has(id));
+  return ids.filter((id) => !cubiertos.has(id) && !NO_CAPTURABLES[id]);
 }
 
 /** Puro. ¿Ese tamaño es uno de los que Apple admite para esa salida? */
@@ -307,14 +316,14 @@ export async function ejecutar(opciones) {
 
     if (opciones.final) {
       const faltan = faltanParaFinal(disponibles);
-      if (faltan.length || informe.saltados.length) {
-        informe.fallos.push({ id: 'final', error: `--final exige todos los objetivos y faltan: ${faltan.join(', ') || informe.saltados.map((s) => s.id).join(', ')}` });
+      const saltadosDeVerdad = informe.saltados.filter((s) => !NO_CAPTURABLES[s.id]);
+      if (faltan.length || saltadosDeVerdad.length) {
+        informe.fallos.push({ id: 'final', error: `--final exige todos los objetivos y faltan: ${faltan.join(', ') || saltadosDeVerdad.map((s) => s.id).join(', ')}` });
         log(informe.fallos[0].error);
         return 1;
       }
     }
 
-    navegador = await abrirNavegador();
     const base = { rutas, log, comun };
     for (const o of disponibles) {
       for (const s of salidasDe(o)) informe.objetivos.push({ id: s, familia: o.familia, objetivo: o.id, nota: o.nota });
@@ -322,7 +331,19 @@ export async function ejecutar(opciones) {
       (informe.resultados ??= []).push(resultado);
       const inicio = Date.now();
       try {
-        await procesarObjetivo(o, base, opciones, navegador, resultado);
+        // Un Chrome por objetivo: en una tanda larga el proceso puede morir
+        // (actualizaciones de Chrome) y no debe arrastrar a los siguientes.
+        await navegador?.cerrar().catch(() => {});
+        navegador = await abrirNavegador();
+        try {
+          await procesarObjetivo(o, base, opciones, navegador, resultado);
+        } catch (e) {
+          // Los simuladores fallan a veces al lanzar la app: un reintento limpio.
+          log(`[${o.id}] reintento tras: ${textoError(e)}`);
+          await navegador.cerrar().catch(() => {});
+          navegador = await abrirNavegador();
+          await procesarObjetivo(o, base, opciones, navegador, resultado);
+        }
       } catch (e) {
         resultado.ok = false;
         resultado.error = textoError(e);
@@ -334,7 +355,8 @@ export async function ejecutar(opciones) {
     }
 
     const resultados = informe.resultados ?? [];
-    const pendientes = resultados.flatMap((r) => r.pendientes ?? []);
+    const pendientes = resultados.flatMap((r) => r.pendientes ?? []).filter((p) => !NO_CAPTURABLES[p.salida]);
+    informe.noCapturables = NO_CAPTURABLES;
     informe.validacion = { ok: resultados.length > 0 && resultados.every((r) => r.ok) };
     informe.final = opciones.final && informe.validacion.ok && pendientes.length === 0;
     if (opciones.final && pendientes.length) codigo = 1;

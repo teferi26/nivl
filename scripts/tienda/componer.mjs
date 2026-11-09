@@ -227,7 +227,11 @@ function svgArcos({ W, H, arcos }) {
   return `<svg class="arcos" viewBox="0 0 ${W} ${H}" aria-hidden="true">${paths}</svg>`;
 }
 
-function svgMeandro({ meandroUnidad: u, meandroAncho: ancho }) {
+function svgMeandro({ meandroUnidad: u, meandroAncho: ancho, W, trazo }, motivos) {
+  if (!motivos.meandro) {
+    if (!motivos.hilo) return '';
+    return `<span class="hilo" style="width:${Math.round(W * 0.12)}px;height:${Math.max(2, trazo)}px"></span>`;
+  }
   const k = u / 10;
   return (
     `<svg class="meandro" width="${ancho}" height="${u}" viewBox="0 0 ${ancho} ${u}" aria-hidden="true">` +
@@ -260,10 +264,10 @@ async function paginaHtml(m, texto, cruda) {
     ESTILOS: estilos,
     CLASE: `${m.modo} marco-${m.marcoTipo}`,
     VARIABLES: variables,
-    ARCOS: svgArcos(m),
+    ARCOS: tema.motivos.arcos ? svgArcos(m) : '',
     TITULO: partir(texto.titular, m.lineas),
     SUB: partir(texto.sub, m.subLineas),
-    MEANDRO: svgMeandro(m),
+    MEANDRO: svgMeandro(m, tema.motivos),
     CRUDA: pathToFileURL(resolve(cruda)).href,
   });
 }

@@ -16,27 +16,32 @@
 
 export const TEMA = {
   marca: 'NIVL',
-  // Valores de ink en src/design/tokens.ts.
+  // Valores de Ónix en src/design/tokens.ts (FONDO_ONIX, ink y oro).
   color: {
-    fondo: '#000000',
-    arcos: '#242424',
-    meandro: '#3a3a3a',
-    marca: '#8c8c8c',
-    titular: '#ffffff',
-    subtitulo: '#bdbdbd',
-    marcoExterior: '#8c8c8c',
-    marcoInterior: '#242424',
+    fondo: '#09090b',
+    degradado: 'linear-gradient(180deg, #121214 0%, #09090b 55%, #050506 100%)',
+    velo: 'radial-gradient(70% 40% at 50% 0%, rgba(201, 169, 97, 0.09) 0%, rgba(201, 169, 97, 0) 100%)',
+    arcos: '#2a2a2c',
+    hilo: '#c9a961',
+    meandro: '#4a494c',
+    marca: '#c9a961',
+    titular: '#f5f2ec',
+    subtitulo: '#b8b4ab',
+    marcoExterior: '#4a494c',
+    marcoInterior: '#2a2a2c',
   },
   tipos: {
-    marca: { familia: 'Cinzel', peso: 600, tracking: '0.34em' },
-    titular: { familia: 'Cinzel', peso: 700, tracking: '0.005em' },
-    subtitulo: { familia: 'Outfit', peso: 300, tracking: '0em' },
+    marca: { familia: 'Outfit', peso: 700, tracking: '0.34em' },
+    titular: { familia: 'Playfair Display', peso: 700, tracking: '0em' },
+    subtitulo: { familia: 'Outfit', peso: 500, tracking: '0em' },
   },
   archivosFuente: [
-    { familia: 'Cinzel', peso: 700, ruta: '@expo-google-fonts/cinzel/700Bold/Cinzel_700Bold.ttf' },
-    { familia: 'Cinzel', peso: 600, ruta: '@expo-google-fonts/cinzel/600SemiBold/Cinzel_600SemiBold.ttf' },
-    { familia: 'Outfit', peso: 300, ruta: '@expo-google-fonts/outfit/300Light/Outfit_300Light.ttf' },
+    { familia: 'Playfair Display', peso: 700, ruta: '@expo-google-fonts/playfair-display/700Bold/PlayfairDisplay_700Bold.ttf' },
+    { familia: 'Outfit', peso: 700, ruta: '@expo-google-fonts/outfit/700Bold/Outfit_700Bold.ttf' },
+    { familia: 'Outfit', peso: 500, ruta: '@expo-google-fonts/outfit/500Medium/Outfit_500Medium.ttf' },
   ],
+  // Ónix no lleva graderíos ni meandro: en su sitio, un hilo de oro.
+  motivos: { arcos: false, meandro: false, hilo: true },
   // Por escena; lo que no esté aquí sale de textos.mjs.
   textos: {},
 };
@@ -58,6 +63,9 @@ export function cssTema(tema) {
   const t = tema.tipos;
   const filas = {
     '--colorFondo': c.fondo,
+    '--fondoDegradado': c.degradado,
+    '--fondoVelo': c.velo,
+    '--colorHilo': c.hilo,
     '--colorArcos': c.arcos,
     '--colorMeandro': c.meandro,
     '--colorMarca': c.marca,

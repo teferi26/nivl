@@ -36,7 +36,7 @@
   const H = document.body.clientHeight;
   const marco = document.querySelector(".marco").getBoundingClientRect();
   const dividida = document.body.classList.contains("dividida");
-  const partes = [...document.querySelectorAll(".marca, .linea, .meandro")];
+  const partes = [...document.querySelectorAll(".marca, .linea, .meandro, .hilo")];
   const rects = partes.map((p) => p.getBoundingClientRect());
   for (const r of rects) {
     if (r.left < 0 || r.right > W || r.top < 0 || r.bottom > H) problemas.push("texto fuera del lienzo");
