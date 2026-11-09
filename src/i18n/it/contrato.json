@@ -88,7 +88,7 @@
       "placeholder": "Es. Niente social prima delle 12",
       "a11y": "Testo della regola",
       "consecuenciaEtiqueta": "Conseguenza se la infrangi",
-      "consecuenciaPlaceholder": "Es. Correre 5 km",
+      "consecuenciaPlaceholder": "Es. Riordinare casa per 30 minuti",
       "consecuenciaA11y": "Conseguenza dell'infrazione",
       "ayudaEditar": "Vale da oggi. La versione precedente si archivia con le sue infrazioni. Infrangerla costa −{{xp}} XP.",
       "ayudaNueva": "Infrangerla costa −{{xp}} XP. Rispettare la conseguenza lo stesso giorno li recupera."
@@ -109,11 +109,11 @@
     "plantilla": {
       "p1": {
         "texto": "Scrivere il diario ogni giorno: ciò che ho vissuto e il piano della giornata",
-        "consecuencia": "Correre 8 km"
+        "consecuencia": "1 giorno senza social"
       },
       "p2": {
         "texto": "Niente alcol",
-        "consecuencia": "1 giorno mangiando solo pulito"
+        "consecuencia": "1 giorno senza serie né streaming"
       },
       "p3": {
         "texto": "Niente caffeina",
@@ -121,11 +121,11 @@
       },
       "p4": {
         "texto": "Mangiare pulito ogni giorno",
-        "consecuencia": "Correre 4,5 km"
+        "consecuencia": "Riordinare casa per 30 minuti"
       },
       "p5": {
         "texto": "Se esco a fare festa senza essermelo guadagnato",
-        "consecuencia": "1 settimana di dieta rigida"
+        "consecuencia": "1 settimana senza uscire a far festa"
       },
       "p6": {
         "texto": "Nessun impegno si mette davanti ai miei obiettivi",

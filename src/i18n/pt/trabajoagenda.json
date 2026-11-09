@@ -1,7 +1,7 @@
 {
   "calendario": {
     "optInTitulo": "Ligar o calendário do telemóvel",
-    "optInCuerpo": "O título e as horas dos teus próximos 14 dias são copiados para a tua conta NIVL. Só leitura: o NIVL não altera o teu calendário. Ao desligar, o copiado é apagado.",
+    "optInCuerpo": "O título e as horas dos teus próximos 14 dias são copiados para a tua conta NIVL. Só leitura: o NIVL não altera o teu calendário. Ao desligar, o copiado é apagado. Se lhe deste permissão, o teu coach pode usá-los para organizar o teu dia.",
     "conectar": "Ligar",
     "desconectar": "Desligar e apagar o copiado",
     "eyebrow": "Calendário",

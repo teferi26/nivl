@@ -14,7 +14,7 @@
   "oraculo": {
     "normasRotas": "{{n}} regras quebradas em 14 dias",
     "proTitulo": "Análise semanal",
-    "proMensaje": "A análise do Oráculo faz parte do NIVL Pro. O relatório continua a ser teu."
+    "proMensaje": "A análise do Oráculo faz parte da subscrição. O relatório continua a ser teu."
   },
   "vista": {
     "hechoA11y": "{{titulo}}. {{detalle}}",

@@ -239,6 +239,25 @@ export function tipoCambioModo(
   return previo && previo.alcance !== 'todos' && productoPorId(nuevo)?.alcance === 'todos' ? 'subida' : 'cambio';
 }
 
+/**
+ * El aviso antes de cobrar cuando comprar `nuevo` deja de lado otro producto:
+ * en la tienda solo hay una suscripción activa por grupo. Pasar a los cuatro
+ * no quita nada, así que no avisa.
+ */
+export function avisoCambioModo(actual: string | null | undefined, nuevo: ProductoModoId): string | null {
+  if (tipoCambioModo(actual, nuevo) !== 'cambio') return null;
+  const previo = productoPorId(base(actual!));
+  return t('oferta:pago.aviso.cambio', {
+    actual: previo ? tituloProducto(previo.id) : t('oferta:pago.planAnterior'),
+    nuevo: tituloProducto(nuevo),
+  });
+}
+
+/** Tienda sana sin ningún producto: es un fallo con reintento, no una pantalla muerta. */
+export function catalogoTrasCargar(precios: Readonly<Record<string, unknown>>): 'listo' | 'error' {
+  return Object.keys(precios).length > 0 ? 'listo' : 'error';
+}
+
 /** El modo que se ofrece primero según el perfil de uso. */
 const MODO_DE_PERFIL: Readonly<Record<string, ModoDePago>> = {
   deportista: 'iron',
@@ -344,6 +363,7 @@ export function legalModo(
     t('oferta:pago.legal.tienda'),
     gestionTienda(plataforma),
     t('oferta:pago.legal.base'),
+    t('oferta:pago.legal.uso'),
     t('oferta:pago.legal.avisoIa'),
   ].join(' ');
 }

@@ -30,8 +30,12 @@ final class Almacen: NSObject, ObservableObject {
   private let claveEstado = "nivl.reloj.estado"
 
   override init() {
+    #if DEBUG
     let args = ProcessInfo.processInfo.arguments
     modoDemo = UserDefaults.standard.bool(forKey: "nivlDemo") || args.contains("-nivlDemo")
+    #else
+    modoDemo = false
+    #endif
     super.init()
     if modoDemo {
       estado = Demo.estado()

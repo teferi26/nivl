@@ -37,7 +37,7 @@
       "eyebrow": "Schwur besiegelt",
       "titulo": "Jetzt: wer ihn anführt.",
       "linea": "Dein Schwur ist besiegelt. Der Coach kann ab morgen deinen Tag anführen.",
-      "enlace": "NIVL Pro ansehen",
+      "enlace": "Abos ansehen",
       "contexto": "Dein Schwur ist besiegelt. NIVL bleibt komplett kostenlos; Pro fügt den Coach hinzu, der ihn anführt."
     }
   },
@@ -119,7 +119,8 @@
         "otra": "Du verwaltest und kündigst es jederzeit in dem Store, in dem du es abgeschlossen hast."
       },
       "base": "NIVL und deine Gewohnheiten bleiben kostenlos.",
-      "avisoIa": "NIVL ist eine KI, keine medizinische Fachkraft."
+      "avisoIa": "NIVL ist eine KI, keine medizinische Fachkraft.",
+      "uso": "Automatisierte oder ungewöhnliche Nutzung kann den Coach vorübergehend pausieren."
     },
     "enlace": {
       "restaurar": "Wiederherstellen",
@@ -133,7 +134,8 @@
       "pendiente": "Kauf vom Store bestätigt. Der Modus öffnet sich in wenigen Sekunden; falls nicht, tippe auf Wiederherstellen.",
       "programada": "Änderung vom Store bestätigt. Sie gilt ab deiner nächsten Verlängerung; bis dahin bleibt dein aktueller Tarif.",
       "sinPermiso": "Für den Coach musst du der Übermittlung deiner Daten an den KI-Anbieter zustimmen. Ohne diese Erlaubnis wird nichts berechnet.",
-      "nada": "Dieses Store-Konto hat kein aktives NIVL Abo."
+      "nada": "Dieses Store-Konto hat kein aktives NIVL Abo.",
+      "cambio": "Du hast {{actual}}. Es kann nur ein Abo aktiv sein: {{nuevo}} ersetzt dein aktuelles, und du verlierst diesen Modus, sobald die Änderung gilt. Der Store zeigt dir, wann."
     },
     "salida": {
       "gratis": "Kostenlos weiter",
@@ -154,6 +156,7 @@
         "work": "Finanzen, Kalender und sein Coach, der deinen Arbeitstag schützt.",
         "founder": "Kalender, Geschäftszahlen und sein Coach, der dich nach den Zahlen fragt."
       }
-    }
+    },
+    "planAnterior": "dein bisheriges Abo"
   }
 }

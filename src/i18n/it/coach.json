@@ -54,7 +54,7 @@
   },
   "vista": {
     "leyendo": "Sto leggendo la tua giornata",
-    "partePro": "Parte di NIVL Pro",
+    "partePro": "Parte dell'abbonamento",
     "listo": "Pronto per la tua giornata",
     "haLeido_one": "Ha letto la tua giornata · {{count}} consultazione",
     "haLeido_other": "Ha letto la tua giornata · {{count}} consultazioni",
@@ -74,13 +74,13 @@
     "quitarFotosA11y": "Rimuovi le foto",
     "energiaA11y": "{{texto}} Vedi l'energia del coach",
     "conservada": "La tua conversazione resta salvata.",
-    "conservadaPro": "Il coach fa parte di NIVL Pro. La tua conversazione resta salvata.",
+    "conservadaPro": "Il coach fa parte dell'abbonamento. La tua conversazione resta salvata.",
     "adjuntarA11y": "Allega una foto",
     "placeholder": "Parla con il sistema",
     "mensajeA11y": "Messaggio per il sistema",
     "enviandoA11y": "Invio in corso: il sistema sta pensando",
     "enviarA11y": "Invia messaggio",
-    "fotosPro": "Le foto al coach sono incluse in NIVL Pro"
+    "fotosPro": "Le foto al coach sono incluse nell'abbonamento"
   },
   "dictado": {
     "microfonoListo": "Microfono pronto. Tieni premuto per dettare.",

@@ -51,6 +51,7 @@ import {
   type ModoDePago,
   type RespuestaOferta,
 } from '@/lib/pro';
+import { COACH_USAGE_NOTICE } from '@/lib/proplans';
 import { fetchSubscription } from '@/lib/subscription';
 import { ink, space, type as tipo, vidrio } from '@/design/tokens';
 import { mensajeSistema } from '@/lib/validation';
@@ -179,8 +180,8 @@ export default function Pro() {
     // que luego salte a otro.
     return (
       <Screen>
-        <EncabezadoArena onVolver={salir} eyebrow="NIVL Pro" titulo="" />
-        <CargaArena etiqueta="Cargando NIVL Pro" formas={['rotulo', 'filas', 'tarjeta']} />
+        <EncabezadoArena onVolver={salir} eyebrow="NIVL" titulo="" />
+        <CargaArena etiqueta="Cargando NIVL" formas={['rotulo', 'filas', 'tarjeta']} />
       </Screen>
     );
   }
@@ -202,7 +203,7 @@ export default function Pro() {
       <Screen refreshing={refreshing} onRefresh={refrescar}>
         <>
           <Entrada indice={0}>
-            <EncabezadoArena onVolver={salir} eyebrow="NIVL Pro" titulo="Tu plan" />
+            <EncabezadoArena onVolver={salir} eyebrow="NIVL" titulo="Tu plan" />
           </Entrada>
           <Entrada indice={1}>{errorPlan}</Entrada>
           <Entrada indice={2}>
@@ -271,7 +272,7 @@ export default function Pro() {
               {prueba ? <Barra ratio={queda} alto={8} tono={agotada ? 'ink8' : 'blanco'} etiqueta={`Energía del coach: ${pct} %`} /> : null}
               <Text style={styles.energia}>
                 {!prueba
-                  ? 'Úsalo cuanto quieras: sin contadores ni pagos extra.'
+                  ? COACH_USAGE_NOTICE
                   : agotada
                   ? `Agotada por este mes. ${recarga ? `Se recarga el ${recarga}.` : 'Se recarga el día 1.'} Tus misiones, tu racha y todos los módulos siguen funcionando.`
                   : `Queda el ${pct} % de lo que el coach puede pensar por ti este mes.${recarga ? ` Se recarga entera el ${recarga}.` : ''}`}

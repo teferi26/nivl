@@ -461,7 +461,7 @@
       "iaRevisar": "Review before saving",
       "iaOtraVez": "Another text",
       "iaQuitar": "Remove the card {{pregunta}}",
-      "iaSinPro": "Generating cards with AI is part of NIVL Pro. By hand they work the same: paste question and answer, one per line.",
+      "iaSinPro": "Generating cards with AI is part of a subscription. By hand they work the same: paste question and answer, one per line.",
       "iaAMano": "Paste them by hand",
       "iaNada": "No cards came out of that text. Try a longer passage."
     },

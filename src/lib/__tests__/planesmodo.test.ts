@@ -188,3 +188,39 @@ describe('paridad con el servidor', () => {
     expect(migracion).not.toMatch(/\b(delete from|drop table|truncate)\b/i);
   });
 });
+
+describe('salida a tienda', () => {
+  const { avisoCambioModo, catalogoTrasCargar, legalModo } = require('../planesmodo') as typeof import('../planesmodo');
+
+  test('cambiar de un modo a otro avisa antes de cobrar y nombra lo que se pierde', () => {
+    const aviso = avisoCambioModo('nivl_iron_mensual', 'nivl_focus_mensual');
+    expect(aviso).toMatch(/IRON/);
+    expect(aviso).toMatch(/FOCUS/);
+  });
+
+  test('sin plan, el mismo plan o pasar a los cuatro no avisan', () => {
+    expect(avisoCambioModo(null, 'nivl_focus_mensual')).toBeNull();
+    expect(avisoCambioModo('nivl_iron_mensual', 'nivl_iron_mensual')).toBeNull();
+    expect(avisoCambioModo('nivl_iron_mensual', 'nivl_todos_mensual')).toBeNull();
+  });
+
+  test('una tienda sin productos es error con reintento, no pantalla muerta', () => {
+    expect(catalogoTrasCargar({})).toBe('error');
+    expect(catalogoTrasCargar({ nivl_iron_mensual: '14,99 €' })).toBe('listo');
+  });
+
+  test('la letra declara el freno de uso y no promete uso ilimitado', () => {
+    const letra = legalModo('nivl_iron_anual', '59,99 €', null, 'ios')!;
+    expect(letra).toMatch(/pausar el coach/);
+    expect(letra).not.toMatch(/cuanto quieras/i);
+  });
+});
+
+describe('plantilla del contrato', () => {
+  const IDIOMAS = ['es', 'en', 'fr', 'de', 'pt', 'it'];
+  test.each(IDIOMAS)('%s: ni dieta ni ejercicio como castigo', (l) => {
+    const d = JSON.parse(readFileSync(join(__dirname, `../../i18n/${l}/contrato.json`), 'utf8'));
+    const textos = Object.values(d.hook.plantilla as Record<string, { consecuencia: string }>).map((p) => p.consecuencia);
+    for (const c of textos) expect(c).not.toMatch(/km|dieta|diet|régime|Diät|comiendo|eating|ayun|fasting/i);
+  });
+});

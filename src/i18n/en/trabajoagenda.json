@@ -1,7 +1,7 @@
 {
   "calendario": {
     "optInTitulo": "Connect your phone calendar",
-    "optInCuerpo": "The title and times of your next 14 days are copied to your NIVL account. Read only: NIVL does not change your calendar. Disconnecting deletes what was copied.",
+    "optInCuerpo": "The title and times of your next 14 days are copied to your NIVL account. Read only: NIVL does not change your calendar. Disconnecting deletes what was copied. If you allowed it, your coach can use them to plan your day.",
     "conectar": "Connect",
     "desconectar": "Disconnect and delete the copy",
     "eyebrow": "Calendar",

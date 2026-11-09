@@ -69,7 +69,8 @@
     "estadisticas": "Atributos",
     "statA11y": "{{stat}}: {{puntos}} pontos",
     "statNota": "Um ponto por cada 100 XP da área.",
-    "cargandoA11y": "A carregar a tua ficha de gladiador"
+    "cargandoA11y": "A carregar a tua ficha de gladiador",
+    "suscripcion": "A tua subscrição"
   },
   "ajustes": {
     "paraQue": "Para que uso o NIVL",
@@ -137,9 +138,9 @@
     "rotulo": "O que se perde",
     "cuerpo": "São apagados o teu perfil, missões, campanhas, diário, dados de corpo e dinheiro, a conversa com o coach, as tuas fotos e todo o teu progresso. Não há volta atrás.",
     "suscripcion": {
-      "android": "Apagar a conta não cancela uma subscrição do NIVL Pro: cancela-a na Play Store > Pagamentos e subscrições > Subscrições.",
-      "ios": "Apagar a conta não cancela uma subscrição do NIVL Pro: cancela-a em Definições > o teu nome > Subscrições.",
-      "otra": "Apagar a conta não cancela uma subscrição do NIVL Pro: cancela-a na loja onde a contrataste."
+      "android": "Apagar a conta não cancela uma subscrição do NIVL: cancela-a na Play Store > Pagamentos e subscrições > Subscrições.",
+      "ios": "Apagar a conta não cancela uma subscrição do NIVL: cancela-a em Definições > o teu nome > Subscrições.",
+      "otra": "Apagar a conta não cancela uma subscrição do NIVL: cancela-a na loja onde a contrataste."
     },
     "creador": "És criador do programa. Se apagares a conta, o teu código é desativado; o saldo já gerado continua a ser-te pago: escreve-nos para o suporte para nos dares os teus dados de pagamento.",
     "etiqueta": "Escreve {{palabra}} para confirmar",
