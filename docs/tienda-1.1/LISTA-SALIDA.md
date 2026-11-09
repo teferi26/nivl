@@ -10,6 +10,8 @@ Fecha: 9 de noviembre de 2026. Estado de GitHub Actions leído a las 09:50 UTC. 
 4. Hay dos incumplimientos reales que el revisor quizá no vea, pero que no se deben enviar así: perfiles publicados sin filtro (CON-01, norma 1.2) y cambiar de modo sin avisar de que sustituye al actual antes de cobrar (PAG-02, norma 3.1.2).
 5. Nada es insalvable: de los nueve bloqueantes, cinco son trabajo en tus cuentas y tu web, dos son de código y dos compartidos. Android no está en condiciones de ir a producción y no debe frenar a iOS.
 
+**Antes de enviar, orden fijo.** Queda un solo build más, sobre `claude/integracion-1-1-90cd1f` (`43c75ce` o posterior): el de TestFlight es de `f322507`, sin Android ni el arreglo de Avance. La migración 0143 y la función `perfil-filtro` deben estar aplicadas antes de enviar, porque las notas y Amigos describen ese filtro. `onboarding-ipad` pasa en verde con la cuenta real (run 42634880901); eso cubre la entrada en iPad, no el recorrido entero.
+
 **Riesgo principal de rechazo: la compra real queda sin probar.** Decisión del dueño (09/11/2026): no probará la compra en TestFlight salvo que sea obligatorio, y Apple no le obliga a hacerlo. Se sustituye por comprobaciones indirectas: los diez productos en `READY_TO_SUBMIT` y adjuntos, los ids de App Store Connect iguales a los de `planesmodo.ts` (comprobado), la clave de RevenueCat en el binario (en EAS, leído en el log) y `STORE_SANDBOX_ACCESS` (sin comprobar: es un secreto de Supabase). Ninguna demuestra que una compra funcione de principio a fin. Si el revisor compra y falla, es rechazo por 2.1.
 
 **Cómo leer esto.** `[ARREGLABLE]`: código, tamaño pequeño, se hará a continuación. `[ARREGLABLE en parte]`: el código es pequeño, pero hace falta algo tuyo antes. "Binario": solo entra compilando de nuevo, así que va antes de la compilación final. Normas leídas hoy, con su enlace en cada entrada. Las rutas parten de la raíz del repo; un nombre suelto de archivo se localiza por nombre y `0140:47` es la línea 47 de la migración 0140.
@@ -86,7 +88,7 @@ Otros documentos, sin repetirlos: [productos](PRODUCTOS.md) · [plataformas y co
 ### 9. PLAT-04. Capturas de la 1.1 [SUBIDAS a App Store Connect, en es-ES]
 
 - **Hecho por API:** tanda final del commit `010100a`: iPhone 6,9 (10), iPhone 6,3 (10), iPad 13 (10), reloj (5) y vídeos de iPhone e iPad. Las otras localizaciones usan las de es-ES. Quedaban en proceso en Apple al subirlas.
-- **Falta:** si el binario final cambia pantallas visibles, repetir la tanda. Android no tiene capturas: su flujo de CI es de la 1.0.8. La rejilla de 28 días de Avance se pinta rota (`src/components/general/AvanceVista.tsx:355`): no sale en capturas, pero un revisor puede verla.
+- **Falta:** si el binario final cambia pantallas visibles, repetir la tanda. Android no tiene capturas: su flujo de CI es de la 1.0.8. La rejilla de 28 días de Avance ya está arreglada (`8b8e243`), sin capturas nuevas.
 - **Norma:** [Apple 2.3 y 2.3.3][a-meta], [especificaciones][a-capt].
 
 ## 3. Riesgos, en orden
