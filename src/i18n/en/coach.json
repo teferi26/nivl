@@ -54,7 +54,7 @@
   },
   "vista": {
     "leyendo": "Reading your day",
-    "partePro": "Part of NIVL Pro",
+    "partePro": "Part of a subscription",
     "listo": "Ready for your day",
     "haLeido_one": "Has read your day · {{count}} lookup",
     "haLeido_other": "Has read your day · {{count}} lookups",
@@ -74,13 +74,13 @@
     "quitarFotosA11y": "Remove the photos",
     "energiaA11y": "{{texto}} See the coach's energy",
     "conservada": "Your conversation is kept.",
-    "conservadaPro": "The coach is part of NIVL Pro. Your conversation is kept.",
+    "conservadaPro": "The coach is part of a subscription. Your conversation is kept.",
     "adjuntarA11y": "Attach a photo",
     "placeholder": "Talk to the system",
     "mensajeA11y": "Message to the system",
     "enviandoA11y": "Sending: the system is thinking",
     "enviarA11y": "Send message",
-    "fotosPro": "Photos for the coach come with NIVL Pro"
+    "fotosPro": "Photos for the coach come with a subscription"
   },
   "dictado": {
     "microfonoListo": "Microphone ready. Press and hold to dictate.",

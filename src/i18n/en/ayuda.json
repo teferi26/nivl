@@ -137,11 +137,11 @@
     },
     "coach": {
       "titulo": "Coach",
-      "definicion": "Your AI coach. It prepares your daily plan, reminds you of things and answers your questions; it's part of NIVL Pro."
+      "definicion": "Your AI coach. It prepares your daily plan, reminds you of things and answers your questions; it's part of a subscription."
     },
     "oraculo": {
       "titulo": "Oracle",
-      "definicion": "Tell it a goal and it turns it into missions with a date and a measure. You choose which to accept; it's part of NIVL Pro."
+      "definicion": "Tell it a goal and it turns it into missions with a date and a measure. You choose which to accept; it's part of a subscription."
     },
     "modos": {
       "titulo": "Modes",

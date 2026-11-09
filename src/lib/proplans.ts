@@ -662,6 +662,8 @@ export function textoIntro(intro: IntroTienda | null | undefined, condicional = 
 export function periodoIntroGratis(intro: IntroTienda | null | undefined): string | null {
   if (!intro || intro.price > 0 || !UNIDADES[intro.periodUnit] || !(intro.periodNumberOfUnits > 0)) return null;
   const n = intro.periodNumberOfUnits * Math.max(1, Math.round(intro.cycles || 1));
+  // Apple puede dar 7 días como 1 semana: siempre en días, que es lo que se dice y lo que cuenta `pasosPrueba`.
+  if (intro.periodUnit === 'WEEK') return `${n * 7} días`;
   const [uno, varios] = UNIDADES[intro.periodUnit]!;
   return `${n} ${n === 1 ? uno : varios}`;
 }

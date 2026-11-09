@@ -461,7 +461,7 @@
       "iaRevisar": "Revê antes de guardar",
       "iaOtraVez": "Outro texto",
       "iaQuitar": "Tirar o cartão {{pregunta}}",
-      "iaSinPro": "Gerar cartões com IA faz parte do NIVL Pro. À mão funcionam na mesma: cola pergunta e resposta, um por linha.",
+      "iaSinPro": "Gerar cartões com IA faz parte da subscrição. À mão funcionam na mesma: cola pergunta e resposta, um por linha.",
       "iaAMano": "Colá-los à mão",
       "iaNada": "Desse texto não saíram cartões. Experimenta com um excerto mais longo."
     },

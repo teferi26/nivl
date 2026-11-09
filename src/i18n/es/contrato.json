@@ -88,7 +88,7 @@
       "placeholder": "Ej. Nada de redes sociales antes de las 12",
       "a11y": "Texto de la norma",
       "consecuenciaEtiqueta": "Consecuencia si la rompes",
-      "consecuenciaPlaceholder": "Ej. Correr 5 km",
+      "consecuenciaPlaceholder": "Ej. Ordenar la casa 30 minutos",
       "consecuenciaA11y": "Consecuencia de romper la norma",
       "ayudaEditar": "Rige desde hoy. La versión anterior se archiva con sus roturas. Romperla cuesta −{{xp}} XP.",
       "ayudaNueva": "Romperla cuesta −{{xp}} XP. Cumplir la consecuencia el mismo día lo recupera."
@@ -109,11 +109,11 @@
     "plantilla": {
       "p1": {
         "texto": "Escribir el diario todos los días: lo vivido y el plan del día",
-        "consecuencia": "Correr 8 km"
+        "consecuencia": "1 día sin redes sociales"
       },
       "p2": {
         "texto": "Nada de alcohol",
-        "consecuencia": "1 día comiendo solo limpio"
+        "consecuencia": "1 día sin series ni streaming"
       },
       "p3": {
         "texto": "Nada de cafeína",
@@ -121,11 +121,11 @@
       },
       "p4": {
         "texto": "Comer limpio a diario",
-        "consecuencia": "Correr 4,5 km"
+        "consecuencia": "Ordenar la casa 30 minutos"
       },
       "p5": {
         "texto": "Si salgo de fiesta sin haberlo ganado",
-        "consecuencia": "1 semana de dieta estricta"
+        "consecuencia": "1 semana sin salir de fiesta"
       },
       "p6": {
         "texto": "Ningún plan se interpone a mis objetivos",

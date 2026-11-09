@@ -88,7 +88,7 @@
       "placeholder": "Ex. Nada de redes sociais antes do meio-dia",
       "a11y": "Texto da regra",
       "consecuenciaEtiqueta": "Consequência se a quebrares",
-      "consecuenciaPlaceholder": "Ex. Correr 5 km",
+      "consecuenciaPlaceholder": "Ex. Arrumar a casa durante 30 minutos",
       "consecuenciaA11y": "Consequência de quebrar a regra",
       "ayudaEditar": "Vale a partir de hoje. A versão anterior é arquivada com as suas quebras. Quebrá-la custa −{{xp}} XP.",
       "ayudaNueva": "Quebrá-la custa −{{xp}} XP. Cumprir a consequência no mesmo dia recupera-o."
@@ -109,11 +109,11 @@
     "plantilla": {
       "p1": {
         "texto": "Escrever o diário todos os dias: o que vivi e o plano do dia",
-        "consecuencia": "Correr 8 km"
+        "consecuencia": "1 dia sem redes sociais"
       },
       "p2": {
         "texto": "Nada de álcool",
-        "consecuencia": "1 dia a comer só comida limpa"
+        "consecuencia": "1 dia sem séries nem streaming"
       },
       "p3": {
         "texto": "Nada de cafeína",
@@ -121,11 +121,11 @@
       },
       "p4": {
         "texto": "Comer limpo todos os dias",
-        "consecuencia": "Correr 4,5 km"
+        "consecuencia": "Arrumar a casa durante 30 minutos"
       },
       "p5": {
         "texto": "Se sair à noite sem o ter merecido",
-        "consecuencia": "1 semana de dieta rigorosa"
+        "consecuencia": "1 semana sem sair à noite"
       },
       "p6": {
         "texto": "Nenhum plano se sobrepõe aos meus objetivos",

@@ -106,7 +106,7 @@
     "clasificadoTitulo": "Das System hat zugeordnet",
     "sinCambios": "Keine Änderungen",
     "autoTitulo": "Automatische Zuordnung",
-    "autoMensaje": "Dass das System für dich zuordnet, gehört zu NIVL Pro. Von Hand zuordnen kannst du weiterhin: Tippe auf eine Buchung, und das System lernt die Regel.",
+    "autoMensaje": "Dass das System für dich zuordnet, gehört zum Abo. Von Hand zuordnen kannst du weiterhin: Tippe auf eine Buchung, und das System lernt die Regel.",
     "elSistema": "Das System",
     "aprendido_one": "{{count}} Buchung zugeordnet. Ab jetzt macht es das selbst.",
     "aprendido_other": "{{count}} Buchungen zugeordnet. Ab jetzt macht es das selbst.",
@@ -199,7 +199,7 @@
       "alertaSinClasificar_other": "{{count}} Ausgaben sind nicht zugeordnet.",
       "aviso": "Das ist keine Finanzberatung.",
       "escribir": "Vom System schreiben lassen",
-      "sinPro": "Der geschriebene Bericht und die Tipps gehören zu NIVL Pro. Die Zahlen hast du trotzdem."
+      "sinPro": "Der geschriebene Bericht und die Tipps gehören zum Abo. Die Zahlen hast du trotzdem."
     },
     "importar": {
       "rotulo": "Kontoauszug importieren",
@@ -232,7 +232,7 @@
       "mismaCuenta": "Wähle zwei verschiedene Konten.",
       "sinColumnas": "Ich erkenne die Spalten dieser Datei nicht. Es braucht Datum, Text und Betrag.",
       "vacio": "In der Datei habe ich keine Buchungen gefunden.",
-      "pdfPro": "PDFs lesen gehört zu NIVL Pro. Die CSV deiner Bank wird kostenlos gelesen."
+      "pdfPro": "PDFs lesen gehört zum Abo. Die CSV deiner Bank wird kostenlos gelesen."
     },
     "confirmar": {
       "archivarTitulo": "{{nombre}} archivieren?",

@@ -1,7 +1,7 @@
 {
   "calendario": {
     "optInTitulo": "Conectar el calendario del móvil",
-    "optInCuerpo": "Se copian a tu cuenta NIVL el título y las horas de tus próximos 14 días. Solo lectura: NIVL no cambia tu calendario. Al desconectar se borra lo copiado.",
+    "optInCuerpo": "Se copian a tu cuenta NIVL el título y las horas de tus próximos 14 días. Solo lectura: NIVL no cambia tu calendario. Al desconectar se borra lo copiado. Si le diste permiso, tu coach puede usarlos para ordenar tu día.",
     "conectar": "Conectar",
     "desconectar": "Desconectar y borrar lo copiado",
     "eyebrow": "Calendario",

@@ -137,11 +137,11 @@
     },
     "coach": {
       "titulo": "Coach",
-      "definicion": "Ton coach IA. Il prépare ton plan du jour, te prévient et répond à tes questions ; il fait partie de NIVL Pro."
+      "definicion": "Ton coach IA. Il prépare ton plan du jour, te prévient et répond à tes questions ; il fait partie de l'abonnement."
     },
     "oraculo": {
       "titulo": "Oracle",
-      "definicion": "Donne-lui un objectif et il le transforme en missions datées et mesurables. Tu choisis lesquelles accepter ; il fait partie de NIVL Pro."
+      "definicion": "Donne-lui un objectif et il le transforme en missions datées et mesurables. Tu choisis lesquelles accepter ; il fait partie de l'abonnement."
     },
     "modos": {
       "titulo": "Modes",

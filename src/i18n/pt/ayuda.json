@@ -137,11 +137,11 @@
     },
     "coach": {
       "titulo": "Coach",
-      "definicion": "O teu treinador com inteligência artificial. Prepara o plano do dia, avisa-te e responde ao que lhe perguntares; faz parte do NIVL Pro."
+      "definicion": "O teu treinador com inteligência artificial. Prepara o plano do dia, avisa-te e responde ao que lhe perguntares; faz parte da subscrição."
     },
     "oraculo": {
       "titulo": "Oráculo",
-      "definicion": "Dizes-lhe um objetivo e ele transforma-o em missões com data e medida. Tu escolhes quais aceitar; faz parte do NIVL Pro."
+      "definicion": "Dizes-lhe um objetivo e ele transforma-o em missões com data e medida. Tu escolhes quais aceitar; faz parte da subscrição."
     },
     "modos": {
       "titulo": "Modos",

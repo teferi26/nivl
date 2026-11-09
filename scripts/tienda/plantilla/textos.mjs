@@ -14,7 +14,7 @@ export const TEXTOS = {
   },
   coach: {
     titular: ['UN COACH QUE', 'MANDA EN TU DÍA'],
-    sub: ['Con NIVL Pro o Élite. Te escribe el plan', 'y ordena tus horas.'],
+    sub: ['Con suscripción. Te escribe el plan', 'y ordena tus horas.'],
   },
   habitos: {
     titular: ['TUS REGLAS.', 'TU CONTRATO.'],

@@ -37,8 +37,8 @@
       "eyebrow": "Juramento sellado",
       "titulo": "Ahora, quién lo dirige.",
       "linea": "Tu juramento está sellado. El coach puede dirigir tu día desde mañana.",
-      "enlace": "Ver NIVL Pro",
-      "contexto": "Tu juramento está sellado. NIVL sigue gratis entera; Pro añade el coach que lo dirige."
+      "enlace": "Ver planes",
+      "contexto": "Tu juramento está sellado. NIVL sigue gratis entera; un modo añade el coach que lo dirige."
     }
   },
   "web": {
@@ -77,7 +77,7 @@
     "losCuatroModos": "Los cuatro modos",
     "soloModo": "Solo {{modo}}",
     "notaTodos": "IRON, FOCUS, WORK y FOUNDER, con su coach.",
-    "notaUno": "Solo este modo y su coach.",
+    "notaUno": "Este modo, su coach y el coach general.",
     "filaUno": "Un modo y su coach",
     "filaTodos": "Los cuatro modos, con su coach",
     "noDisponible": "Las suscripciones no están disponibles en esta versión de la app.",
@@ -118,8 +118,9 @@
         "android": "La gestionas y la cancelas cuando quieras en Google Play > Pagos y suscripciones > Suscripciones.",
         "otra": "La gestionas y la cancelas cuando quieras desde la tienda donde la contrataste."
       },
-      "base": "NIVL y tus hábitos siguen gratis.",
-      "avisoIa": "NIVL es una IA, no un profesional sanitario."
+      "base": "Lo básico de NIVL y tus hábitos siguen gratis. Un modo añade su mundo y su coach, además del coach general.",
+      "avisoIa": "NIVL es una IA, no un profesional sanitario.",
+      "uso": "Un uso automatizado o fuera de lo normal puede pausar el coach temporalmente."
     },
     "enlace": {
       "restaurar": "Restaurar",
@@ -133,7 +134,8 @@
       "pendiente": "Compra confirmada por la tienda. El modo se abre en unos segundos; si no aparece, pulsa Restaurar.",
       "programada": "Cambio confirmado por la tienda. Se aplica en tu próxima renovación; hasta entonces sigues con tu plan actual.",
       "sinPermiso": "Para usar el coach hace falta aceptar el envío de tus datos al proveedor de IA. Sin ese permiso no se cobra nada.",
-      "nada": "Esta cuenta de la tienda no tiene ninguna suscripción de NIVL activa."
+      "nada": "Esta cuenta de la tienda no tiene ninguna suscripción de NIVL activa.",
+      "cambio": "Tienes {{actual}}. Solo puede haber una suscripción activa: {{nuevo}} sustituye a la que tienes y dejarás de tener ese modo cuando el cambio se aplique. La tienda te indica cuándo."
     },
     "salida": {
       "gratis": "Seguir gratis",
@@ -154,6 +156,49 @@
         "work": "Economía, agenda y su coach, que protege tu jornada.",
         "founder": "Agenda, economía del negocio y su coach, que te pide las cifras."
       }
-    }
+    },
+    "planAnterior": "tu plan anterior"
+  },
+  "plan": {
+    "titulo": "El coach está contigo.",
+    "subPruebaTienda": "Tus días gratis. Al acabar, la tienda cobra tu plan salvo que lo canceles antes.",
+    "subPrueba": "Tu prueba de 7 días. Brief, plan del día, entreno, dieta, revisión semanal y memoria. Al acabar no se cobra nada: no se renueva sola.",
+    "subActivo": "Brief, plan del día, entreno, dieta, revisión semanal y memoria. Todo activo.",
+    "secEnergia": "Energía del coach este mes",
+    "secCoach": "Tu coach",
+    "a11yEnergia": "Energía del coach: {{pct}} %",
+    "agotadaFecha": "Agotada por este mes. Se recarga el {{fecha}}. Tus misiones, tu racha y todos los módulos siguen funcionando.",
+    "agotadaDia1": "Agotada por este mes. Se recarga el día 1. Tus misiones, tu racha y todos los módulos siguen funcionando.",
+    "queda": "Queda el {{pct}} % de lo que el coach puede pensar por ti este mes.",
+    "quedaFecha": "Queda el {{pct}} % de lo que el coach puede pensar por ti este mes. Se recarga entera el {{fecha}}.",
+    "tuPlan": "Tu plan",
+    "filaPlan": "Plan",
+    "pruebaAuto": "Prueba gratuita",
+    "prueba7": "Prueba de 7 días",
+    "filaModos": "Modos",
+    "renovacion": "Próxima renovación",
+    "activoHasta": "Activo hasta",
+    "gestionar": "Gestionar o cancelar suscripción",
+    "gestionarNota": "Ahí cambias de plan, ves la renovación o la cancelas.",
+    "fuera": "Esta suscripción se contrató fuera de esta app: se gestiona y se cancela desde donde la contrataste.",
+    "hablar": "Hablar con el coach",
+    "usoCoach": "Sin contadores ni pagos extra por usar el coach. Para proteger el servicio, un uso automatizado o fuera de lo normal puede pausarlo temporalmente; el resto de NIVL sigue disponible.",
+    "noComprobar": "No se ha podido comprobar tu plan.",
+    "volver": "Volver"
+  },
+  "tienda": {
+    "sesion": "Inicia sesión para suscribirte.",
+    "noVinculada": "La tienda aún no está vinculada a esta cuenta. Cierra y vuelve a abrir NIVL e inténtalo de nuevo.",
+    "cuentaCambio": "La cuenta ha cambiado. Vuelve a intentarlo.",
+    "otraCuenta": "Esta compra de la tienda pertenece a otra cuenta de NIVL. Entra con esa cuenta para usarla.",
+    "yaTiene": "Tu cuenta de la tienda ya tiene esta suscripción. Pulsa Restaurar compras para recuperarla.",
+    "enCurso": "Ya hay una operación con la tienda en curso. Espera a que termine.",
+    "noResponde": "La tienda no responde ahora mismo. No se ha completado ningún cobro nuevo: inténtalo en unos minutos.",
+    "noPermite": "Este dispositivo no permite compras. Revisa las restricciones de la tienda.",
+    "noDisponible": "Ese plan no está disponible ahora mismo en la tienda.",
+    "esperaPrecio": "Espera a que se cargue el precio de la tienda.",
+    "canceladaVigente": "Tu suscripción a este plan está cancelada pero sigue vigente. Reactívala desde Gestionar o cancelar suscripción.",
+    "yaActivo": "Ya tienes este plan activo en la tienda. Si no lo ves en NIVL, pulsa Restaurar compras.",
+    "pendientePago": "El pago está pendiente de aprobación en la tienda. Hoy no se ha cobrado nada: el coach se activará cuando la tienda lo confirme. Si tarda, pulsa Restaurar compras."
   }
 }

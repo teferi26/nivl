@@ -13,6 +13,8 @@ import { vibrar } from '@/design/haptics';
 import { t } from '@/i18n';
 import { registrar } from '@/lib/analitica';
 import {
+  avisoCambioModo,
+  catalogoTrasCargar,
   modoDePerfil,
   precioVisible,
   preciosModosDeTienda,
@@ -68,7 +70,7 @@ export function useOfertaModos({ modoInicial, kind, empezarEnTodos, actual, onCo
         if (!vivo) return;
         setPrecios(p);
         setPruebas(d);
-        setCatalogo('listo');
+        setCatalogo(catalogoTrasCargar(p));
       })
       .catch(() => {
         if (!vivo) return;
@@ -173,6 +175,7 @@ export function useOfertaModos({ modoInicial, kind, empezarEnTodos, actual, onCo
     precioDe,
     periodoGratis: pruebas[producto.id] ?? null,
     esActual,
+    avisoCambio: avisoCambioModo(actual, producto.id),
     puedeComprar,
     busy,
     aviso,

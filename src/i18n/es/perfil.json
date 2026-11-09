@@ -69,7 +69,8 @@
     "estadisticas": "Estadísticas",
     "statA11y": "{{stat}}: {{puntos}} puntos",
     "statNota": "Un punto por cada 100 XP del área.",
-    "cargandoA11y": "Cargando tu ficha de gladiador"
+    "cargandoA11y": "Cargando tu ficha de gladiador",
+    "suscripcion": "Tu suscripción"
   },
   "ajustes": {
     "paraQue": "Para qué uso NIVL",
@@ -137,9 +138,9 @@
     "rotulo": "Lo que se pierde",
     "cuerpo": "Se borran tu perfil, misiones, campañas, diario, datos de cuerpo y dinero, la conversación con el coach, tus fotos y todo tu progreso. No hay vuelta atrás.",
     "suscripcion": {
-      "android": "Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en Play Store > Pagos y suscripciones > Suscripciones.",
-      "ios": "Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en Ajustes > tu nombre > Suscripciones.",
-      "otra": "Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en la tienda donde la contrataste."
+      "android": "Borrar la cuenta no cancela una suscripción de NIVL: cancélala en Play Store > Pagos y suscripciones > Suscripciones.",
+      "ios": "Borrar la cuenta no cancela una suscripción de NIVL: cancélala en Ajustes > tu nombre > Suscripciones.",
+      "otra": "Borrar la cuenta no cancela una suscripción de NIVL: cancélala en la tienda donde la contrataste."
     },
     "creador": "Eres creador del programa. Si borras la cuenta, tu código se desactiva; el saldo ya generado se te sigue pagando: escríbenos a soporte para darnos tus datos de pago.",
     "etiqueta": "Escribe {{palabra}} para confirmar",
