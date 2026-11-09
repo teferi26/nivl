@@ -1,7 +1,7 @@
 // FOCUS en el coach: el estado solo con el modo, partido entre lento y turno, y las herramientas.
 //
 // Lo que se comprueba, sobre el backend simulado (sec_coach_fake_test.ts):
-//   · Sin modo FOCUS el estado es el de siempre, byte a byte (SHA-256 calculado antes de añadir FOCUS).
+//   · Sin modo FOCUS el estado es el de siempre, byte a byte (SHA-256 recalculado al añadir el freno de edad).
 //   · Tabla ausente: cadena vacía. Fallo de lectura: se dice, nunca «no hay nada».
 //   · «## FOCUS hoy» va en el turno y «## FOCUS: exámenes y notas» en la parte cacheada.
 //   · Las herramientas: sin strict ni uniones, validan lo que dicta el modelo y apuntar no paga XP.
@@ -67,7 +67,7 @@ const FILAS_FOCUS = {
 };
 
 // Calculado con el context.ts de antes de añadir FOCUS, con estas mismas FILAS_BASE y HOY.
-const HASH_SIN_FOCUS = 'e953dfcad5df927533b2daca32e39ef6bc8e0589dcf3c705bead8b46b82a67a9';
+const HASH_SIN_FOCUS = 'a11c90b403b3fd36e6bb2436390837e8bc7874c16fe7bdcdaa37f1a6730d7b85';
 
 async function sha256(t: string): Promise<string> {
   const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));

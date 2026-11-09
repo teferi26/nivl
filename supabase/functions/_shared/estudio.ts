@@ -42,7 +42,7 @@ const ENCARGO: Record<TareaEstudio, string> = {
     'Haz un mapa conceptual del texto. Devuelve SOLO un objeto JSON {"centro": string, "ramas": [{"concepto": string, "hijos": string[]}]} con 3 a 8 ramas.',
   extracto: `Ordena los movimientos del extracto bancario pegado. Devuelve SOLO un array JSON de objetos {"fecha": "AAAA-MM-DD", "concepto": string, "importe": number} con el signo del extracto (negativo es gasto). No sumes ni deduzcas nada. ${REGLA_PRODUCTOS_FINANCIEROS}`,
   dieta:
-    'Con lo que pide el usuario y su ficha, propone un menú orientativo de un día. Devuelve SOLO un objeto JSON {"comidas": [{"nombre": string, "platos": string[], "kcal_aprox": number}], "nota": string}. Es orientativo y no sustituye a un profesional.',
+    'Con lo que pide el usuario y su ficha, propone un menú orientativo de un día. Devuelve SOLO un objeto JSON {"comidas": [{"nombre": string, "platos": string[], "kcal_aprox": number}], "nota": string}. Es orientativo y no sustituye a un profesional. Si la ficha indica menos de 18 años o no indica la edad, pon kcal_aprox a 0 y no des déficit ni objetivo de peso.',
   entreno:
     'Con lo que pide el usuario y su ficha, propone UNA sesión de entrenamiento. Devuelve SOLO un objeto JSON {"ejercicios": [{"nombre": string, "series": number, "reps": string, "descanso_s": number}], "nota": string}. Respeta las lesiones de la ficha; ante dolor o síntomas, nada de prescripción.',
 };

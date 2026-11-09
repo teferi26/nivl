@@ -210,5 +210,15 @@
     "fila": "Nutzungsmessung",
     "activada": "Aktiviert. Nur die Schritte des Ablaufs, nie, was du schreibst.",
     "desactivada": "Deaktiviert. Es wird nichts gespeichert oder gesendet."
+  },
+  "filtro": {
+    "titulo": "Foto an den Filter senden?",
+    "eyebrow": "Bevor andere es sehen",
+    "cuerpo": "Damit deine Freunde es sehen können, prüft es ein automatischer Filter. Nur dieses Foto geht an Anthropic, das das Bild zu diesem Zweck verarbeitet. Du kannst auch auf eine manuelle Prüfung warten: Bis dahin sehen andere ein neutrales Bild.",
+    "permitir": "An den Filter senden",
+    "manual": "Manuelle Prüfung",
+    "avisoTitulo": "Nur du siehst es",
+    "fotoRechazada": "Dieses Foto hat den Filter nicht bestanden. Andere sehen ein neutrales Bild. Wenn du das für einen Fehler hältst, schreib dem Support.",
+    "nombreRechazado": "Dieser Name hat den Filter nicht bestanden. Andere sehen einen neutralen Alias. Wenn du das für einen Fehler hältst, schreib dem Support."
   }
 }

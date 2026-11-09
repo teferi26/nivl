@@ -210,5 +210,15 @@
     "fila": "Usage measurement",
     "activada": "On. Only the steps of the journey, never what you write.",
     "desactivada": "Off. Nothing is stored or sent."
+  },
+  "filtro": {
+    "titulo": "Send your photo to the filter?",
+    "eyebrow": "Before others see it",
+    "cuerpo": "To show it to your friends, an automatic filter checks it. Only this photo is sent to Anthropic, which processes the image for this purpose. You can also wait for manual review: until then, others will see a neutral image.",
+    "permitir": "Send to the filter",
+    "manual": "Manual review",
+    "avisoTitulo": "Only you will see it",
+    "fotoRechazada": "This photo didn't pass the filter. Others will see a neutral image. If you think it's a mistake, contact support.",
+    "nombreRechazado": "This name didn't pass the filter. Others will see a neutral alias. If you think it's a mistake, contact support."
   }
 }

@@ -166,7 +166,7 @@
   },
   "convivencia": {
     "titulo": "Convivenza e sicurezza",
-    "cuerpo": "Non sono ammessi molestie, minacce, furti d'identità né contenuti offensivi. Nomi, titoli e foto vengono controllati periodicamente e a ogni segnalazione, e rimossi se violano queste regole. Il tuo profilo conserva i tuoi dati.",
+    "cuerpo": "Un filtro automatico controlla nomi, titoli e foto prima di mostrarli agli altri. Se qualcosa non passa o è ancora in attesa, vedranno un alias e un'immagine neutri. Se non autorizzi il filtro per una foto, attende una revisione manuale. Puoi segnalare e bloccare chiunque.",
     "bloqueado": "Utente bloccato",
     "desbloquear": "Sblocca"
   },

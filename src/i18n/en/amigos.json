@@ -166,7 +166,7 @@
   },
   "convivencia": {
     "titulo": "Community and safety",
-    "cuerpo": "No harassment, threats, impersonation or offensive content. Names, titles and photos are reviewed periodically and whenever someone reports them, and are removed if they break these rules. Your profile keeps your details.",
+    "cuerpo": "An automatic filter checks names, titles and photos before others see them. If something doesn't pass or is still pending, they'll see a neutral alias and image. If you don't authorize the filter for a photo, it waits for manual review. You can report and block anyone.",
     "bloqueado": "Blocked user",
     "desbloquear": "Unblock"
   },

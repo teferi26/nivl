@@ -166,7 +166,7 @@
   },
   "convivencia": {
     "titulo": "Convivência e segurança",
-    "cuerpo": "Não se permite assédio, ameaças, usurpação de identidade nem conteúdo ofensivo. Os nomes, títulos e fotos são revistos periodicamente e sempre que alguém os denuncia, e são retirados se violarem estas regras. O teu perfil mantém os teus dados.",
+    "cuerpo": "Um filtro automático verifica nomes, títulos e fotos antes de os mostrar a outros. Se algo não passar ou continuar pendente, verão um pseudónimo e uma imagem neutros. Se não autorizares o filtro de uma foto, ela aguarda uma revisão manual. Podes denunciar e bloquear qualquer pessoa.",
     "bloqueado": "Utilizador bloqueado",
     "desbloquear": "Desbloquear"
   },
