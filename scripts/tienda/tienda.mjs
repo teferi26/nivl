@@ -24,10 +24,10 @@ const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const RAIZ_REPO = path.resolve(AQUI, '../..');
 
 // Las de la ficha, en orden, hasta 10. Fuera además: pro (con la tienda cerrada dice
-// «no disponible») y avance (su rejilla de 28 días se pinta rota en la app).
+// «no disponible»).
 // Fuera: amigos (su titular es el de arena) y
 // amigos-seguridad (denunciar y bloquear es para la revisión de Apple, no para vender).
-export const ESCENAS_TIENDA = Object.freeze(['hoy', 'coach', 'rueda', 'iron-hoy', 'focus-hoy', 'work-hoy', 'founder-hoy', 'arena', 'habitos', 'campanas']);
+export const ESCENAS_TIENDA = Object.freeze(['hoy', 'coach', 'rueda', 'iron-hoy', 'focus-hoy', 'work-hoy', 'founder-hoy', 'avance', 'arena', 'habitos']);
 export const ESCENAS_MUESTRA = Object.freeze(['hoy', 'coach']);
 
 const USO = 'Uso: node scripts/tienda/tienda.mjs --commit <sha> [--muestra] [--objetivos a,b] [--sin-video] [--final] [--fuente-tv <sha>] [--fuente-watch <sha>]';
