@@ -41,7 +41,7 @@ describe('consentimiento IA · lo que dice la hoja', () => {
     for (const region of ['Almacenamiento en EE. UU.', 'procesamiento', 'Europa', 'Asia', 'Australia']) expect(location).toContain(region);
     // Guideline 5.1.2(i): cada proveedor, con lo que recibe. Desde el 12/10/2026 todo el coach va por Anthropic.
     const anthropic = PROVEEDORES_IA.find((p) => p.nombre.startsWith('Anthropic'))?.cuando ?? '';
-    for (const w of ['todos los planes', 'NIVL Pro', 'NIVL Élite', 'prueba de 7 días', 'fotos']) expect(anthropic).toContain(w);
+    for (const w of ['todos los planes', 'prueba de 7 días', 'fotos']) expect(anthropic).toContain(w);
   });
 
   test('ni DeepSeek ni China: desde el 12/10/2026 no se usa en ningún plan', () => {

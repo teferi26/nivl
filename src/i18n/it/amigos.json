@@ -13,7 +13,13 @@
     "desbloquear": "Sblocca utente",
     "desbloquearMensaje": "Potrà di nuovo chiederti l'amicizia. L'amicizia precedente non si recupera. Se condividete un ludus, riapparirà.",
     "desbloquearConfirmar": "Sblocca",
-    "soporteNoAbierto": "Impossibile aprire l'assistenza"
+    "soporteNoAbierto": "Impossibile aprire l'assistenza",
+    "motivos": {
+      "name": "Nome o titolo offensivo",
+      "avatar": "Foto inappropriata",
+      "harassment": "Molestie o minacce",
+      "impersonation": "Sostituzione di persona"
+    }
   },
   "duelo": {
     "rivalOculto": "Rivale nascosto",

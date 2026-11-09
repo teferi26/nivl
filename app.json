@@ -8,6 +8,13 @@
     "scheme": "nivl",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#000000",
+    "locales": {
+      "en": "./locales/en.json",
+      "fr": "./locales/fr.json",
+      "de": "./locales/de.json",
+      "it": "./locales/it.json",
+      "pt": "./locales/pt.json"
+    },
     "ios": {
       "bundleIdentifier": "com.teferi.nivl",
       "supportsTablet": true,
@@ -27,6 +34,7 @@
         "UIBackgroundModes": ["location"],
         "CFBundleDevelopmentRegion": "es",
         "CFBundleLocalizations": ["es", "en", "fr", "de", "pt", "it"],
+        "CFBundleAllowMixedLocalizations": true,
         "UISupportedInterfaceOrientations~ipad": [
           "UIInterfaceOrientationPortrait",
           "UIInterfaceOrientationPortraitUpsideDown",

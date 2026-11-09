@@ -1,0 +1,16 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "O NIVL usa a câmara para as tuas provas, a tua foto de perfil e as tuas fotos de progresso. As imagens só são enviadas ao coach quando tu as envias.",
+    "NSPhotoLibraryUsageDescription": "O NIVL usa a tua galeria para escolher provas, a tua foto de perfil e as tuas fotos de progresso. As imagens só são enviadas ao coach quando tu as envias.",
+    "NSMicrophoneUsageDescription": "O NIVL só usa o microfone quando pedes: para ditares ao coach enquanto manténs premido o botão de voz. Nunca grava em segundo plano.",
+    "NSPhotoLibraryAddUsageDescription": "O NIVL guarda nas tuas fotos apenas os cartões que decides guardar ao partilhar.",
+    "NSHealthShareUsageDescription": "O NIVL lê da app Saúde apenas as categorias que escolheres (treinos, passos, energia ativa, frequência cardíaca, sono e peso) para mostrar a tua evolução e comparar o que registas.",
+    "NSHealthUpdateUsageDescription": "O NIVL guarda na app Saúde os treinos que medires com a app, se o permitires.",
+    "NSLocationWhenInUseUsageDescription": "O NIVL usa a tua localização durante a corrida ou o passeio de bicicleta que iniciares, mesmo com o ecrã desligado, para calcular distância, ritmo e percurso. Fora dessa sessão não a usa.",
+    "NSSpeechRecognitionUsageDescription": "O NIVL converte a tua voz em texto para a enviar ao coach. É processada no teu dispositivo sempre que possível.",
+    "NSCalendarsUsageDescription": "Se ligares o teu calendário, o NIVL copia para a tua conta o título e as horas dos próximos 14 dias, e o coach pode usá-los se o permitiste. Só o lê: nunca altera nada.",
+    "NSRemindersUsageDescription": "O NIVL só lê o teu calendário. Não lê nem altera os teus lembretes.",
+    "NSCalendarsFullAccessUsageDescription": "Se ligares o teu calendário, o NIVL copia para a tua conta o título e as horas dos próximos 14 dias, e o coach pode usá-los se o permitiste. Só o lê: nunca altera nada.",
+    "NSRemindersFullAccessUsageDescription": "O NIVL só lê o teu calendário. Não lê nem altera os teus lembretes."
+  }
+}

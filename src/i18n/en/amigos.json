@@ -13,7 +13,13 @@
     "desbloquear": "Unblock user",
     "desbloquearMensaje": "They'll be able to send you a friend request again. The old friendship isn't restored. If you share a ludus, they'll show up again.",
     "desbloquearConfirmar": "Unblock",
-    "soporteNoAbierto": "Couldn't open support"
+    "soporteNoAbierto": "Couldn't open support",
+    "motivos": {
+      "name": "Offensive name or title",
+      "avatar": "Inappropriate photo",
+      "harassment": "Harassment or threats",
+      "impersonation": "Impersonation"
+    }
   },
   "duelo": {
     "rivalOculto": "Hidden rival",

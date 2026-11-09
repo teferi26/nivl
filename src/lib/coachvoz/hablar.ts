@@ -14,12 +14,13 @@
 import type * as SpeechTipo from 'expo-speech';
 import { requireOptionalNativeModule } from 'expo';
 import { AppState, Platform, type NativeEventSubscription } from 'react-native';
+import { idiomaVozActual } from './idioma';
 import { prepararVoz, trocear, type OpcionesVoz } from './texto';
 
 type Speech = typeof SpeechTipo;
 type Voz = SpeechTipo.Voice;
 
-/** Idioma de la voz del coach. */
+/** Idioma de la voz por defecto; el real sale de `idiomaVozActual()`. */
 export const IDIOMA_VOZ = 'es-ES';
 /** Ritmo: un pelo por debajo del normal (1). Serio, sin prisa. */
 export const RITMO_VOZ = 0.95;
@@ -66,9 +67,9 @@ function idiomaDe(v: Pick<Voz, 'language'>): string {
   return (v.language ?? '').replace('_', '-').toLowerCase();
 }
 
-/** Puntuación de una voz es-ES: más es mejor; null = descartada. */
-function puntuar(v: Voz): number | null {
-  if (idiomaDe(v) !== IDIOMA_VOZ.toLowerCase()) return null;
+/** Puntuación de una voz del idioma pedido: más es mejor; null = descartada. */
+function puntuar(v: Voz, locale: string): number | null {
+  if (idiomaDe(v) !== locale.toLowerCase()) return null;
   const id = `${v.identifier ?? ''} ${v.name ?? ''}`.toLowerCase();
   // Voces de novedad de Apple (Eddy, Flo, Grandma, Rocko…): fuera.
   if (id.includes('eloquence') || id.includes('speech.synthesis.voice')) return null;
@@ -83,42 +84,44 @@ function puntuar(v: Voz): number | null {
 }
 
 /**
- * La mejor voz es-ES de la lista: Enhanced/premium primero, local antes que
- * de red, nunca las voces de novedad. Null si no hay ninguna es-ES (entonces
- * se habla solo con `language: 'es-ES'` y el sistema elige).
+ * La mejor voz del idioma de la lista: Enhanced/premium primero, local antes
+ * que de red, nunca las voces de novedad. Null si no hay ninguna de ese idioma
+ * (entonces se habla solo con `language` y el sistema elige).
  */
-export function elegirVoz(voces: readonly Voz[]): string | null {
+export function elegirVoz(voces: readonly Voz[], locale: string = IDIOMA_VOZ): string | null {
   let mejor: { id: string; p: number } | null = null;
   for (const v of voces ?? []) {
     if (!v?.identifier) continue;
-    const p = puntuar(v);
+    const p = puntuar(v, locale);
     if (p === null) continue;
     if (!mejor || p > mejor.p) mejor = { id: v.identifier, p };
   }
   return mejor?.id ?? null;
 }
 
-let vozCache: string | null | undefined;
-let vozPendiente: Promise<string | null> | null = null;
+let vozCache: { locale: string; id: string | null } | undefined;
+let vozPendiente: { locale: string; promesa: Promise<string | null> } | null = null;
 
 /** La voz elegida, cacheada. Una lista vacía (Android aún cargando) no se cachea. */
-async function vozCoach(s: Speech): Promise<string | null> {
-  if (vozCache !== undefined) return vozCache;
-  if (!vozPendiente) {
-    vozPendiente = (async () => {
+async function vozCoach(s: Speech, locale: string): Promise<string | null> {
+  if (vozCache?.locale === locale) return vozCache.id;
+  if (vozPendiente?.locale !== locale) {
+    const pendiente: { locale: string; promesa: Promise<string | null> } = { locale, promesa: Promise.resolve(null) };
+    pendiente.promesa = (async () => {
       try {
         const voces = await s.getAvailableVoicesAsync();
-        const id = elegirVoz(voces ?? []);
-        if (voces && voces.length > 0) vozCache = id;
+        const id = elegirVoz(voces ?? [], locale);
+        if (voces && voces.length > 0) vozCache = { locale, id };
         return id;
       } catch {
         return null;
       } finally {
-        vozPendiente = null;
+        if (vozPendiente === pendiente) vozPendiente = null;
       }
     })();
+    vozPendiente = pendiente;
   }
-  return vozPendiente;
+  return vozPendiente.promesa;
 }
 
 // ---------------------------------------------------------------------------
@@ -216,6 +219,7 @@ function decirTrozo(
   s: Speech,
   trozo: string,
   voz: string | null,
+  locale: string,
   miTurno: number,
   alEmpezar: () => void,
 ): Promise<'ok' | 'parado' | 'error'> {
@@ -230,7 +234,7 @@ function decirTrozo(
     const reloj = setTimeout(() => acabar('ok'), tiempoMaximo(trozo));
     try {
       s.speak(trozo, {
-        language: IDIOMA_VOZ,
+        language: locale,
         rate: RITMO_VOZ,
         pitch: TONO_VOZ,
         ...(voz ? { voice: voz } : {}),
@@ -271,7 +275,8 @@ export async function hablar(texto: string, opciones: OpcionesHablar = {}): Prom
     return;
   }
   // Crudo: sin limpiar, pero troceado igual (iOS no admite enunciados largos).
-  const trozos = crudo ? trocear(texto) : prepararVoz(texto, voz);
+  const locale = idiomaVozActual();
+  const trozos = crudo ? trocear(texto) : prepararVoz(texto, { ...voz, idioma: locale.split('-')[0] });
   if (trozos.length === 0) {
     fin('nada');
     return;
@@ -280,7 +285,7 @@ export async function hablar(texto: string, opciones: OpcionesHablar = {}): Prom
   pararAlSegundoPlano();
   parar(); // lo anterior se calla
   const miTurno = turno;
-  const idVoz = await vozCoach(s);
+  const idVoz = await vozCoach(s, locale);
   if (turno !== miTurno || silencio) {
     fin('parado');
     return;
@@ -303,7 +308,7 @@ export async function hablar(texto: string, opciones: OpcionesHablar = {}): Prom
       motivo = 'parado';
       break;
     }
-    const r = await decirTrozo(s, trozo, idVoz, miTurno, alEmpezar);
+    const r = await decirTrozo(s, trozo, idVoz, locale, miTurno, alEmpezar);
     if (r === 'parado') {
       motivo = 'parado';
       break;

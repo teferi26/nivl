@@ -1,0 +1,16 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "NIVL usa la fotocamera per le tue prove, la foto del profilo e le foto dei progressi. Le immagini vengono inviate al coach solo quando sei tu a mandarle.",
+    "NSPhotoLibraryUsageDescription": "NIVL usa la tua libreria foto per scegliere prove, foto del profilo e foto dei progressi. Le immagini vengono inviate al coach solo quando sei tu a mandarle.",
+    "NSMicrophoneUsageDescription": "NIVL usa il microfono solo quando lo chiedi tu: per dettare al coach mentre tieni premuto il pulsante vocale. Non registra mai in background.",
+    "NSPhotoLibraryAddUsageDescription": "NIVL salva nelle tue foto solo le schede che scegli di salvare quando condividi.",
+    "NSHealthShareUsageDescription": "NIVL legge da Salute solo le categorie che scegli (allenamenti, passi, energia attiva, frequenza cardiaca, sonno e peso) per mostrare i tuoi progressi e confrontare ciò che registri.",
+    "NSHealthUpdateUsageDescription": "NIVL salva in Salute gli allenamenti che misuri con l'app, se lo permetti.",
+    "NSLocationWhenInUseUsageDescription": "NIVL usa la tua posizione durante la corsa o l'uscita in bici che avvii, anche a schermo spento, per calcolare distanza, ritmo e percorso. Fuori da quella sessione non la usa.",
+    "NSSpeechRecognitionUsageDescription": "NIVL converte la tua voce in testo per inviarlo al coach. L'elaborazione avviene sul dispositivo quando possibile.",
+    "NSCalendarsUsageDescription": "Se colleghi il calendario, NIVL copia nel tuo account il titolo e gli orari dei prossimi 14 giorni, e il coach può usarli se glielo hai permesso. Lo legge soltanto: non modifica mai nulla.",
+    "NSRemindersUsageDescription": "NIVL legge solo il tuo calendario. Non legge né modifica i promemoria.",
+    "NSCalendarsFullAccessUsageDescription": "Se colleghi il calendario, NIVL copia nel tuo account il titolo e gli orari dei prossimi 14 giorni, e il coach può usarli se glielo hai permesso. Lo legge soltanto: non modifica mai nulla.",
+    "NSRemindersFullAccessUsageDescription": "NIVL legge solo il tuo calendario. Non legge né modifica i promemoria."
+  }
+}

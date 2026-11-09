@@ -58,6 +58,7 @@ import enTrabajogestion from './en/trabajogestion.json';
 import enTrabajoagenda from './en/trabajoagenda.json';
 import enGeneral from './en/general.json';
 import enAyuda from './en/ayuda.json';
+import enLegal from './en/legal.json';
 import enResistencia from './en/resistencia.json';
 import enResistenciaPlan from './en/resistenciaPlan.json';
 import enMedicion from './en/medicion.json';
@@ -113,6 +114,7 @@ import frTrabajogestion from './fr/trabajogestion.json';
 import frTrabajoagenda from './fr/trabajoagenda.json';
 import frGeneral from './fr/general.json';
 import frAyuda from './fr/ayuda.json';
+import frLegal from './fr/legal.json';
 import frResistencia from './fr/resistencia.json';
 import frResistenciaPlan from './fr/resistenciaPlan.json';
 import frMedicion from './fr/medicion.json';
@@ -168,6 +170,7 @@ import ptTrabajogestion from './pt/trabajogestion.json';
 import ptTrabajoagenda from './pt/trabajoagenda.json';
 import ptGeneral from './pt/general.json';
 import ptAyuda from './pt/ayuda.json';
+import ptLegal from './pt/legal.json';
 import ptResistencia from './pt/resistencia.json';
 import ptResistenciaPlan from './pt/resistenciaPlan.json';
 import ptMedicion from './pt/medicion.json';
@@ -223,6 +226,7 @@ import deTrabajogestion from './de/trabajogestion.json';
 import deTrabajoagenda from './de/trabajoagenda.json';
 import deGeneral from './de/general.json';
 import deAyuda from './de/ayuda.json';
+import deLegal from './de/legal.json';
 import deResistencia from './de/resistencia.json';
 import deResistenciaPlan from './de/resistenciaPlan.json';
 import deMedicion from './de/medicion.json';
@@ -278,6 +282,7 @@ import itTrabajogestion from './it/trabajogestion.json';
 import itTrabajoagenda from './it/trabajoagenda.json';
 import itGeneral from './it/general.json';
 import itAyuda from './it/ayuda.json';
+import itLegal from './it/legal.json';
 import itResistencia from './it/resistencia.json';
 import itResistenciaPlan from './it/resistenciaPlan.json';
 import itMedicion from './it/medicion.json';
@@ -342,6 +347,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     trabajoagenda: enTrabajoagenda,
     general: enGeneral,
     ayuda: enAyuda,
+    legal: enLegal,
     resistencia: enResistencia,
     resistenciaPlan: enResistenciaPlan,
     medicion: enMedicion,
@@ -399,6 +405,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     trabajoagenda: frTrabajoagenda,
     general: frGeneral,
     ayuda: frAyuda,
+    legal: frLegal,
     resistencia: frResistencia,
     resistenciaPlan: frResistenciaPlan,
     medicion: frMedicion,
@@ -456,6 +463,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     trabajoagenda: ptTrabajoagenda,
     general: ptGeneral,
     ayuda: ptAyuda,
+    legal: ptLegal,
     resistencia: ptResistencia,
     resistenciaPlan: ptResistenciaPlan,
     medicion: ptMedicion,
@@ -513,6 +521,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     trabajoagenda: deTrabajoagenda,
     general: deGeneral,
     ayuda: deAyuda,
+    legal: deLegal,
     resistencia: deResistencia,
     resistenciaPlan: deResistenciaPlan,
     medicion: deMedicion,
@@ -570,6 +579,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     trabajoagenda: itTrabajoagenda,
     general: itGeneral,
     ayuda: itAyuda,
+    legal: itLegal,
     resistencia: itResistencia,
     resistenciaPlan: itResistenciaPlan,
     medicion: itMedicion,

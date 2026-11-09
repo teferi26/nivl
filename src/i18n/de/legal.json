@@ -1,0 +1,74 @@
+{
+  "descargo": "NIVL ist kein medizinischer, ernährungsberatender oder psychologischer Dienst. Wende dich bei Schmerzen, Verletzungen oder gesundheitlichen Problemen an eine Fachperson.",
+  "crisis": {
+    "completa": "Wenn es dir wirklich schlecht geht, ruf {{crisis}} an (24 Stunden). Bei akuter Gefahr die {{emergencias}}.",
+    "sinEmergencias": "Wenn es dir wirklich schlecht geht, ruf {{crisis}} an (24 Stunden). Bei akuter Gefahr wähle den Notruf deines Landes.",
+    "soloEmergencias": "Wenn es dir wirklich schlecht geht oder akute Gefahr besteht, ruf die {{emergencias}} an.",
+    "generica": "Wenn es dir wirklich schlecht geht oder akute Gefahr besteht, wähle den Notruf deines Landes."
+  },
+  "ia": {
+    "eyebrow": "VOR DEM COACH",
+    "titulo": "Deine Daten und die KI",
+    "intro": "Der Coach arbeitet mit KI-Modellen anderer Unternehmen. Damit er dir antworten und deinen Tag planen kann, sendet NIVL ihnen bei jeder Anfrage:",
+    "aQuien": "Empfänger",
+    "fueraEee": "Ein Teil dieser Verarbeitung findet außerhalb des Europäischen Wirtschaftsraums statt, in Ländern, in denen deine Daten möglicherweise nicht denselben Schutz genießen wie in der EU.",
+    "paraQue": "NIVL sendet diese Daten, damit der Coach dir antworten kann. NIVL verwendet sie nicht für Werbung.",
+    "consentimiento": "Mit deiner Zustimmung willigst du ausdrücklich ein, dass diese Daten, einschließlich Gesundheitsdaten, verarbeitet und an diese Anbieter gesendet werden, auch außerhalb des EWR. Du kannst die Einwilligung jederzeit im Profil widerrufen: Neue KI-Anfragen werden dann gestoppt. Daten einer bereits gesendeten Anfrage können nicht zurückgeholt werden.",
+    "sinAceptar": "Wenn du nicht zustimmst, kannst du deine Gewohnheiten, deine Organisation und deinen Fortschritt weiter kostenlos nutzen, ohne den Coach.",
+    "aceptar": "Zustimmen und Coach aktivieren",
+    "rechazar": "Jetzt nicht",
+    "datos": {
+      "salud": {
+        "titulo": "Gesundheit und Training",
+        "detalle": "Gewicht, Körperprofil (Größe, Alter, Verletzungen, Gesundheitsnotizen), Krafttraining, Cardio und Ernährung."
+      },
+      "medicion": {
+        "titulo": "Uhr und Messung",
+        "detalle": "Wenn du die Messung aktivierst: Dauer, Distanz, Höhenmeter, Tempo, durchschnittlicher und maximaler Puls, Schlaf, Herzfrequenzvariabilität und Ruhepuls. Die GPS-Route und der Pulsverlauf werden nicht gesendet."
+      },
+      "diario": {
+        "titulo": "Dein Tagebuch",
+        "detalle": "Was du schreibst, deine Stimmung und deine Energie."
+      },
+      "finanzas": {
+        "titulo": "Deine Finanzen",
+        "detalle": "Konten, Buchungen und Budgets, die du unter Finanzen erfasst."
+      },
+      "dia": {
+        "titulo": "Dein Tag",
+        "detalle": "Missionen, Kampagnen, Termine, Regeln und was du mit dem Coach besprichst."
+      },
+      "calendario": {
+        "titulo": "Dein Kalender",
+        "detalle": "Wenn du ihn verbindest: Titel und Uhrzeiten deiner nächsten Termine."
+      },
+      "fotos": {
+        "titulo": "Deine Fotos",
+        "detalle": "Nur die, die du im Chat anhängst, und nur für diese Anfrage."
+      }
+    },
+    "anthropic": {
+      "donde": "Speicherung in den USA; Verarbeitung standardmäßig in den USA, Europa, Asien und Australien.",
+      "cuando": "Der Coach in allen Tarifen und während der 7-tägigen Testphase, mit den Fotos, die du anhängst, Zusammenfassungen, Mitteilungstexten, der Einordnung von Buchungen und anderen kurzen Aufgaben."
+    }
+  },
+  "salud": {
+    "title": "Deine Gesundheitsdaten",
+    "purpose": "Mit deiner Erlaubnis speichert und verwendet NIVL dein Gewicht, Körperprofil, Training, deine Ernährung und dein Wohlbefinden-Tagebuch, um deine Entwicklung zu zeigen und die Funktionen des Coaches anzubieten. Wenn du sie verbindest, speichert NIVL außerdem in deinem Konto auf unseren Servern, was du mit der Apple Watch misst oder aus Apple Health liest (Puls, Schlaf, Schritte, aktive Energie und Einheiten), und die GPS-Routen deiner Trainings, die deinen Standort während jeder Einheit zeigen. Tagebuch, Fotos, Pläne, seine Erinnerung und vom Coach erstellte oder geänderte Einträge können Gesundheitsdaten mit anderen Daten vermischen.",
+    "storage": "Verantwortlich ist {{responsable}} (soporte@nivl.app). Die Daten werden bei Supabase in Frankfurt gespeichert. Diese Erlaubnis aktiviert die KI nicht und erlaubt für sich allein keine Übermittlung an deren Anbieter: Der Coach fragt gesondert nach deiner Einwilligung.",
+    "choice": "Das ist freiwillig. Ohne Zustimmung kannst du allgemeine Gewohnheiten, Kampagnen, allgemeine Ziele und Finanzen weiter nutzen. Coach und Orakel benötigen diese Erlaubnis, weil ihre Gespräche und ihr Verlauf Gesundheitsdaten enthalten können.",
+    "withdrawal": "Du kannst diese Erlaubnis im Profil widerrufen und als Gesundheitsdaten gekennzeichnete Daten, das GESAMTE Tagebuch, Fotos, Erinnerung und vom Coach markierte Einträge löschen. Vorher kannst du sie exportieren. Deine Punkte, Beträge und Konten unter Finanzen und allgemeine Einträge ohne diese Markierungen bleiben erhalten. Unter Finanzen werden Anmerkungen entfernt und als KI-Text markierte automatische Regeln deaktiviert. Früherer allgemeiner Text, der nicht als Gesundheitsdaten gekennzeichnet ist, wird nicht automatisch gelöscht.",
+    "checkbox": "Ich willige ausdrücklich ein, dass NIVL meine Gesundheitsdaten zu diesen Zwecken speichert und verwendet.",
+    "erase": "Gelöscht werden dein Körperprofil, Gewicht, Training mit GPS-Routen und Pulsdaten, Daten aus Apple Health und Apple Watch (Puls, Schlaf, Schritte und aktive Energie), Ernährung, körperliche Ziele, als Gesundheit markierte Ziele und Briefe, körperliche Gewohnheiten und Regeln mit ihren Einträgen, das GESAMTE Tagebuch und seine Fotos, Missionsfotos, Gespräche, Erinnerung, Zusammenfassungen und Pläne. Außerdem vom Coach erstellte oder geänderte und als gemischter Inhalt markierte Gewohnheiten, Regeln, Kampagnen, Termine, Einkäufe und Ziele. Sie können Gesundheitsdaten mit anderen Daten vermischen: Der gesamte Eintrag wird gelöscht. Unter Finanzen werden Anmerkungen entfernt und als KI-Text markierte automatische Regeln deaktiviert; Konten, Buchungen und Beträge bleiben erhalten. Deine Punkte und allgemeine Einträge ohne Gesundheits- oder Coach-Markierung bleiben erhalten. Früherer allgemeiner Text, der nicht als Gesundheitsdaten gekennzeichnet ist, wird nicht automatisch gelöscht. Exportiere vorher, wenn du eine Kopie möchtest. Das kann nicht rückgängig gemacht werden."
+  },
+  "errores": {
+    "versionObsoleta": "Der Text hat sich geändert. Aktualisiere NIVL, um ihn zu prüfen.",
+    "borradoPendiente": "Schließe die ausstehende Löschung ab, bevor du Gesundheit wieder aktivierst.",
+    "noGuardado": "Die Erlaubnis konnte nicht gespeichert werden.",
+    "activaSalud": "Aktiviere die Gesundheitserlaubnis im Profil, bevor du dieses Protokoll nutzt.",
+    "borradoIncompleto": "Die Löschung ist nicht abgeschlossen. Die Daten bleiben gesperrt, sobald der Widerruf erfasst ist. Du kannst das im Profil prüfen und es erneut versuchen.",
+    "edadNoGuardada": "Die Bestätigung wurde nicht gespeichert. Bitte versuche es erneut.",
+    "actualizaFotos": "Aktualisiere NIVL, um Fortschrittsfotos zu nutzen.",
+    "eligeMotivo": "Wähle einen Grund für die Meldung."
+  }
+}

@@ -1,10 +1,11 @@
+import { t } from '@/i18n';
+import { conTextos } from './textosVivos';
+
+const reason = <V extends string>(value: V) =>
+  conTextos({ value }, { label: () => t(`amigos:seguridad.motivos.${value}` as 'amigos:seguridad.motivos.name') });
+
 /** Closed report vocabulary; the server validates the same values. */
-export const REPORT_REASONS = [
-  { value: 'name', label: 'Nombre o título ofensivo' },
-  { value: 'avatar', label: 'Foto inapropiada' },
-  { value: 'harassment', label: 'Acoso o amenazas' },
-  { value: 'impersonation', label: 'Suplantación de identidad' },
-] as const;
+export const REPORT_REASONS = [reason('name'), reason('avatar'), reason('harassment'), reason('impersonation')] as const;
 
 export type ReportReason = (typeof REPORT_REASONS)[number]['value'];
 

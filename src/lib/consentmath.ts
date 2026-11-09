@@ -14,6 +14,11 @@
 // procesamiento del proveedor. Aceptar esta hoja no sustituye las obligaciones
 // del responsable sobre transferencias internacionales y datos de salud.
 
+import { t } from '@/i18n';
+import { idiomaDispositivo } from '@/i18n/dispositivo';
+import { lineasDe } from './crisis';
+import { conTextos, registroVivo } from './textosVivos';
+
 export const AI_CONSENT_VERSION = '2026-09-29';
 
 /** Edad mínima para usar NIVL (Términos de uso y política de privacidad). */
@@ -24,14 +29,21 @@ export interface DatoIa {
   detalle: string;
 }
 
-/** Qué sale hacia el proveedor de IA en cada turno. */
-export const DATOS_IA: readonly DatoIa[] = [
-  { titulo: 'Salud y entreno', detalle: 'Peso, ficha física (altura, edad, lesiones, notas de salud), gimnasio, cardio y nutrición.' },
-  { titulo: 'Tu diario', detalle: 'Lo que escribes, tu ánimo y tu energía.' },
-  { titulo: 'Tus finanzas', detalle: 'Cuentas, movimientos y presupuestos que registres en Economía.' },
-  { titulo: 'Tu día', detalle: 'Misiones, campañas, agenda, reglas y lo que hablas con el coach.' },
-  { titulo: 'Tus fotos', detalle: 'Solo las que adjuntes al chat, y solo en ese turno.' },
-];
+const CLAVES_DATOS = ['salud', 'medicion', 'diario', 'finanzas', 'dia', 'calendario', 'fotos'] as const;
+
+/**
+ * Qué sale hacia el proveedor de IA en cada turno. La ruta GPS y la serie de
+ * pulso no salen (`consultar_historial` y `estudioResistencia` no las piden).
+ */
+export const DATOS_IA: readonly DatoIa[] = CLAVES_DATOS.map((c) =>
+  conTextos(
+    {},
+    {
+      titulo: () => t(`legal:ia.datos.${c}.titulo` as 'legal:ia.datos.salud.titulo'),
+      detalle: () => t(`legal:ia.datos.${c}.detalle` as 'legal:ia.datos.salud.detalle'),
+    },
+  ),
+);
 
 export interface ProveedorIa {
   nombre: string;
@@ -41,31 +53,34 @@ export interface ProveedorIa {
 
 /** A quién va, y cuándo. */
 export const PROVEEDORES_IA: readonly ProveedorIa[] = [
-  { nombre: 'Anthropic (Claude)', donde: 'Almacenamiento en EE. UU.; procesamiento por defecto en EE. UU., Europa, Asia y Australia.', cuando: 'El coach en todos los planes (NIVL Pro, NIVL Élite y la prueba de 7 días), con las fotos que adjuntes, los resúmenes, los textos de los avisos, la clasificación de movimientos y otras tareas cortas.' },
+  conTextos(
+    { nombre: 'Anthropic (Claude)' },
+    { donde: () => t('legal:ia.anthropic.donde'), cuando: () => t('legal:ia.anthropic.cuando') },
+  ),
 ];
 
-export const TEXTO_CONSENTIMIENTO = {
-  eyebrow: 'ANTES DEL COACH',
-  titulo: 'Tus datos y la IA',
-  intro:
-    'El coach funciona con modelos de IA de otras empresas. Para responderte y planificar tu día, NIVL les envía en cada turno:',
-  aQuien: 'A quién se envía',
-  fueraEee:
-    'Parte de ese tratamiento ocurre fuera del Espacio Económico Europeo, en países donde tus datos podrían no tener la misma protección que en la UE.',
-  paraQue: 'NIVL envía estos datos para que el coach te responda. NIVL no los utiliza para publicidad.',
-  consentimiento:
-    'Al aceptar das tu consentimiento explícito para que se traten estos datos, incluidos los de salud, y para enviarlos a esos proveedores, también fuera del EEE. Puedes retirarlo cuando quieras en Perfil: se detienen las nuevas solicitudes de IA. Los datos de una solicitud ya enviada no se pueden recuperar.',
-  sinAceptar: 'Si no aceptas, puedes seguir usando gratis tus hábitos, tu organización y tu progreso, sin el coach.',
-  aceptar: 'Acepto y activo el coach',
-  rechazar: 'Ahora no',
-} as const;
+const CLAVES_IA = ['eyebrow', 'titulo', 'intro', 'aQuien', 'fueraEee', 'paraQue', 'consentimiento', 'sinAceptar', 'aceptar', 'rechazar'] as const;
+
+export const TEXTO_CONSENTIMIENTO = registroVivo(CLAVES_IA, (c) => t(`legal:ia.${c}`));
 
 /** El descargo de salud (Guideline 1.4.1). Una línea, en la voz del sistema. */
-export const DESCARGO_SALUD =
-  'NIVL no es un servicio médico, nutricional ni psicológico. Ante dolor, lesión o un problema de salud, consulta a un profesional.';
+export function descargoSalud(): string {
+  return t('legal:descargo');
+}
 
-/** La salida de emergencia, siempre con los números escritos. */
-export const LINEA_CRISIS = 'Si lo estás pasando mal de verdad, llama al 024 (gratis, 24 horas). Si hay peligro inmediato, al 112.';
+/** La región del teléfono («ES» de «es-ES»), o null si no se conoce. */
+export function regionDispositivo(): string | null {
+  return idiomaDispositivo()?.split('-')[1] ?? null;
+}
+
+/** La salida de emergencia, con los números escritos del país del teléfono. */
+export function lineaCrisis(region: string | null = regionDispositivo()): string {
+  const { crisis, emergencias } = lineasDe(region);
+  if (crisis && emergencias) return t('legal:crisis.completa', { crisis, emergencias });
+  if (crisis) return t('legal:crisis.sinEmergencias', { crisis });
+  if (emergencias) return t('legal:crisis.soloEmergencias', { emergencias });
+  return t('legal:crisis.generica');
+}
 
 export interface EstadoConsentimiento {
   /** La versión que exige hoy el servidor. */

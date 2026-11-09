@@ -1,3 +1,4 @@
+import { t } from '@/i18n';
 import { EDAD_MINIMA } from './consentmath';
 import { conLimiteDeRed } from './limiteRed';
 import { supabase } from './supabase';
@@ -18,7 +19,7 @@ export async function confirmarEdad(): Promise<void> {
   const { data, error } = await conLimiteDeRed(supabase.rpc('confirm_minimum_age', { p_min_age: EDAD_MINIMA }));
   if (error) throw error;
   if (data !== true || !(await fetchEdadConfirmada())) {
-    throw new ErrorVisible('No se ha guardado la confirmación. Vuelve a intentarlo.');
+    throw new ErrorVisible(t('legal:errores.edadNoGuardada'));
   }
 }
 
@@ -40,7 +41,7 @@ export async function fetchMayorDeEdadConfirmada(): Promise<boolean> {
 export async function confirmarMayorDeEdad(): Promise<void> {
   const { error } = await supabase.rpc('confirm_adult');
   if (error) {
-    if (faltaLaRpc(error)) throw new ErrorVisible('Actualiza NIVL para usar las fotos de progreso.');
+    if (faltaLaRpc(error)) throw new ErrorVisible(t('legal:errores.actualizaFotos'));
     throw error;
   }
 }

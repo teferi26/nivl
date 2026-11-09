@@ -36,7 +36,7 @@ import { usePiel, type Piel } from '@/design/piel';
 import { ink, radio, space, stroke, type, vidrio } from '@/design/tokens';
 import { useAnchoUtil, useNavActual } from '@/design/useSizeClass';
 import { t } from '@/i18n';
-import { DESCARGO_SALUD, LINEA_CRISIS } from '@/lib/consentmath';
+import { descargoSalud, lineaCrisis } from '@/lib/consentmath';
 import { dateKey, relativoDe } from '@/lib/dates';
 import type { DecisionOferta } from '@/lib/paywallmoment';
 import type { AvisoModo } from '@/modos/avisosCoach';
@@ -232,7 +232,7 @@ function Vacio({ onAtajo }: { onAtajo: (mensaje: string) => void }) {
         </Text>
         <Text style={styles.vacioTexto}>{t('coach:vista.vacioCuerpo')}</Text>
         <Text style={styles.vacioDescargo}>
-          {DESCARGO_SALUD} {LINEA_CRISIS}
+          {descargoSalud()} {lineaCrisis()}
         </Text>
       </Entrada>
       <Entrada indice={2}>
