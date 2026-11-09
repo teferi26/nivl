@@ -125,6 +125,7 @@
       ],
       "@bacons/apple-targets",
       "./plugins/withEscenas.js",
+      "./plugins/withManifiestoReloj.js",
       [
         "expo-speech-recognition",
         {
