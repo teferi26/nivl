@@ -125,6 +125,7 @@ struct DatosTV: Equatable {
     let perfil: PerfilTV
     let saludActiva: Bool
     let rutina: RutinaTV?
+    var ironAbierto = true
     let arena: [FilaArena]
     let ludus: LudusTV?
     let semana: SemanaTV

@@ -84,6 +84,8 @@ struct PaqueteTV: Decodable, Equatable {
     let semana: Semana
     /// Falta en servidores anteriores a la 0128: se trata como null.
     let proxima: Proxima?
+    /// Falta en servidores anteriores a la 0144: se trata como abierto.
+    let ironAbierto: Bool?
 
     struct Proxima: Decodable, Equatable {
         let nombre: String
@@ -294,6 +296,7 @@ extension PaqueteTV {
             ),
             saludActiva: saludActiva,
             rutina: rutina.map(Self.vistaRutina),
+            ironAbierto: ironAbierto ?? true,
             arena: arena.map {
                 FilaArena(id: $0.id, soyYo: $0.soyYo, nombre: Formato.limpiar($0.nombre), titulo: Formato.limpiar($0.titulo), rango: $0.rango,
                           xpTotal: $0.xpTotal, xpVentana: $0.xpVentana, racha: $0.racha,

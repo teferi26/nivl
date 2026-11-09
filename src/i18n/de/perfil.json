@@ -220,5 +220,50 @@
     "avisoTitulo": "Nur du siehst es",
     "fotoRechazada": "Dieses Foto hat den Filter nicht bestanden. Andere sehen ein neutrales Bild. Wenn du das für einen Fehler hältst, schreib dem Support.",
     "nombreRechazado": "Dieser Name hat den Filter nicht bestanden. Andere sehen einen neutralen Alias. Wenn du das für einen Fehler hältst, schreib dem Support."
+  },
+  "televisores": {
+    "ceja": "Apple TV",
+    "titulo": "Fernseher",
+    "subtitulo": "Dein Training und deine Tabelle auf dem großen Bildschirm.",
+    "entradaDetalle": "Verbinde ein Apple TV oder entziehe ihm den Zugriff.",
+    "enlazarSeccion": "Mit Code verbinden",
+    "codigoRotulo": "Code deines Fernsehers",
+    "comoEnlazar": "Öffne NIVL auf deinem Apple TV. Scanne den QR-Code mit der Kamera oder gib hier den angezeigten Code ein.",
+    "enlazados": "Verbundene Fernseher",
+    "cuantos": "{{n}} von 5",
+    "cargando": "Fernseher werden geladen",
+    "ultimoUso": "Zuletzt genutzt: {{fecha}}",
+    "ninguno": "Kein Fernseher hat Zugriff auf dein Konto.",
+    "verTelevisores": "Fernseher ansehen",
+    "nombrePorDefecto": "Dein Apple TV",
+    "quitar": {
+      "titulo": "Fernseher trennen",
+      "mensaje": "{{nombre}} sieht dein Konto dann nicht mehr.",
+      "confirmar": "Trennen"
+    },
+    "confirmar": {
+      "titulo": "Fernseher verbinden",
+      "noValido": "Dieser Link enthält keinen gültigen Code. Scanne den Code deines Fernsehers erneut.",
+      "vasA": "Du verbindest gleich ein Apple TV.",
+      "codigoA11y": "Code {{codigo}}",
+      "advertencia": "Tu das nur, wenn dieser Code auf deinem eigenen Bildschirm steht. Hat ihn dir jemand anderes gegeben, lehne ihn ab: Wer diesen Fernseher hat, sieht deine Missionen, deine Routine, dein Gewicht und deine Platzierung.",
+      "enlazar": "Diesen Fernseher verbinden",
+      "noHeSidoYo": "Das war ich nicht",
+      "hechoTitulo": "Fernseher verbunden.",
+      "hechoCuerpo": "{{nombre}} liest jetzt dein Konto. Nur Lesen: Von dort wird nichts eingetragen. Du kannst es jederzeit unter Profil, Fernseher trennen.",
+      "rechazadoTitulo": "Code abgelehnt.",
+      "rechazadoCuerpo": "Kein Fernseher hat auf dein Konto zugegriffen."
+    },
+    "motivo": {
+      "invalido": "Der Code ist ungültig oder abgelaufen. Fordere am Fernseher einen neuen an.",
+      "intentos": "Zu viele Versuche. Warte eine Stunde.",
+      "tope": "Du hast schon fünf Fernseher verbunden. Trenne einen, um einen weiteren hinzuzufügen.",
+      "borrado": "Dein Konto wird gelöscht. Verbinden ist nicht möglich."
+    },
+    "aviso": {
+      "titulo": "Fernseher verbunden",
+      "cuerpo": "{{nombre}} sieht dein Konto. Warst du das nicht, trenne es unter Profil, Fernseher."
+    },
+    "continuar": "Weiter"
   }
 }

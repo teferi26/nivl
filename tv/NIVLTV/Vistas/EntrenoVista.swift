@@ -41,6 +41,7 @@ struct AnclaSesion: ViewModifier {
 struct EntrenoPantalla: View {
     let rutina: RutinaTV?
     let saludActiva: Bool
+    var ironAbierto = true
     var proxima: ProximaSesion?
     var estadoInicial: String?
 
@@ -50,12 +51,14 @@ struct EntrenoPantalla: View {
     @Namespace private var espacioFoco
 
     private var estado: EstadoEntreno {
-        EstadoEntreno.decidir(rutina: rutina, saludActiva: saludActiva, proxima: proxima)
+        EstadoEntreno.decidir(rutina: rutina, saludActiva: saludActiva, proxima: proxima, ironAbierto: ironAbierto)
     }
 
     var body: some View {
         Group {
             switch estado {
+            case .ironCerrado:
+                aviso(titulo: Textos.ironCerradoTitulo, texto: Textos.ironCerradoTexto)
             case .sinSalud:
                 aviso(titulo: Textos.sinSaludTitulo, texto: Textos.sinSaludEntreno)
             case .rutinaVacia(let nombre):
@@ -191,8 +194,8 @@ private struct ListaPrescrita: View {
                         Spacer(minLength: 0)
                     }
                     .padding(Hueco.s4)
-                    .background(Tinta.i1, ignoresSafeAreaEdges: [])
-                    .overlay(Rectangle().strokeBorder(Tinta.i3, lineWidth: Trazo.hairline))
+                    .fondoOnix(Tinta.i1, radio: Radio.control)
+                    .marcoOnix(Tinta.i3, ancho: Trazo.hairline, radio: Radio.control)
                     .accessibilityElement(children: .combine)
                 }
             }

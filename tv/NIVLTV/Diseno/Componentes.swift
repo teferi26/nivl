@@ -1,8 +1,8 @@
 // NIVL TV · Piezas del kit para el salón.
 //
 // Traducción a SwiftUI de lo esencial de @/components/arena: rótulo, cifra,
-// tarjeta de piedra, barra y el botón con foco. Radio 0, sin sombras ni
-// degradados; el foco se dice con escala ×1,1 y marco blanco.
+// tarjeta, barra y el botón con foco. Tarjetas redondeadas y oro solo como
+// hilo; el foco se dice con escala ×1,1 y marco hueso.
 
 import SwiftUI
 
@@ -34,12 +34,12 @@ private struct CuerpoFoco: View {
             .textCase(.uppercase)
             .padding(relleno)
             .foregroundStyle(invertido ? Tinta.i0 : Tinta.i9)
-            .background(invertido ? Tinta.i10 : (enfocado ? Tinta.i2 : Tinta.i1), ignoresSafeAreaEdges: [])
-            .overlay(Rectangle().strokeBorder(invertido ? Tinta.i10 : Tinta.i4, lineWidth: Trazo.hairline))
+            .fondoOnix(invertido ? Tinta.i10 : (enfocado ? Tinta.i2 : Tinta.i1), radio: Radio.control)
+            .marcoOnix(invertido ? Tinta.i10 : Tinta.i4, ancho: Trazo.hairline, radio: Radio.control)
             // El marco de foco va por fuera, con un hueco negro: se ve igual
             // sobre la superficie blanca que sobre la piedra.
             .padding(8)
-            .overlay(Rectangle().strokeBorder(enfocado ? Tinta.i10 : .clear, lineWidth: Trazo.rule))
+            .marcoOnix(enfocado ? Tinta.i10 : .clear, ancho: Trazo.rule, radio: Radio.control + 8)
             .scaleEffect(configuration.isPressed ? 1.04 : (enfocado ? Foco.escala : 1), anchor: ancla)
             .animation(.easeOut(duration: Foco.duracion), value: enfocado)
             .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
@@ -49,30 +49,29 @@ private struct CuerpoFoco: View {
 /// Rótulo de sección (`label`): Outfit 700, mayúsculas, tracking 2.
 struct Rotulo: View {
     let texto: String
+    var color = Tinta.i6
     var body: some View {
         Text(texto)
             .font(Tipo.rotulo)
             .tracking(3)
             .textCase(.uppercase)
-            .foregroundStyle(Tinta.i6)
+            .foregroundStyle(color)
             .lineLimit(1)
     }
 }
 
-/// Lo grabado (`inscripcion`): Cinzel 700, mayúsculas.
+/// Lo grabado (`inscripcion`): Playfair 700.
 struct Inscripcion: View {
     let texto: String
     var color = Tinta.i8
     var body: some View {
         Text(texto)
             .font(Tipo.inscripcion)
-            .tracking(5)
-            .textCase(.uppercase)
             .foregroundStyle(color)
     }
 }
 
-/// Encabezado de cada sección: eyebrow + título Cinzel + meandro.
+/// Encabezado de cada sección: eyebrow + título Playfair + hilo de oro.
 struct EncabezadoTV: View {
     let ceja: String
     let titulo: String
@@ -80,11 +79,9 @@ struct EncabezadoTV: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Hueco.s3) {
-            Rotulo(texto: ceja)
+            Rotulo(texto: ceja, color: Oro.hilo)
             Text(titulo)
                 .font(Tipo.rango)
-                .tracking(6)
-                .textCase(.uppercase)
                 .foregroundStyle(Tinta.i10)
                 // Una sola línea que encoge: a dos líneas «TORSO ·» dejaba el
                 // punto colgando al final.
@@ -93,7 +90,7 @@ struct EncabezadoTV: View {
             if let subtitulo {
                 Text(subtitulo).font(Tipo.cuerpo).foregroundStyle(Tinta.i8).lineLimit(1)
             }
-            Meandro().frame(width: 220, height: 14).padding(.top, Hueco.s2)
+            HiloOro().padding(.top, Hueco.s2)
         }
         .accessibilityElement(children: .combine)
     }
@@ -109,7 +106,7 @@ struct Cifra: View {
         VStack(alignment: .leading, spacing: Hueco.s2) {
             Rotulo(texto: rotulo)
             HStack(alignment: .firstTextBaseline, spacing: Hueco.s2) {
-                Text(valor).font(Tipo.cifra).foregroundStyle(Tinta.i10).monospacedDigit()
+                Text(valor).font(Tipo.cifra).foregroundStyle(Oro.claro)
                     .lineLimit(1).minimumScaleFactor(0.5)
                 if let unidad {
                     Text(unidad).font(Tipo.cuerpoSm).foregroundStyle(Tinta.i6)
@@ -121,7 +118,7 @@ struct Cifra: View {
     }
 }
 
-/// Tarjeta de piedra (TarjetaArena «piedra» o «contorno»).
+/// Tarjeta de Ónix.
 struct Tarjeta<Contenido: View>: View {
     var marco: CGFloat = Trazo.hairline
     var relleno: CGFloat = Hueco.s8
@@ -132,12 +129,12 @@ struct Tarjeta<Contenido: View>: View {
             .padding(relleno)
             .frame(maxWidth: .infinity, alignment: .leading)
             // Sin invadir el área segura: si no, el fondo sube bajo la barra de pestañas.
-            .background(Tinta.i1, ignoresSafeAreaEdges: [])
-            .overlay(Rectangle().strokeBorder(Tinta.i3, lineWidth: marco))
+            .fondoOnix(Tinta.i1, radio: Radio.tarjeta)
+            .marcoOnix(Tinta.i3, ancho: marco, radio: Radio.tarjeta)
     }
 }
 
-/// Barra de progreso: pista ink4, avance ink10.
+/// Barra de progreso: pista ink4, avance en el hilo de oro.
 struct Barra: View {
     let fraccion: Double
     var alto: CGFloat = 12
@@ -145,8 +142,8 @@ struct Barra: View {
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                Rectangle().fill(Tinta.i4)
-                Rectangle().fill(Tinta.i10).frame(width: geo.size.width * min(1, max(0, fraccion)))
+                Capsule().fill(Tinta.i4)
+                Capsule().fill(Oro.hilo).frame(width: geo.size.width * min(1, max(0, fraccion)))
             }
         }
         .frame(height: alto)
@@ -154,30 +151,14 @@ struct Barra: View {
     }
 }
 
-/// Meandro griego de un trazo (motivo `Meandro`), oculto al lector.
-struct Meandro: View {
+/// El hilo de oro bajo un título, oculto al lector.
+struct HiloOro: View {
     var body: some View {
-        Canvas { ctx, size in
-            let paso: CGFloat = size.height
-            var x: CGFloat = 0
-            var p = Path()
-            p.move(to: CGPoint(x: 0, y: size.height))
-            while x + paso <= size.width {
-                p.addLine(to: CGPoint(x: x, y: 0))
-                p.addLine(to: CGPoint(x: x + paso * 0.66, y: 0))
-                p.addLine(to: CGPoint(x: x + paso * 0.66, y: size.height * 0.55))
-                p.addLine(to: CGPoint(x: x + paso * 0.33, y: size.height * 0.55))
-                p.addLine(to: CGPoint(x: x + paso * 0.33, y: size.height))
-                p.addLine(to: CGPoint(x: x + paso, y: size.height))
-                x += paso
-            }
-            ctx.stroke(p, with: .color(Tinta.i6), lineWidth: Trazo.hairline)
-        }
-        .accessibilityHidden(true)
+        Capsule().fill(Oro.hilo).frame(width: 96, height: Trazo.hairline).accessibilityHidden(true)
     }
 }
 
-/// Laurel de Élite: blanco, como EliteBadge de la app.
+/// Laurel de Élite: el hilo de oro, como EliteBadge de la app.
 struct LaurelElite: View {
     var tam: CGFloat = 30
     var body: some View {
@@ -186,7 +167,7 @@ struct LaurelElite: View {
             Image(systemName: "laurel.trailing")
         }
         .font(.system(size: tam, weight: .semibold))
-        .foregroundStyle(Tinta.i10)
+        .foregroundStyle(Oro.hilo)
         .accessibilityLabel("Élite")
     }
 }

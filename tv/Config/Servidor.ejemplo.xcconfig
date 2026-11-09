@@ -6,3 +6,6 @@
 
 NIVL_SUPABASE_URL = https:/$()/TU-PROYECTO.supabase.co
 NIVL_SUPABASE_CLAVE = TU-CLAVE-PUBLICA
+
+// Solo para archivar: el identificador de 10 caracteres de tu equipo de Apple.
+DEVELOPMENT_TEAM = TU-EQUIPO

@@ -1,7 +1,8 @@
 // NIVL TV · El QR del enlace, con CoreImage y sin interpolar.
 //
 // CoreImage da la matriz; aquí se recorta su margen y se pinta a un píxel por
-// módulo, blanco sobre negro con cuatro módulos de zona de silencio. La vista
+// módulo, oscuro sobre hueso (la polaridad que leen todas las cámaras) con
+// cuatro módulos de zona de silencio. La vista
 // lo escala por un entero, así cada módulo cae en píxeles exactos.
 
 import CoreGraphics
@@ -33,15 +34,15 @@ enum GeneradorQR {
         return filas[arriba...abajo].map { Array($0[izquierda...derecha]) }
     }
 
-    /// Módulos blancos sobre negro, un píxel por módulo, con su zona de silencio.
+    /// Módulos casi negros sobre hueso, un píxel por módulo, con su zona de silencio.
     static func imagen(_ texto: String) -> CGImage? {
         guard let m = matriz(texto), let primera = m.first else { return nil }
         let total = primera.count + silencio * 2
         guard m.count + silencio * 2 == total else { return nil }
-        var datos = [UInt8](repeating: 0, count: total * total)
+        var datos = [UInt8](repeating: 234, count: total * total)
         for (y, fila) in m.enumerated() {
             for (x, oscuro) in fila.enumerated() where oscuro {
-                datos[(y + silencio) * total + x + silencio] = 255
+                datos[(y + silencio) * total + x + silencio] = 9
             }
         }
         guard let proveedor = CGDataProvider(data: Data(datos) as CFData) else { return nil }

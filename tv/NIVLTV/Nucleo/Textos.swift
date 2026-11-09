@@ -45,6 +45,8 @@ enum Textos {
     static let entrenoCeja = "IRON · hoy"
     static let entrenoAyuda = "Clic del mando al terminar cada serie. El descanso corre solo."
     static let entrenoNoRegistra = "Esta TV no registra nada. La sesión se apunta en tu iPhone."
+    static let ironCerradoTitulo = "IRON cerrado"
+    static let ironCerradoTexto = "La rutina guiada es parte de IRON. Cuando lo abras en tu iPhone, la verás aquí."
     static let sinSaludTitulo = "Sin entreno"
     static let sinSaludEntreno = "Activa los datos de salud en tu iPhone para ver tu rutina aquí."
     static let rutinaVacia = "Tu rutina de hoy no tiene ejercicios. Añádelos en el iPhone."
@@ -87,7 +89,7 @@ enum Textos {
             enlaceCeja, enlaceTitulo, pasoUno, pasoDos, pasoTres, renovando, sinConexionEnlace, caducaEn("9:59"),
             noDisponibleTitulo, noDisponibleTexto, sinRedTitulo, sinRedTexto, errorTitulo, errorTexto,
             caducadaTitulo, caducadaTexto, confirmarCierre, confirmarCierreTexto,
-            entrenoCeja, entrenoAyuda, entrenoNoRegistra, sinSaludTitulo, sinSaludEntreno, rutinaVacia, hoyNoToca,
+            entrenoCeja, entrenoAyuda, entrenoNoRegistra, ironCerradoTitulo, ironCerradoTexto, sinSaludTitulo, sinSaludEntreno, rutinaVacia, hoyNoToca,
             descansoConProxima, sinRutinaTitulo, sinRutinaTexto, proximaRotulo, sesionTerminada, sesionTerminadaTexto,
             salirTitulo, salirTexto, salirSeguir, salirConfirmar, numeroEjercicios(1), numeroEjercicios(4), yMas(1), yMas(3),
             arenaTitulo, arenaSinAmigos, arenaVacia, semanaVaciaTitulo, semanaVaciaTexto,

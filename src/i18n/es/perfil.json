@@ -220,5 +220,50 @@
     "avisoTitulo": "Solo lo verás tú",
     "fotoRechazada": "Esta foto no ha pasado el filtro. Los demás verán una imagen neutra. Si crees que es un error, escribe a soporte.",
     "nombreRechazado": "Este nombre no ha pasado el filtro. Los demás verán un alias neutro. Si crees que es un error, escribe a soporte."
+  },
+  "televisores": {
+    "ceja": "Apple TV",
+    "titulo": "Televisores",
+    "subtitulo": "Tu entreno y tu tabla en la pantalla grande.",
+    "entradaDetalle": "Enlaza un Apple TV o corta su acceso.",
+    "enlazarSeccion": "Enlazar con código",
+    "codigoRotulo": "Código de tu TV",
+    "comoEnlazar": "Abre NIVL en tu Apple TV. Escanea su QR con la cámara o escribe aquí el código que enseña.",
+    "enlazados": "Televisores enlazados",
+    "cuantos": "{{n}} de 5",
+    "cargando": "Cargando televisores",
+    "ultimoUso": "Último uso: {{fecha}}",
+    "ninguno": "Ningún televisor tiene acceso a tu cuenta.",
+    "verTelevisores": "Ver televisores",
+    "nombrePorDefecto": "Tu Apple TV",
+    "quitar": {
+      "titulo": "Desenlazar televisor",
+      "mensaje": "{{nombre}} dejará de ver tu cuenta.",
+      "confirmar": "Desenlazar"
+    },
+    "confirmar": {
+      "titulo": "Enlazar televisor",
+      "noValido": "Este enlace no trae un código válido. Vuelve a escanear el código de tu TV.",
+      "vasA": "Vas a enlazar un Apple TV.",
+      "codigoA11y": "Código {{codigo}}",
+      "advertencia": "Hazlo solo si este código está en tu propia pantalla. Si te lo ha dado otra persona, recházalo: quien tenga esa TV verá tus misiones, tu rutina, tu peso y tu ranking.",
+      "enlazar": "Enlazar este televisor",
+      "noHeSidoYo": "No he sido yo",
+      "hechoTitulo": "Televisor enlazado.",
+      "hechoCuerpo": "{{nombre}} ya lee tu cuenta. Solo lectura: desde ahí no se registra nada. Puedes cortarlo cuando quieras en Perfil, Televisores.",
+      "rechazadoTitulo": "Código rechazado.",
+      "rechazadoCuerpo": "Ningún televisor ha accedido a tu cuenta."
+    },
+    "motivo": {
+      "invalido": "El código no vale o ha caducado. Pide otro en la TV.",
+      "intentos": "Demasiados intentos. Espera una hora.",
+      "tope": "Ya tienes cinco televisores enlazados. Desenlaza uno para añadir otro.",
+      "borrado": "Tu cuenta se está borrando. No se puede enlazar."
+    },
+    "aviso": {
+      "titulo": "Televisor enlazado",
+      "cuerpo": "{{nombre}} ve tu cuenta. Si no has sido tú, córtalo en Perfil, Televisores."
+    },
+    "continuar": "Continuar"
   }
 }

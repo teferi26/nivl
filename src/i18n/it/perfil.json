@@ -220,5 +220,50 @@
     "avisoTitulo": "La vedrai solo tu",
     "fotoRechazada": "Questa foto non ha superato il filtro. Gli altri vedranno un'immagine neutra. Se pensi sia un errore, scrivi all'assistenza.",
     "nombreRechazado": "Questo nome non ha superato il filtro. Gli altri vedranno un alias neutro. Se pensi sia un errore, scrivi all'assistenza."
+  },
+  "televisores": {
+    "ceja": "Apple TV",
+    "titulo": "Televisori",
+    "subtitulo": "Il tuo allenamento e la tua classifica sul grande schermo.",
+    "entradaDetalle": "Collega una Apple TV o togli il suo accesso.",
+    "enlazarSeccion": "Collega con un codice",
+    "codigoRotulo": "Codice della tua TV",
+    "comoEnlazar": "Apri NIVL sulla tua Apple TV. Inquadra il QR con la fotocamera o scrivi qui il codice mostrato.",
+    "enlazados": "Televisori collegati",
+    "cuantos": "{{n}} di 5",
+    "cargando": "Caricamento dei televisori",
+    "ultimoUso": "Ultimo uso: {{fecha}}",
+    "ninguno": "Nessun televisore ha accesso al tuo account.",
+    "verTelevisores": "Vedi televisori",
+    "nombrePorDefecto": "La tua Apple TV",
+    "quitar": {
+      "titulo": "Scollega il televisore",
+      "mensaje": "{{nombre}} non vedrà più il tuo account.",
+      "confirmar": "Scollega"
+    },
+    "confirmar": {
+      "titulo": "Collega televisore",
+      "noValido": "Questo link non contiene un codice valido. Inquadra di nuovo il codice della tua TV.",
+      "vasA": "Stai per collegare una Apple TV.",
+      "codigoA11y": "Codice {{codigo}}",
+      "advertencia": "Fallo solo se questo codice è sul tuo schermo. Se te l'ha dato un'altra persona, rifiutalo: chi ha quella TV vedrà le tue missioni, la tua routine, il tuo peso e la tua classifica.",
+      "enlazar": "Collega questo televisore",
+      "noHeSidoYo": "Non sono stato io",
+      "hechoTitulo": "Televisore collegato.",
+      "hechoCuerpo": "{{nombre}} ora legge il tuo account. Sola lettura: da lì non si registra nulla. Puoi scollegarlo quando vuoi in Profilo, Televisori.",
+      "rechazadoTitulo": "Codice rifiutato.",
+      "rechazadoCuerpo": "Nessun televisore ha avuto accesso al tuo account."
+    },
+    "motivo": {
+      "invalido": "Il codice non è valido o è scaduto. Chiedine un altro alla TV.",
+      "intentos": "Troppi tentativi. Aspetta un'ora.",
+      "tope": "Hai già cinque televisori collegati. Scollegane uno per aggiungerne un altro.",
+      "borrado": "Il tuo account è in fase di eliminazione. Non si può collegare."
+    },
+    "aviso": {
+      "titulo": "Televisore collegato",
+      "cuerpo": "{{nombre}} vede il tuo account. Se non sei stato tu, scollegalo in Profilo, Televisori."
+    },
+    "continuar": "Continua"
   }
 }
