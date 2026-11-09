@@ -48,7 +48,7 @@ Otros documentos, sin repetirlos: [productos](PRODUCTOS.md) · [plataformas y co
 - **Hecho por API el 09/11/2026:** los diez en el grupo `NIVL`, 165 territorios como los de Pro, precios por equalización desde España, 7 días gratis solo en los cinco anuales. Localizados en es-ES, en-US, en-GB y fr-FR. Comprobado leyendo la API. Los antiguos, intactos.
 - **RevenueCat iOS, configurado en el panel (lo comunica otra sesión, no comprobado aquí):** los diez productos, offering `modos` como Current con diez paquetes, `default` activa, In-App Purchase Key válida, Restore Behavior «Transfer to new App User ID», Sandbox access «Anybody», webhook activo. Sin comprobar: los entornos por evento del webhook. Android sin tocar.
 - **Captura de revisión subida a los diez** (proceso de Apple terminado): sale de la app real en simulador, con datos ficticios y sin StoreKit; la nota de cada producto se lo dice a Apple. Si la rechazan, se sustituye por una de TestFlight.
-- **Falta:** los diez siguen en `MISSING_METADATA` aunque por API tienen 165 territorios, 165 precios, localizaciones, captura y, en anuales, prueba. La API no dice qué falta. La página de cada producto en App Store Connect lo indica.
+- **Estado:** en la web de App Store Connect, `nivl_iron_mensual` sale «En preparación para el envío», sin avisos y con «Añadir a revisión» activo (visto por otra sesión; los otros nueve sin abrir). La API sigue dando `MISSING_METADATA` en los diez: no se toma como bloqueo, pero queda sin explicar.
 - **Adjuntar a la 1.1:** la API solo tiene `subscriptionSubmissions`, que los manda a revisión; por eso no se ha usado. Se hace en el momento del envío.
 - **Norma:** [Apple 2.1][a-compl] y [3.1.1][a-iap], [Play Billing][g-billing].
 - **Quién:** el dueño, sección 7. **Lo cierra:** estado `READY_TO_SUBMIT` en los diez y compra sandbox de cada uno con `mis_modos` correcto.
@@ -284,7 +284,7 @@ Fuera del repo, por los runs: el identificador de la complicación registrado en
    ```bash
    gh workflow run ios-testflight.yml --ref claude/integracion-1-1-90cd1f -f compilar=true -f enviar=true
    ```
-4. **App Store Connect, a mano:** App Privacy con Ubicación (ADV-1), cuestionario de edad (CON-10), Paid Applications Agreement, cuentas de revisión gratis y de cuatro modos con un amigo de demostración (ADV-2, NOT-2, NOT-3), casillas de Mac y Vision (PLAT-09). Captura de la pantalla de compra real en cada uno de los diez productos, y adjuntarlos a la 1.1.
+4. **App Store Connect:** cuestionario de edad contestado (leído por API: 16+, contenido de usuario sí). App Privacy y Paid Applications Agreement: hechos según el dueño; la API no permite comprobarlos, y conviene confirmar que App Privacy incluye Ubicación. Siguen pendientes las cuentas de revisión gratis y de cuatro modos con un amigo de demostración (ADV-2, NOT-2, NOT-3) y las casillas de Mac y Vision (PLAT-09). Los diez productos se adjuntan al enviar la versión.
 5. **Supabase y RevenueCat:** comprobar `STORE_SANDBOX_ACCESS`, que `REVENUECAT_API_KEY` empieza por `sk_` (P8), los interruptores (CON-06) y los entornos por evento del webhook. RevenueCat Android sigue sin configurar.
 6. **Con un iPhone real, opcional:** Salud, GPS con pantalla apagada, reloj e iPad. La compra no se prueba por decisión tuya; ver el riesgo principal arriba.
 7. **Google Play:** crea la clave de Android en RevenueCat y añádela a EAS (PLAT-03), productos, Data safety, declaraciones, huella en `assetlinks.json`, y 12 testers durante 14 días si tu cuenta entra en la regla (ADV-4).
