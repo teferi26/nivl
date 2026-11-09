@@ -244,7 +244,7 @@ Escrito el 09/11/2026 sobre la integración 1.1. Compilado en este Mac con Andro
 
 **Tres arreglos que solo aparecieron al ejecutarlo:**
 - **Teclado.** Con `targetSdk` 36 la app va de borde a borde y `adjustResize` ya no encoge la ventana: el teclado tapaba el botón de continuar del onboarding y el campo del Coach. `src/components/ui/HuecoTecladoAndroid.tsx` deja un hueco en la raíz, solo en Android, y `TabBar` se oculta con el teclado abierto. Visto en onboarding, login, Coach y hojas.
-- **`reanimated` no enlazaba.** Busca `libworklets.so` en una carpeta que AGP 8.11 no rellena: la compilación moría en ninja. `plugins/withAndroidWorkletsPublicado.js` la publica ahí. El AAB 1.0.11 sí compiló en CI con las mismas versiones, así que puede que en Linux no haga falta; copiarla no estorba.
+- **`reanimated` no enlazaba.** Busca `libworklets.so` en una carpeta que AGP 8.11 no rellena: la compilación moría en ninja. `plugins/withAndroidWorkletsPublicado.js` la publica ahí. Solo actúa al compilar en local: en CI la copia rompía el enlace («undefined symbol: worklets::…», run 42701320246) y la 1.0.11 había compilado allí sin ella.
 - **Permisos y servicios** (P11 y P12), arriba.
 
 **El flujo del AAB** (`.github/workflows/android-play.yml`) falla si el AAB no está firmado, usa la clave de depuración, no llega a `targetSdk` 36, declara permisos prohibidos o conserva servicios con `foregroundServiceType`. Avisa si falta `EXPO_PUBLIC_RC_ANDROID_KEY`.
