@@ -10,6 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { HuecoTecladoAndroid } from '@/components/ui/HuecoTecladoAndroid';
 import { EdadMinimaGuard, EdadMinimaProvider, useEdadMinima } from '@/components/EdadMinima';
 import { HealthConsentGuard, HealthConsentProvider, useHealthConsent } from '@/components/ConsentimientoSalud';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -320,7 +321,7 @@ export default function RootLayout() {
             <ModoProvider>
               <CelebracionProvider>
                 <EdadMinimaProvider>
-                  <HealthConsentProvider><ProtectedStack /></HealthConsentProvider>
+                  <HealthConsentProvider><HuecoTecladoAndroid><ProtectedStack /></HuecoTecladoAndroid></HealthConsentProvider>
                 </EdadMinimaProvider>
               </CelebracionProvider>
             </ModoProvider>
