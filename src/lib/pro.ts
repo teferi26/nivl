@@ -17,6 +17,7 @@
 // web). `subscription.ts` (Stripe, EXPO_PUBLIC_PAYWALL) se queda como está
 // para el Oráculo y para la web.
 
+import { t } from '@/i18n';
 import type AsyncStorageTipo from '@react-native-async-storage/async-storage';
 import { Linking, NativeModules, Platform } from 'react-native';
 // `./tienda` es RevenueCat en iOS/Android (tienda.native.ts) y un stub en web
@@ -264,7 +265,7 @@ async function asegurarUsuario(): Promise<string> {
   if (!purchasesAvailable()) throw new PurchasesUnavailableError();
   const { data } = await supabase.auth.getSession();
   const uid = data.session?.user.id;
-  if (!uid) throw new ErrorVisible('Inicia sesión para suscribirte.');
+  if (!uid) throw new ErrorVisible(t('oferta:tienda.sesion'));
   usuarioSolicitado = uid;
   const paso = cola.then(() => aplicarUsuario(uid));
   cola = paso.catch(() => {});
@@ -276,7 +277,7 @@ async function asegurarUsuario(): Promise<string> {
     actual = null;
   }
   if (actual !== uid) {
-    throw new ErrorVisible('La tienda aún no está vinculada a esta cuenta. Cierra y vuelve a abrir NIVL e inténtalo de nuevo.');
+    throw new ErrorVisible(t('oferta:tienda.noVinculada'));
   }
   return uid;
 }
@@ -297,7 +298,7 @@ async function comprobarCuenta(uid: string): Promise<void> {
   const { data, error } = await supabase.auth.getSession();
   const tienda = await Purchases.getAppUserID();
   if (error || data.session?.user.id !== uid || tienda !== uid || usuarioSolicitado !== uid) {
-    throw new ErrorVisible('La cuenta ha cambiado. Vuelve a intentarlo.');
+    throw new ErrorVisible(t('oferta:tienda.cuentaCambio'));
   }
 }
 
@@ -330,21 +331,21 @@ function traducir(e: unknown): unknown {
     case PURCHASES_ERROR_CODE.PAYMENT_PENDING_ERROR:
       // Ask to Buy (iOS) o pago diferido (Google Play): no hay cobro todavía.
       return new ErrorVisible(
-        'El pago está pendiente de aprobación en la tienda. Hoy no se ha cobrado nada: el coach se activará cuando la tienda lo confirme. Si tarda, pulsa Restaurar compras.',
+        t('oferta:tienda.pendientePago'),
       );
     case PURCHASES_ERROR_CODE.RECEIPT_ALREADY_IN_USE_ERROR:
     case PURCHASES_ERROR_CODE.RECEIPT_IN_USE_BY_OTHER_SUBSCRIBER_ERROR:
-      return new ErrorVisible('Esta compra de la tienda pertenece a otra cuenta de NIVL. Entra con esa cuenta para usarla.');
+      return new ErrorVisible(t('oferta:tienda.otraCuenta'));
     case PURCHASES_ERROR_CODE.PRODUCT_ALREADY_PURCHASED_ERROR:
-      return new ErrorVisible('Tu cuenta de la tienda ya tiene esta suscripción. Pulsa Restaurar compras para recuperarla.');
+      return new ErrorVisible(t('oferta:tienda.yaTiene'));
     case PURCHASES_ERROR_CODE.OPERATION_ALREADY_IN_PROGRESS_ERROR:
-      return new ErrorVisible('Ya hay una operación con la tienda en curso. Espera a que termine.');
+      return new ErrorVisible(t('oferta:tienda.enCurso'));
     case PURCHASES_ERROR_CODE.STORE_PROBLEM_ERROR:
-      return new ErrorVisible('La tienda no responde ahora mismo. No se ha completado ningún cobro nuevo: inténtalo en unos minutos.');
+      return new ErrorVisible(t('oferta:tienda.noResponde'));
     case PURCHASES_ERROR_CODE.PURCHASE_NOT_ALLOWED_ERROR:
-      return new ErrorVisible('Este dispositivo no permite compras. Revisa las restricciones de la tienda.');
+      return new ErrorVisible(t('oferta:tienda.noPermite'));
     case PURCHASES_ERROR_CODE.PRODUCT_NOT_AVAILABLE_FOR_PURCHASE_ERROR:
-      return new ErrorVisible('Ese plan no está disponible ahora mismo en la tienda.');
+      return new ErrorVisible(t('oferta:tienda.noDisponible'));
     case PURCHASES_ERROR_CODE.NETWORK_ERROR:
     case PURCHASES_ERROR_CODE.OFFLINE_CONNECTION_ERROR:
       // `mensajeSistema` lo reconoce como falta de red.
@@ -637,14 +638,14 @@ function suscripcionesNivl(info: CustomerInfo | null | undefined): SuscripcionTi
 
 /** Compra solo al precio mostrado y espera a que el servidor refleje el derecho. */
 export async function purchase(planId: ProPlanId, precioMostrado: string): Promise<ResultadoCompra> {
-  if (!precioVisible(precioMostrado)) throw new ErrorVisible('Espera a que se cargue el precio de la tienda.');
+  if (!precioVisible(precioMostrado)) throw new ErrorVisible(t('oferta:tienda.esperaPrecio'));
   const uid = await asegurarUsuario();
   return enColaDeTienda(() => comprarEnCuenta(uid, planId, precioMostrado, reglasPro(uid, planId)));
 }
 
 /** Compra un producto de modo, con las mismas garantías que cualquier otra compra. */
 export async function purchaseModo(id: ProductoModoId, precioMostrado: string): Promise<ResultadoCompra> {
-  if (!precioVisible(precioMostrado)) throw new ErrorVisible('Espera a que se cargue el precio de la tienda.');
+  if (!precioVisible(precioMostrado)) throw new ErrorVisible(t('oferta:tienda.esperaPrecio'));
   const uid = await asegurarUsuario();
   return enColaDeTienda(() =>
     comprarEnCuenta(uid, id, precioMostrado, {
@@ -677,7 +678,7 @@ async function comprarEnCuenta(uid: string, planId: ProductoTienda, precioMostra
   } catch (e) {
     throw traducir(e);
   }
-  if (!paquete) throw new ErrorVisible('Ese plan no está disponible ahora mismo en la tienda.');
+  if (!paquete) throw new ErrorVisible(t('oferta:tienda.noDisponible'));
   if (precioVisible(paquete.product.priceString) !== precioMostrado.trim()) throw new StorePriceChangedError();
 
   // Sin saber qué tiene ya, no se cobra: en Google Play comprar otro producto
@@ -700,12 +701,12 @@ async function comprarEnCuenta(uid: string, planId: ProductoTienda, precioMostra
   const tipo = reglas.tipo(actual?.producto);
   if (tipo === 'mismo') {
     if (actual?.renueva === false) {
-      throw new ErrorVisible('Tu suscripción a este plan está cancelada pero sigue vigente. Reactívala desde Gestionar o cancelar suscripción.');
+      throw new ErrorVisible(t('oferta:tienda.canceladaVigente'));
     }
     // Puede que acabe de recuperarse (sincronización de arriba): que el servidor la refleje.
     await reconciliarCompra(uid);
     if (await reglas.exacta()) return 'activa';
-    throw new ErrorVisible('Ya tienes este plan activo en la tienda. Si no lo ves en NIVL, pulsa Restaurar compras.');
+    throw new ErrorVisible(t('oferta:tienda.yaActivo'));
   }
   if (actual?.store && actual.store !== tiendaDelDispositivo()) {
     // Otra tienda (o la web): cambiar aquí sería pagar dos suscripciones.

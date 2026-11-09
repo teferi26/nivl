@@ -37,7 +37,7 @@
       "eyebrow": "Serment scellé",
       "titulo": "Maintenant, qui le dirige.",
       "linea": "Ton serment est scellé. Le coach peut diriger ta journée dès demain.",
-      "enlace": "Voir NIVL Pro",
+      "enlace": "Voir les abonnements",
       "contexto": "Ton serment est scellé. NIVL reste entièrement gratuit ; Pro ajoute le coach qui le dirige."
     }
   },
@@ -77,7 +77,7 @@
     "losCuatroModos": "Les quatre modes",
     "soloModo": "{{modo}} seul",
     "notaTodos": "IRON, FOCUS, WORK et FOUNDER, avec leur coach.",
-    "notaUno": "Ce mode et son coach uniquement.",
+    "notaUno": "Ce mode, son coach et le coach général.",
     "filaUno": "Un mode et son coach",
     "filaTodos": "Les quatre modes, avec leur coach",
     "noDisponible": "Les abonnements ne sont pas disponibles dans cette version de l'app.",
@@ -118,8 +118,9 @@
         "android": "Tu le gères et tu l'annules quand tu veux dans Google Play > Paiements et abonnements > Abonnements.",
         "otra": "Tu le gères et tu l'annules quand tu veux depuis la boutique où tu l'as souscrit."
       },
-      "base": "NIVL et tes habitudes restent gratuits.",
-      "avisoIa": "NIVL est une IA, pas un professionnel de santé."
+      "base": "L’essentiel de NIVL et tes habitudes restent gratuits. Un mode ajoute son univers et son coach, ainsi que le coach général.",
+      "avisoIa": "NIVL est une IA, pas un professionnel de santé.",
+      "uso": "Une utilisation automatisée ou anormale peut mettre le coach en pause temporairement."
     },
     "enlace": {
       "restaurar": "Restaurer",
@@ -133,7 +134,8 @@
       "pendiente": "Achat confirmé par la boutique. Le mode s'ouvre dans quelques secondes ; s'il n'apparaît pas, touche Restaurer.",
       "programada": "Changement confirmé par la boutique. Il s'applique à ton prochain renouvellement ; d'ici là, tu gardes ta formule actuelle.",
       "sinPermiso": "Pour utiliser le coach, il faut accepter l'envoi de tes données au fournisseur d'IA. Sans cette autorisation, rien n'est facturé.",
-      "nada": "Ce compte de la boutique n'a aucun abonnement NIVL actif."
+      "nada": "Ce compte de la boutique n'a aucun abonnement NIVL actif.",
+      "cambio": "Tu as {{actual}}. Un seul abonnement peut être actif : {{nuevo}} remplace celui que tu as, et tu perds ce mode quand le changement s’applique. La boutique t’indique quand."
     },
     "salida": {
       "gratis": "Continuer gratuitement",
@@ -154,6 +156,49 @@
         "work": "Finances, agenda et son coach, qui protège ta journée de travail.",
         "founder": "Agenda, finances de l'entreprise et son coach, qui te demande les chiffres."
       }
-    }
+    },
+    "planAnterior": "ton ancien forfait"
+  },
+  "plan": {
+    "titulo": "Le coach est avec toi.",
+    "subPruebaTienda": "Tes jours gratuits. À la fin, la boutique facture ton forfait sauf si tu annules avant.",
+    "subPrueba": "Ton essai de 7 jours. Brief, plan du jour, entraînement, alimentation, bilan hebdomadaire et mémoire. Rien n’est facturé à la fin : pas de renouvellement.",
+    "subActivo": "Brief, plan du jour, entraînement, alimentation, bilan hebdomadaire et mémoire. Tout est actif.",
+    "secEnergia": "Énergie du coach ce mois-ci",
+    "secCoach": "Ton coach",
+    "a11yEnergia": "Énergie du coach : {{pct}} %",
+    "agotadaFecha": "Épuisée pour ce mois-ci. Elle se recharge le {{fecha}}. Tes missions, ta série et tous les modules continuent de fonctionner.",
+    "agotadaDia1": "Épuisée pour ce mois-ci. Elle se recharge le 1er. Tes missions, ta série et tous les modules continuent de fonctionner.",
+    "queda": "Il reste {{pct}} % de ce que le coach peut réfléchir pour toi ce mois-ci.",
+    "quedaFecha": "Il reste {{pct}} % de ce que le coach peut réfléchir pour toi ce mois-ci. Recharge complète le {{fecha}}.",
+    "tuPlan": "Ton forfait",
+    "filaPlan": "Forfait",
+    "pruebaAuto": "Essai gratuit",
+    "prueba7": "Essai de 7 jours",
+    "filaModos": "Modes",
+    "renovacion": "Prochain renouvellement",
+    "activoHasta": "Actif jusqu’au",
+    "gestionar": "Gérer ou annuler l’abonnement",
+    "gestionarNota": "Là, tu changes de forfait, tu vois le renouvellement ou tu annules.",
+    "fuera": "Cet abonnement a été souscrit hors de cette app : gère-le et annule-le là où tu l’as souscrit.",
+    "hablar": "Parler au coach",
+    "usoCoach": "Ni compteurs ni frais supplémentaires pour utiliser le coach. Pour protéger le service, une utilisation automatisée ou anormale peut le mettre en pause temporairement ; le reste de NIVL reste disponible.",
+    "noComprobar": "Impossible de vérifier ton forfait.",
+    "volver": "Retour"
+  },
+  "tienda": {
+    "sesion": "Connecte-toi pour t’abonner.",
+    "noVinculada": "La boutique n’est pas encore liée à ce compte. Ferme et rouvre NIVL, puis réessaie.",
+    "cuentaCambio": "Le compte a changé. Réessaie.",
+    "otraCuenta": "Cet achat appartient à un autre compte NIVL. Connecte-toi avec ce compte pour l’utiliser.",
+    "yaTiene": "Ton compte de la boutique a déjà cet abonnement. Appuie sur Restaurer les achats pour le récupérer.",
+    "enCurso": "Une opération avec la boutique est déjà en cours. Attends qu’elle se termine.",
+    "noResponde": "La boutique ne répond pas pour le moment. Aucun nouveau débit n’a été effectué : réessaie dans quelques minutes.",
+    "noPermite": "Cet appareil n’autorise pas les achats. Vérifie les restrictions de la boutique.",
+    "noDisponible": "Ce forfait n’est pas disponible dans la boutique pour le moment.",
+    "esperaPrecio": "Attends que le prix de la boutique se charge.",
+    "canceladaVigente": "Ton abonnement à ce forfait est annulé mais toujours actif. Réactive-le depuis Gérer ou annuler l’abonnement.",
+    "yaActivo": "Ce forfait est déjà actif dans la boutique. Si tu ne le vois pas dans NIVL, appuie sur Restaurer les achats.",
+    "pendientePago": "Le paiement attend une approbation dans la boutique. Rien n’a été facturé aujourd’hui : le coach s’activera quand la boutique le confirmera. Si ça tarde, appuie sur Restaurer les achats."
   }
 }

@@ -4,6 +4,7 @@
 // el system: si cambiara el system se invalidaría la caché del dossier entero
 // en cada llamada y el coste se multiplicaría.
 
+import { frenoEdad, LINEA_FRENO } from './menores.ts';
 import { LIGAS_ACTIVAS } from './funciones.ts';
 import { construirEstudio } from './analytics.ts';
 import { construirEstudioEconomico } from './finance.ts';
@@ -576,6 +577,7 @@ export async function buildContext(
           'prescribiendo para un usuario medio que no existe. Antes de programar entreno o dieta, ' +
           'pregúntale lo que falte (de una en una) y guárdalo con fijar_ficha.',
       );
+      push(LINEA_FRENO.sin_edad);
     } else {
       const edad = f.birth_year ? new Date(today).getFullYear() - f.birth_year : null;
       push(
@@ -606,6 +608,8 @@ export async function buildContext(
         !f.food_notes && 'comida', !f.equipment && 'material',
       ].filter(Boolean);
       if (faltan.length) push(`Falta por saber: ${faltan.join(', ')}. Pregúntalo cuando venga a cuento y guárdalo.`);
+      const freno = frenoEdad(f.birth_year, new Date(today).getFullYear());
+      if (freno !== 'libre') push(LINEA_FRENO[freno]);
     }
     push();
   }

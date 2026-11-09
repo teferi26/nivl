@@ -1,7 +1,7 @@
 {
   "calendario": {
     "optInTitulo": "Handykalender verbinden",
-    "optInCuerpo": "Titel und Uhrzeiten deiner nächsten 14 Tage werden in dein NIVL-Konto kopiert. Nur Lesen: NIVL ändert deinen Kalender nicht. Beim Trennen wird die Kopie gelöscht.",
+    "optInCuerpo": "Titel und Uhrzeiten deiner nächsten 14 Tage werden in dein NIVL-Konto kopiert. Nur Lesen: NIVL ändert deinen Kalender nicht. Beim Trennen wird die Kopie gelöscht. Wenn du es erlaubt hast, kann dein Coach sie für deine Tagesplanung nutzen.",
     "conectar": "Verbinden",
     "desconectar": "Trennen und Kopie löschen",
     "eyebrow": "Kalender",

@@ -1,0 +1,74 @@
+{
+  "descargo": "NIVL is not a medical, nutrition or psychological service. If you have pain, an injury or a health problem, see a professional.",
+  "crisis": {
+    "completa": "If you're really struggling, call {{crisis}} (24 hours). If there's immediate danger, call {{emergencias}}.",
+    "sinEmergencias": "If you're really struggling, call {{crisis}} (24 hours). If there's immediate danger, call your country's emergency number.",
+    "soloEmergencias": "If you're really struggling or there's immediate danger, call {{emergencias}}.",
+    "generica": "If you're really struggling or there's immediate danger, call your country's emergency number."
+  },
+  "ia": {
+    "eyebrow": "BEFORE THE COACH",
+    "titulo": "Your data and AI",
+    "intro": "The coach runs on AI models from other companies. To answer you and plan your day, NIVL sends them on each turn:",
+    "aQuien": "Who receives it",
+    "fueraEee": "Part of this processing takes place outside the European Economic Area, in countries where your data may not have the same protection as in the EU.",
+    "paraQue": "NIVL sends this data so the coach can answer you. NIVL does not use it for advertising.",
+    "consentimiento": "By accepting, you give your explicit consent for this data, including health data, to be processed and sent to these providers, including outside the EEA. You can withdraw it at any time in Profile: new AI requests stop. Data from a request already sent cannot be recovered.",
+    "sinAceptar": "If you do not accept, you can keep using your habits, organization and progress for free, without the coach.",
+    "aceptar": "I accept and turn on the coach",
+    "rechazar": "Not now",
+    "datos": {
+      "salud": {
+        "titulo": "Health and training",
+        "detalle": "Weight, physical profile (height, age, injuries, health notes), gym, cardio and nutrition."
+      },
+      "medicion": {
+        "titulo": "Watch and tracking",
+        "detalle": "If you turn on tracking: duration, distance, elevation, pace, average and maximum heart rate, sleep, heart rate variability and resting heart rate. Your GPS route and heart rate series are not sent."
+      },
+      "diario": {
+        "titulo": "Your journal",
+        "detalle": "What you write, your mood and your energy."
+      },
+      "finanzas": {
+        "titulo": "Your finances",
+        "detalle": "Accounts, transactions and budgets you record in Money."
+      },
+      "dia": {
+        "titulo": "Your day",
+        "detalle": "Missions, campaigns, schedule, rules and what you say to the coach."
+      },
+      "calendario": {
+        "titulo": "Your calendar",
+        "detalle": "If you connect it: the title and times of your upcoming events."
+      },
+      "fotos": {
+        "titulo": "Your photos",
+        "detalle": "Only the ones you attach to the chat, and only for that turn."
+      }
+    },
+    "anthropic": {
+      "donde": "Storage in the US; processing by default in the US, Europe, Asia and Australia.",
+      "cuando": "The coach on all plans and during the 7-day trial, with any photos you attach, summaries, notification text, transaction categorization and other short tasks."
+    }
+  },
+  "salud": {
+    "title": "Your health data",
+    "purpose": "With your permission, NIVL stores and uses your weight, physical profile, workouts, nutrition and wellbeing journal to show your progress and offer the coach features. If you connect them, it also stores in your account, on our servers, what you measure with Apple Watch or read from Apple Health (heart rate, sleep, steps, active energy and sessions) and the GPS routes of your workouts, which show your location during each session. The journal, photos, plans, its memory and records created or changed by the coach may mix health with other data.",
+    "storage": "The controller is {{responsable}} (soporte@nivl.app). Data is hosted on Supabase, in Frankfurt. This permission does not turn on AI or by itself authorize sending data to AI providers: the coach asks for separate consent.",
+    "choice": "This is optional. Without accepting, you can keep using general habits, campaigns, general goals and money tracking. The coach and the oracle need this permission because their conversations and history may include health data.",
+    "withdrawal": "You can withdraw this permission in Profile and erase data identified as health data, the ENTIRE journal, photos, memory and records flagged by the coach. You can export them first. Your points, Money amounts and accounts, and general records without those flags are kept. In Money, annotations are removed and automatic rules flagged as AI text are turned off. Earlier general text not identified as health data is not erased automatically.",
+    "checkbox": "I explicitly consent to NIVL storing and using my health data for these purposes.",
+    "erase": "This will erase your physical profile, weight, training with its GPS routes and heart rate data, Apple Health and Apple Watch data (heart rate, sleep, steps and active energy), nutrition, physical goals, goals and letters flagged as health, physical habits and rules with their records, the ENTIRE journal and its photos, mission photos, conversations, memory, summaries and plans. Also habits, rules, campaigns, schedule, shopping and goals created or changed by the coach and flagged as mixed content. They may mix health with other data: the whole record is erased. In Money, annotations are removed and automatic rules flagged as AI text are turned off; accounts, transactions and amounts are kept. Your points and general records without health or coach flags are kept. Earlier general text not identified as health data is not erased automatically. Export first if you want a copy. This cannot be undone."
+  },
+  "errores": {
+    "versionObsoleta": "The text has changed. Update NIVL to review it.",
+    "borradoPendiente": "Finish the pending erasure before turning health back on.",
+    "noGuardado": "The permission could not be saved.",
+    "activaSalud": "Turn on the health permission in Profile before using this log.",
+    "borradoIncompleto": "The erasure has not finished. Data stays locked once the withdrawal is recorded. You can check and retry in Profile.",
+    "edadNoGuardada": "The confirmation was not saved. Please try again.",
+    "actualizaFotos": "Update NIVL to use progress photos.",
+    "eligeMotivo": "Choose a reason for the report."
+  }
+}

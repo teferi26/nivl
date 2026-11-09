@@ -69,7 +69,8 @@
     "estadisticas": "Atributos",
     "statA11y": "{{stat}}: {{puntos}} pontos",
     "statNota": "Um ponto por cada 100 XP da área.",
-    "cargandoA11y": "A carregar a tua ficha de gladiador"
+    "cargandoA11y": "A carregar a tua ficha de gladiador",
+    "suscripcion": "A tua subscrição"
   },
   "ajustes": {
     "paraQue": "Para que uso o NIVL",
@@ -137,9 +138,9 @@
     "rotulo": "O que se perde",
     "cuerpo": "São apagados o teu perfil, missões, campanhas, diário, dados de corpo e dinheiro, a conversa com o coach, as tuas fotos e todo o teu progresso. Não há volta atrás.",
     "suscripcion": {
-      "android": "Apagar a conta não cancela uma subscrição do NIVL Pro: cancela-a na Play Store > Pagamentos e subscrições > Subscrições.",
-      "ios": "Apagar a conta não cancela uma subscrição do NIVL Pro: cancela-a em Definições > o teu nome > Subscrições.",
-      "otra": "Apagar a conta não cancela uma subscrição do NIVL Pro: cancela-a na loja onde a contrataste."
+      "android": "Apagar a conta não cancela uma subscrição do NIVL: cancela-a na Play Store > Pagamentos e subscrições > Subscrições.",
+      "ios": "Apagar a conta não cancela uma subscrição do NIVL: cancela-a em Definições > o teu nome > Subscrições.",
+      "otra": "Apagar a conta não cancela uma subscrição do NIVL: cancela-a na loja onde a contrataste."
     },
     "creador": "És criador do programa. Se apagares a conta, o teu código é desativado; o saldo já gerado continua a ser-te pago: escreve-nos para o suporte para nos dares os teus dados de pagamento.",
     "etiqueta": "Escreve {{palabra}} para confirmar",
@@ -209,5 +210,15 @@
     "fila": "Medição de utilização",
     "activada": "Ativada. Só os passos do percurso, nunca o que escreves.",
     "desactivada": "Desativada. Não se guarda nem se envia nada."
+  },
+  "filtro": {
+    "titulo": "Enviar a tua foto para o filtro?",
+    "eyebrow": "Antes de outros a verem",
+    "cuerpo": "Para a mostrares aos teus amigos, um filtro automático verifica-a. Só esta foto é enviada à Anthropic, que trata a imagem para este fim. Também podes aguardar uma revisão manual: entretanto, os outros verão uma imagem neutra.",
+    "permitir": "Enviar para o filtro",
+    "manual": "Revisão manual",
+    "avisoTitulo": "Só tu a verás",
+    "fotoRechazada": "Esta foto não passou no filtro. Os outros verão uma imagem neutra. Se achas que é um erro, escreve ao suporte.",
+    "nombreRechazado": "Este nome não passou no filtro. Os outros verão um pseudónimo neutro. Se achas que é um erro, escreve ao suporte."
   }
 }

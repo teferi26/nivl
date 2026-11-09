@@ -13,7 +13,13 @@
     "desbloquear": "Unblock user",
     "desbloquearMensaje": "They'll be able to send you a friend request again. The old friendship isn't restored. If you share a ludus, they'll show up again.",
     "desbloquearConfirmar": "Unblock",
-    "soporteNoAbierto": "Couldn't open support"
+    "soporteNoAbierto": "Couldn't open support",
+    "motivos": {
+      "name": "Offensive name or title",
+      "avatar": "Inappropriate photo",
+      "harassment": "Harassment or threats",
+      "impersonation": "Impersonation"
+    }
   },
   "duelo": {
     "rivalOculto": "Hidden rival",
@@ -166,7 +172,7 @@
   },
   "convivencia": {
     "titulo": "Community and safety",
-    "cuerpo": "No harassment, threats, impersonation or offensive content. Names, titles and photos are reviewed before others see them: until then they'll see a neutral alias and image. Your profile keeps your details.",
+    "cuerpo": "No harassment, threats, impersonation or offensive content. An automatic filter checks names, titles and photos before others see them. If something doesn't pass or is still pending, they'll see a neutral alias and image. If you don't authorize the filter for a photo, it waits for manual review. You can report and block anyone. Your profile keeps your details.",
     "bloqueado": "Blocked user",
     "desbloquear": "Unblock"
   },

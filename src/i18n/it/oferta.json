@@ -37,7 +37,7 @@
       "eyebrow": "Giuramento sigillato",
       "titulo": "Ora, chi lo guida.",
       "linea": "Il tuo giuramento è sigillato. Il coach può guidare la tua giornata da domani.",
-      "enlace": "Vedi NIVL Pro",
+      "enlace": "Vedi i piani",
       "contexto": "Il tuo giuramento è sigillato. NIVL resta del tutto gratuito; Pro aggiunge il coach che lo guida."
     }
   },
@@ -77,7 +77,7 @@
     "losCuatroModos": "Le quattro modalità",
     "soloModo": "Solo {{modo}}",
     "notaTodos": "IRON, FOCUS, WORK e FOUNDER, con il loro coach.",
-    "notaUno": "Solo questa modalità e il suo coach.",
+    "notaUno": "Questa modalità, il suo coach e il coach generale.",
     "filaUno": "Una modalità e il suo coach",
     "filaTodos": "Le quattro modalità, con il loro coach",
     "noDisponible": "Gli abbonamenti non sono disponibili in questa versione dell'app.",
@@ -118,8 +118,9 @@
         "android": "Lo gestisci e lo disdici quando vuoi in Google Play > Pagamenti e abbonamenti > Abbonamenti.",
         "otra": "Lo gestisci e lo disdici quando vuoi dallo store in cui l'hai attivato."
       },
-      "base": "NIVL e le tue abitudini restano gratis.",
-      "avisoIa": "NIVL è un'IA, non un professionista sanitario."
+      "base": "Le funzioni di base di NIVL e le tue abitudini restano gratis. Una modalità aggiunge il suo mondo e il suo coach, oltre al coach generale.",
+      "avisoIa": "NIVL è un'IA, non un professionista sanitario.",
+      "uso": "Un uso automatizzato o anomalo può mettere in pausa il coach temporaneamente."
     },
     "enlace": {
       "restaurar": "Ripristina",
@@ -133,7 +134,8 @@
       "pendiente": "Acquisto confermato dallo store. La modalità si apre tra qualche secondo; se non compare, tocca Ripristina.",
       "programada": "Modifica confermata dallo store. Si applica al prossimo rinnovo; fino ad allora resti con il tuo piano attuale.",
       "sinPermiso": "Per usare il coach serve accettare l'invio dei tuoi dati al fornitore di IA. Senza questo permesso non si paga nulla.",
-      "nada": "Questo account dello store non ha nessun abbonamento NIVL attivo."
+      "nada": "Questo account dello store non ha nessun abbonamento NIVL attivo.",
+      "cambio": "Hai {{actual}}. Può essere attivo un solo abbonamento: {{nuevo}} sostituisce quello che hai e perdi quella modalità quando il cambio si applica. Lo store ti indica quando."
     },
     "salida": {
       "gratis": "Continua gratis",
@@ -154,6 +156,49 @@
         "work": "Finanze, agenda e il suo coach, che protegge la tua giornata di lavoro.",
         "founder": "Agenda, finanze dell'attività e il suo coach, che ti chiede i numeri."
       }
-    }
+    },
+    "planAnterior": "il tuo piano precedente"
+  },
+  "plan": {
+    "titulo": "Il coach è con te.",
+    "subPruebaTienda": "I tuoi giorni gratis. Alla fine lo store addebita il piano, salvo disdetta prima.",
+    "subPrueba": "La tua prova di 7 giorni. Brief, piano del giorno, allenamento, dieta, revisione settimanale e memoria. Alla fine non si paga nulla: non si rinnova.",
+    "subActivo": "Brief, piano del giorno, allenamento, dieta, revisione settimanale e memoria. Tutto attivo.",
+    "secEnergia": "Energia del coach questo mese",
+    "secCoach": "Il tuo coach",
+    "a11yEnergia": "Energia del coach: {{pct}} %",
+    "agotadaFecha": "Esaurita per questo mese. Si ricarica il {{fecha}}. Missioni, serie e tutti i moduli continuano a funzionare.",
+    "agotadaDia1": "Esaurita per questo mese. Si ricarica il giorno 1. Missioni, serie e tutti i moduli continuano a funzionare.",
+    "queda": "Resta il {{pct}} % di ciò che il coach può pensare per te questo mese.",
+    "quedaFecha": "Resta il {{pct}} % di ciò che il coach può pensare per te questo mese. Si ricarica del tutto il {{fecha}}.",
+    "tuPlan": "Il tuo piano",
+    "filaPlan": "Piano",
+    "pruebaAuto": "Prova gratuita",
+    "prueba7": "Prova di 7 giorni",
+    "filaModos": "Modalità",
+    "renovacion": "Prossimo rinnovo",
+    "activoHasta": "Attivo fino al",
+    "gestionar": "Gestisci o annulla l’abbonamento",
+    "gestionarNota": "Lì cambi piano, vedi il rinnovo o annulli.",
+    "fuera": "Questo abbonamento è stato sottoscritto fuori da questa app: gestiscilo e annullalo dove l’hai sottoscritto.",
+    "hablar": "Parla con il coach",
+    "usoCoach": "Nessun contatore né costo extra per usare il coach. Per proteggere il servizio, un uso automatizzato o anomalo può metterlo in pausa temporaneamente; il resto di NIVL resta disponibile.",
+    "noComprobar": "Impossibile verificare il tuo piano.",
+    "volver": "Indietro"
+  },
+  "tienda": {
+    "sesion": "Accedi per abbonarti.",
+    "noVinculada": "Lo store non è ancora collegato a questo account. Chiudi e riapri NIVL e riprova.",
+    "cuentaCambio": "L’account è cambiato. Riprova.",
+    "otraCuenta": "Questo acquisto appartiene a un altro account NIVL. Accedi con quell’account per usarlo.",
+    "yaTiene": "Il tuo account dello store ha già questo abbonamento. Tocca Ripristina acquisti per recuperarlo.",
+    "enCurso": "C’è già un’operazione con lo store in corso. Attendi che finisca.",
+    "noResponde": "Lo store non risponde in questo momento. Nessun nuovo addebito è stato completato: riprova tra qualche minuto.",
+    "noPermite": "Questo dispositivo non consente acquisti. Controlla le restrizioni dello store.",
+    "noDisponible": "Quel piano non è disponibile nello store in questo momento.",
+    "esperaPrecio": "Attendi il caricamento del prezzo dello store.",
+    "canceladaVigente": "Il tuo abbonamento è annullato ma ancora valido. Riattivalo da Gestisci o annulla l’abbonamento.",
+    "yaActivo": "Hai già questo piano attivo nello store. Se non lo vedi in NIVL, tocca Ripristina acquisti.",
+    "pendientePago": "Il pagamento è in attesa di approvazione nello store. Oggi non è stato addebitato nulla: il coach si attiverà quando lo store lo confermerà. Se tarda, tocca Ripristina acquisti."
   }
 }

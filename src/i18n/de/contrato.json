@@ -88,7 +88,7 @@
       "placeholder": "z. B. Keine sozialen Medien vor 12 Uhr",
       "a11y": "Text der Regel",
       "consecuenciaEtiqueta": "Konsequenz, wenn du sie brichst",
-      "consecuenciaPlaceholder": "z. B. 5 km laufen",
+      "consecuenciaPlaceholder": "Z. B. 30 Minuten die Wohnung aufräumen",
       "consecuenciaA11y": "Konsequenz bei Regelbruch",
       "ayudaEditar": "Gilt ab heute. Die vorherige Version wird mit ihren Brüchen archiviert. Ein Bruch kostet −{{xp}} XP.",
       "ayudaNueva": "Ein Bruch kostet −{{xp}} XP. Erfüllst du die Konsequenz am selben Tag, holst du sie zurück."
@@ -109,11 +109,11 @@
     "plantilla": {
       "p1": {
         "texto": "Jeden Tag Tagebuch schreiben: das Erlebte und den Tagesplan",
-        "consecuencia": "8 km laufen"
+        "consecuencia": "1 Tag ohne soziale Medien"
       },
       "p2": {
         "texto": "Kein Alkohol",
-        "consecuencia": "1 Tag nur sauber essen"
+        "consecuencia": "1 Tag ohne Serien und Streaming"
       },
       "p3": {
         "texto": "Kein Koffein",
@@ -121,11 +121,11 @@
       },
       "p4": {
         "texto": "Jeden Tag sauber essen",
-        "consecuencia": "4,5 km laufen"
+        "consecuencia": "30 Minuten die Wohnung aufräumen"
       },
       "p5": {
         "texto": "Wenn ich feiern gehe, ohne es mir verdient zu haben",
-        "consecuencia": "1 Woche strenge Diät"
+        "consecuencia": "1 Woche nicht feiern gehen"
       },
       "p6": {
         "texto": "Kein Plan stellt sich meinen Zielen in den Weg",

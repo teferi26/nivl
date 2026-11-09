@@ -30,9 +30,7 @@ struct VistaRacha: View {
         .lineLimit(1)
         .foregroundStyle(Ink.ink10)
       Rotulo(texto: e.racha == 1 ? "Día de racha" : "Días de racha")
-      // El grano: logro. Va en su banda, nunca bajo el texto.
-      Grano()
-        .frame(height: 8)
+      HiloOro()
         .padding(.top, 4)
       if !e.rachaCerrada && e.pendientes > 0 && e.esDeHoy {
         Text(e.pendientes == 1 ? "Te queda 1 misión para sumar hoy." : "Te quedan \(e.pendientes) misiones para sumar hoy.")
@@ -50,12 +48,11 @@ struct VistaRacha: View {
         .font(Tipo.cifra(26, relativoA: .title2))
         .foregroundStyle(Ink.ink10)
         .frame(width: 44, height: 44)
-        .overlay(Rectangle().stroke(Ink.ink10, lineWidth: 3))
+        .overlay(RoundedRectangle(cornerRadius: Radio.control).stroke(Oro.hilo, lineWidth: 1))
         .accessibilityLabel("Rango \(e.rango)")
       VStack(alignment: .leading, spacing: 4) {
         Text("NIVEL \(e.nivel)")
           .font(Tipo.inscripcion(13))
-          .tracking(2)
           .foregroundStyle(Ink.ink9)
         Barra(progreso: e.progresoNivel)
         Text(e.xpSiguiente > 0 ? "\(formatoMiles(e.xpEnNivel)) / \(formatoMiles(e.xpSiguiente)) XP" : "Nivel máximo")
@@ -67,8 +64,8 @@ struct VistaRacha: View {
     }
     .padding(8)
     .frame(maxWidth: .infinity, alignment: .leading)
-    .background(Ink.ink1)
-    .overlay(Rectangle().stroke(Ink.ink3, lineWidth: 1))
+    .background(Ink.ink1, in: RoundedRectangle(cornerRadius: Radio.control))
+    .overlay(RoundedRectangle(cornerRadius: Radio.control).stroke(Ink.ink3, lineWidth: 1))
     .accessibilityElement(children: .combine)
   }
 
@@ -98,7 +95,7 @@ struct VistaRacha: View {
   }
 }
 
-/// La Barra del kit: pista ink4, avance ink10, radio 0.
+/// La Barra del kit: pista ink4, avance en oro.
 struct Barra: View {
   let progreso: Double
   var alto: CGFloat = 4
@@ -106,8 +103,8 @@ struct Barra: View {
   var body: some View {
     GeometryReader { g in
       ZStack(alignment: .leading) {
-        Rectangle().fill(Ink.ink4)
-        Rectangle().fill(Ink.ink10).frame(width: g.size.width * progreso)
+        Capsule().fill(Ink.ink4)
+        Capsule().fill(Oro.hilo).frame(width: g.size.width * progreso)
       }
     }
     .frame(height: alto)

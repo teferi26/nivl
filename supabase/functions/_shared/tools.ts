@@ -8,6 +8,7 @@
 // Invariante de economía: el coach elige DIFICULTAD, nunca puntos. El XP sale
 // de la tabla de game.ts (10/25/50/100/250). Así no puede inflar el nivel.
 
+import { frenoEdad } from './menores.ts';
 import { LIGAS_ACTIVAS } from './funciones.ts';
 import type { Db } from './db.ts';
 import { misionCasaConDeporte } from './entrenoEspejo.ts';
@@ -1237,13 +1238,14 @@ export async function executeTool(
         throw new Error(`${prot} g de proteína está fuera de rango.`);
       }
 
-      // Línea roja de salud (menores): sin objetivos de calorías para quien
-      // declara tener menos de 18. Decisión de producto pendiente del dueño:
-      // el umbral y si aplica también a prescribir_entreno.
+      // Línea roja de salud: sin objetivos de calorías si puede ser menor o no consta su edad.
       const { data: ficha } = await sb.from('body_profile').select('birth_year').eq('user_id', userId).maybeSingle();
-      const nacido = Number((ficha as { birth_year?: number } | null)?.birth_year);
-      if (Number.isFinite(nacido) && new Date().getUTCFullYear() - nacido < 18) {
-        throw new Error('Es menor de edad: no se fijan calorías. Recomiéndale hablarlo con un profesional y su familia.');
+      const freno = frenoEdad((ficha as { birth_year?: number } | null)?.birth_year, new Date().getUTCFullYear());
+      if (freno === 'sin_edad') {
+        throw new Error('No consta su año de nacimiento: pregúntaselo y guárdalo con fijar_ficha antes de fijar calorías.');
+      }
+      if (freno === 'menor') {
+        throw new Error('Puede ser menor de edad: no se fijan calorías. Recomiéndale hablarlo con un profesional y su familia.');
       }
 
       // Solo un objetivo vigente: el anterior queda archivado, no borrado.

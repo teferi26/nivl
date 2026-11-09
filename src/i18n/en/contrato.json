@@ -88,7 +88,7 @@
       "placeholder": "E.g. No social media before noon",
       "a11y": "Rule text",
       "consecuenciaEtiqueta": "Consequence if you break it",
-      "consecuenciaPlaceholder": "E.g. Run 5 km",
+      "consecuenciaPlaceholder": "E.g. Tidy the house for 30 minutes",
       "consecuenciaA11y": "Consequence of breaking the rule",
       "ayudaEditar": "Applies from today. The previous version is archived with its breaks. Breaking it costs −{{xp}} XP.",
       "ayudaNueva": "Breaking it costs −{{xp}} XP. Carrying out the consequence the same day earns it back."
@@ -109,11 +109,11 @@
     "plantilla": {
       "p1": {
         "texto": "Write in the journal every day: what I lived and the day's plan",
-        "consecuencia": "Run 8 km"
+        "consecuencia": "1 day without social media"
       },
       "p2": {
         "texto": "No alcohol",
-        "consecuencia": "1 day of eating only clean"
+        "consecuencia": "1 day without shows or streaming"
       },
       "p3": {
         "texto": "No caffeine",
@@ -121,11 +121,11 @@
       },
       "p4": {
         "texto": "Eat clean every day",
-        "consecuencia": "Run 4.5 km"
+        "consecuencia": "Tidy the house for 30 minutes"
       },
       "p5": {
         "texto": "If I go out partying without having earned it",
-        "consecuencia": "1 week of strict diet"
+        "consecuencia": "1 week without going out partying"
       },
       "p6": {
         "texto": "No plan gets in the way of my goals",

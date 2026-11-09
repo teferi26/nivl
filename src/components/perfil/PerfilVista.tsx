@@ -12,6 +12,7 @@
 //   7. Los Ajustes (PerfilAjustes, sin rediseñar).
 // Contadores: nivel y racha en el Hero, misiones y evidencia en Registro (4).
 
+import { PermisoFotoSheet } from './PermisoFotoSheet';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
@@ -68,6 +69,8 @@ export interface PerfilAcciones {
   onNombre: (t: string) => void;
   onGuardarNombre: () => void;
   onAvatar: () => void;
+  /** Con valor, se pide permiso para enviar la foto al filtro. */
+  permisoFoto?: { onResponder: (permitido: boolean | null) => void } | null;
   onCompartir: () => void;
   onCodigo: () => void;
   onLogro: (code: string) => void;
@@ -170,7 +173,7 @@ export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, accione
             <FilaArena icono="people-outline" titulo={t('perfil:vista.amigos')} meta={t('perfil:vista.ranking')} onPress={() => router.push('/amigos')} />
             <FilaArena
               icono="shield-half-outline"
-              titulo={elite ? 'NIVL Élite' : 'NIVL Pro'} // i18n-ok: nombres de los planes (la marca)
+              titulo={t('perfil:vista.suscripcion')}
               meta={tieneCoach === null ? undefined : tieneCoach ? t('perfil:vista.activo') : t('perfil:vista.activaCoach')}
               onPress={() => router.push('/pro')}
             />
@@ -241,6 +244,7 @@ export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, accione
 
       {/* En la galería no hay ajustes (null): sin ellos, tampoco su rótulo. */}
       {ajustes ? <Section title={t('perfil:vista.ajustes')}>{ajustes}</Section> : null}
+      {acciones.permisoFoto ? <PermisoFotoSheet onResponder={acciones.permisoFoto.onResponder} /> : null}
     </View>
   );
 }

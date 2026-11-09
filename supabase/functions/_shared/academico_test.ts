@@ -1,7 +1,7 @@
 // FOCUS en el coach: el estado solo con el modo, partido entre lento y turno, y las herramientas.
 //
 // Lo que se comprueba, sobre el backend simulado (sec_coach_fake_test.ts):
-//   · Sin modo FOCUS el estado es el de siempre, byte a byte (SHA-256 calculado antes de añadir FOCUS).
+//   · Sin modo FOCUS el estado es el de siempre, byte a byte (SHA-256 recalculado al añadir el freno de edad).
 //   · Tabla ausente: cadena vacía. Fallo de lectura: se dice, nunca «no hay nada».
 //   · «## FOCUS hoy» va en el turno y «## FOCUS: exámenes y notas» en la parte cacheada.
 //   · Las herramientas: sin strict ni uniones, validan lo que dicta el modelo y apuntar no paga XP.
@@ -67,7 +67,7 @@ const FILAS_FOCUS = {
 };
 
 // Calculado con el context.ts de antes de añadir FOCUS, con estas mismas FILAS_BASE y HOY.
-const HASH_SIN_FOCUS = 'e953dfcad5df927533b2daca32e39ef6bc8e0589dcf3c705bead8b46b82a67a9';
+const HASH_SIN_FOCUS = 'a11c90b403b3fd36e6bb2436390837e8bc7874c16fe7bdcdaa37f1a6730d7b85';
 
 async function sha256(t: string): Promise<string> {
   const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));
@@ -93,9 +93,15 @@ const conFake = async <T>(op: Parameters<typeof instalar>[0], fn: (f: ReturnType
 
 Deno.test('academico: sin modo FOCUS el estado no cambia un byte', async () => {
   await conFake({ filas: FILAS_BASE }, async () => {
-    for (const op of [undefined, {}, { modo: null }, { modo: 'iron' as const }, { modo: 'work' as const }]) {
+    for (const op of [undefined, {}, { modo: null }, { modo: 'iron' as const }]) {
       equal(await sha256((await buildContext(sb(), USER_ID, HOY, op)).text), HASH_SIN_FOCUS, JSON.stringify(op));
     }
+    // WORK añade su sección al final: lo anterior sigue siendo idéntico y de FOCUS no hay nada.
+    const conWork = (await buildContext(sb(), USER_ID, HOY, { modo: 'work' })).text;
+    const corte = conWork.indexOf('\n\n## Trabajo ahora');
+    ok(corte > 0, conWork);
+    equal(await sha256(conWork.slice(0, corte)), HASH_SIN_FOCUS, 'WORK solo añade su sección');
+    ok(!conWork.includes('## FOCUS'), conWork);
   });
 });
 
@@ -308,7 +314,7 @@ const noHayPago = (fake: { llamadas: Llamada[] }) => {
 };
 
 Deno.test('academico: esquema de las herramientas (sin strict, sin uniones, clasificadas)', () => {
-  equal(TOOL_DEFS.length, 28);
+  equal(TOOL_DEFS.length, 32);
   for (const n of ['marcar_tema', 'apuntar_estudio']) {
     const def = TOOL_DEFS.find((t) => t.name === n)! as any;
     ok(def && !('strict' in def), n);

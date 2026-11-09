@@ -83,6 +83,8 @@ import trabajoagenda from './es/trabajoagenda.json';
 import general from './es/general.json';
 // Primer uso: pistas, términos y glosario (src/components/ayuda).
 import ayuda from './es/ayuda.json';
+// Permisos de IA y salud, descargo y líneas de crisis (tienda 1.1).
+import legal from './es/legal.json';
 // IRON Resistencia: pantallas (src/components/resistencia) y plan de carrera.
 import resistencia from './es/resistencia.json';
 import resistenciaPlan from './es/resistenciaPlan.json';
@@ -147,6 +149,7 @@ export const RECURSOS_ES = {
   trabajoagenda,
   general,
   ayuda,
+  legal,
   resistencia,
   resistenciaPlan,
   medicion,

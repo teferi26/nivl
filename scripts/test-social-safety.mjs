@@ -36,6 +36,8 @@ for (const name of (await readdir(migrations)).filter(n => /^\d{4}.*\.sql$/.test
 const sql = await readFile(path.join(migrations, '0032_social_safety.sql'), 'utf8');
 await db.exec(sql);
 await db.exec(sql); // Re-executable without erasing decisions or reports.
+await db.exec(await readFile(path.join(migrations, '0087_perfiles_sin_revision_previa.sql'), 'utf8'));
+await db.exec(await readFile(path.join(migrations, '0143_filtro_perfiles.sql'), 'utf8'));
 const A='10000000-0000-4000-8000-000000000001', B='20000000-0000-4000-8000-000000000002', C='30000000-0000-4000-8000-000000000003';
 async function role(r,u='') {
   await db.exec('reset role');
@@ -118,6 +120,56 @@ await test('Avatar bytes are immutable even via service writes or delete/reuploa
   assert.equal(await scalar('select count(*)::int from storage.objects where name=$1',[B+'/new.jpg']),0);
   await role('authenticated',B);await db.query('update profiles set avatar_url=$1 where id=$2',[B+'/photo.jpg',B]);
   await approve(B);
+});
+await test('0143: two accounts, offensive alias never reaches the other one and only the server applies verdicts',async()=>{
+  const antes=(await (async()=>{await role('postgres');return (await db.query('select name,equipped_title from profiles where id=$1',[B])).rows[0];})());
+  await role('authenticated',B);await db.query("update profiles set name='H1tl3r' where id=$1",[B]);
+  await role('postgres');assert.equal(await scalar('select nombre_estado from social_profile_reviews where user_id=$1',[B]),'rechazado');
+  await role('authenticated',A);assert.match(await scalar('select name from friends_board(7) where user_id=$1',[B]),/^Gladiador /);
+  assert.equal(await scalar('select equipped_title from friends_board(7) where user_id=$1',[B]),antes.equipped_title,'title stays published');
+  await role('service_role');await scalar('select social_filtro_aplicar($1,$2,$3,null,$4,null,null)',[B,'H1tl3r',antes.equipped_title,'ok']);
+  await role('authenticated',A);assert.match(await scalar('select name from friends_board(7) where user_id=$1',[B]),/^Gladiador /,'a rejected term cannot be approved by the filter');
+  await role('authenticated',B);await denied('select social_filtro_aplicar($1,$2,null,null,$3,null,null)',[B,'x','ok']);
+  await denied('select social_filtro_reservar($1,1)',[B]);
+  await db.query('update profiles set name=$1 where id=$2',['Marco',B]);
+  await role('authenticated',A);assert.match(await scalar('select name from friends_board(7) where user_id=$1',[B]),/^Gladiador /,'clean alias waits for the filter');
+  await role('service_role');await scalar('select social_filtro_aplicar($1,$2,$3,null,$4,null,null)',[B,'stale',antes.equipped_title,'ok']);
+  await role('authenticated',A);assert.match(await scalar('select name from friends_board(7) where user_id=$1',[B]),/^Gladiador /,'stale verdict is ignored');
+  await role('service_role');await scalar('select social_filtro_aplicar($1,$2,$3,null,$4,null,null)',[B,'Marco',antes.equipped_title,'ok']);
+  await role('authenticated',A);assert.equal(await scalar('select name from friends_board(7) where user_id=$1',[B]),'Marco');
+  await role('authenticated',B);await db.query('update profiles set name=$1 where id=$2',[antes.name,B]);
+  await approve(B);
+});
+await test('0143: a new photo stays hidden until the filter passes it and needs its own permission',async()=>{
+  const F=B+'/filtro.jpg';
+  await role('authenticated',B);
+  await db.query("insert into storage.objects(bucket_id,name,owner) values('avatars',$1,$2)",[F,B]);
+  await db.query('update profiles set avatar_url=$1 where id=$2',[F,B]);
+  const p=async()=>{await role('postgres');return (await db.query('select name,equipped_title from profiles where id=$1',[B])).rows[0];};
+  const q=await p();
+  const visto=async()=>{await role('authenticated',A);return [await scalar('select avatar_url from friends_board(7) where user_id=$1',[B]),await scalar('select count(*)::int from storage.objects where name=$1',[F])];};
+  assert.deepEqual(await visto(),[null,0]);
+  await role('service_role');await scalar('select social_filtro_aplicar($1,$2,$3,$4,null,null,$5)',[B,q.name,q.equipped_title,F,'ok']);
+  assert.deepEqual(await visto(),[null,0],'without permission an ok verdict goes to manual review');
+  await role('postgres');assert.equal(await scalar('select foto_estado from social_profile_reviews where user_id=$1',[B]),'revision');
+  await role('authenticated',A);await denied('select social_filtro_permitir_foto($1)',[F]);
+  await role('authenticated',B);await scalar('select social_filtro_permitir_foto($1)',[F]);
+  await role('service_role');await scalar('select social_filtro_aplicar($1,$2,$3,$4,null,null,$5)',[B,q.name,q.equipped_title,F,'revision']);
+  assert.deepEqual(await visto(),[null,0],'a model failure keeps it hidden');
+  await role('service_role');await scalar('select social_filtro_aplicar($1,$2,$3,$4,null,null,$5)',[B,q.name,q.equipped_title,F,'ok']);
+  assert.deepEqual(await visto(),[F,1]);
+  await role('authenticated',B);await db.query('update profiles set avatar_url=$1 where id=$2',[B+'/photo.jpg',B]);
+  await approve(B);
+});
+await test('0143: the daily brake stops model calls for one person',async()=>{
+  await role('service_role');
+  let ok=0;for(let i=0;i<31;i++) if(await scalar('select social_filtro_reservar($1,10)',[C])) ok++;
+  assert.equal(ok,30);
+});
+await test('0143: term list catches the obvious and leaves normal names alone',async()=>{
+  await role('postgres');
+  for(const t of ['H1TLER','hijo de puta','www.spam.com','llama 6001234567','@micuenta']) assert.equal(await scalar('select social_texto_prohibido($1)',[t]),true,t);
+  for(const t of ['Disputa','Nazim','María José','Gladiador 7','Sangre de arena']) assert.equal(await scalar('select social_texto_prohibido($1)',[t]),false,t);
 });
 await test('Report persists approved snapshot, deduplicates and rejects invalid/self reports',async()=>{
   await role('authenticated',A);

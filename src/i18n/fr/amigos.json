@@ -13,7 +13,13 @@
     "desbloquear": "Débloquer l'utilisateur",
     "desbloquearMensaje": "Cette personne pourra de nouveau te demander en ami. L'ancienne amitié ne revient pas. Si vous partagez un ludus, elle y réapparaîtra.",
     "desbloquearConfirmar": "Débloquer",
-    "soporteNoAbierto": "Impossible d'ouvrir le support"
+    "soporteNoAbierto": "Impossible d'ouvrir le support",
+    "motivos": {
+      "name": "Nom ou titre offensant",
+      "avatar": "Photo inappropriée",
+      "harassment": "Harcèlement ou menaces",
+      "impersonation": "Usurpation d'identité"
+    }
   },
   "duelo": {
     "rivalOculto": "Rival masqué",
@@ -166,7 +172,7 @@
   },
   "convivencia": {
     "titulo": "Vie commune et sécurité",
-    "cuerpo": "Harcèlement, menaces, usurpation d'identité et contenu offensant sont interdits. Les noms, titres et photos sont vérifiés avant d'être montrés aux autres : en attendant, ils verront un pseudo et une image neutres. Ton profil garde tes données.",
+    "cuerpo": "Harcèlement, menaces, usurpation d'identité et contenu offensant sont interdits. Un filtre automatique vérifie les noms, titres et photos avant de les montrer aux autres. Si quelque chose ne passe pas ou reste en attente, ils verront un pseudo et une image neutres. Si tu n'autorises pas le filtre pour une photo, elle attend une vérification manuelle. Tu peux signaler et bloquer n'importe qui. Ton profil garde tes données.",
     "bloqueado": "Utilisateur bloqué",
     "desbloquear": "Débloquer"
   },

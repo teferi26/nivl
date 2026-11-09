@@ -236,7 +236,7 @@
     "crudo": {
       "rotulo": "Before we go on",
       "titulo": "I'm going to be blunt with you.",
-      "cuerpo": "I'm not here to be liked. I'm here so that 90 days from now you're not the same person.",
+      "cuerpo": "I'm not here to be liked. I'm here so that in 90 days you can look back and see what you've done.",
       "detalle": "I'll tell you when you're lying to yourself. I'll call it out when you try to dodge. And I'll be with you every time you deliver.",
       "pregunta": "How do you want me to talk to you?",
       "duro": "No filter. Give it to me straight",
@@ -287,8 +287,8 @@
       }
     },
     "veredicto": {
-      "duro": "{{cuanto}} wanting this and your excuse is “{{freno}}”. You've got {{min}} a day. That's enough. What isn't enough is waiting any longer.",
-      "tacto": "{{cuanto}} wanting it. It's normal to get stuck on “{{freno}}”. With {{min}} a day you'll get there, and I'll take you."
+      "duro": "{{cuanto}} wanting this and your excuse is “{{freno}}”. With {{min}} a day you can start. What doesn't help is waiting longer.",
+      "tacto": "{{cuanto}} wanting it. It's normal to get stuck on “{{freno}}”. With {{min}} a day you can start moving forward, and I'll be with you."
     },
     "hitos": {
       "deportista": {
@@ -330,7 +330,7 @@
         },
         "dia90": {
           "titulo": "The reckoning",
-          "detalle": "Results you can show."
+          "detalle": "What you've done, measured."
         }
       },
       "emprendedor": {

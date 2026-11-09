@@ -85,7 +85,7 @@ describe('en otro idioma', () => {
   it('la oferta del paso del coach: potencia, beneficios y la línea de la firma', () => {
     __fijarIdiomaParaTest('it');
     expect(TIERS[0]!.power).toBe('Il coach completo.');
-    expect(copyUpsell('firma', 'pro').enlace).toBe('Vedi NIVL Pro');
+    expect(copyUpsell('firma', 'pro').enlace).toBe('Vedi i piani');
     expect(copyUpsell('firma', 'pro').beneficio).toBe('Brief cada mañana');
     // El beneficio del motivo va primero también traducido (casa por id).
     expect(beneficiosPorMotivo(PRO_BENEFITS, 'primer_dia', 'pro')[0]!.title).toBe('Piano del giorno, blocco per blocco');

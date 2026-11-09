@@ -47,6 +47,9 @@ struct RaizReloj: View {
 
     /// `-nivlPagina entrenar|racha|focus|descanso` al lanzar (capturas del simulador).
     static var inicial: Pagina {
+      #if !DEBUG
+      return .hoy
+      #else
       switch UserDefaults.standard.string(forKey: "nivlPagina") {
       case "entrenar": return .entrenar
       case "racha": return .racha
@@ -54,20 +57,31 @@ struct RaizReloj: View {
       case "descanso": return .descanso
       default: return .hoy
       }
+      #endif
     }
+  }
+
+  /// Capturas del simulador. En Release no existe.
+  private var pantallaDemo: AnyView? {
+    #if DEBUG
+    guard almacen.modoDemo, let demo = Demo.pantallaEntreno else { return nil }
+    switch demo {
+    case .enMarcha:
+      return AnyView(PanelEntreno(fase: .enMarcha, metricas: Demo.metricasEntreno(), acciones: AccionesEntreno()))
+    case .resumen:
+      return AnyView(ResumenEntrenoVista(resumen: Demo.resumenEntreno(), alCerrar: {}))
+    }
+    #else
+    return nil
+    #endif
   }
 
   var body: some View {
     // El entreno va fuera de las páginas: un gesto de corona no debe poder
     // sacarte de él, y al salir la pila de navegación vuelve limpia.
     Group {
-      if almacen.modoDemo, let demo = Demo.pantallaEntreno {
-        switch demo {
-        case .enMarcha:
-          PanelEntreno(fase: .enMarcha, metricas: Demo.metricasEntreno(), acciones: AccionesEntreno())
-        case .resumen:
-          ResumenEntrenoVista(resumen: Demo.resumenEntreno(), alCerrar: {})
-        }
+      if let demo = pantallaDemo {
+        demo
       } else if entreno.fase.enCurso {
         VistaEntrenoEnMarcha()
       } else if entreno.fase.esResumen {
@@ -119,7 +133,6 @@ struct SinDatos: View {
         .accessibilityHidden(true)
       Text(titulo)
         .font(Tipo.inscripcion(15))
-        .tracking(3)
         .foregroundStyle(Ink.ink9)
       Text(linea)
         .font(Tipo.detalle)

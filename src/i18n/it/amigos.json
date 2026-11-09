@@ -13,7 +13,13 @@
     "desbloquear": "Sblocca utente",
     "desbloquearMensaje": "Potrà di nuovo chiederti l'amicizia. L'amicizia precedente non si recupera. Se condividete un ludus, riapparirà.",
     "desbloquearConfirmar": "Sblocca",
-    "soporteNoAbierto": "Impossibile aprire l'assistenza"
+    "soporteNoAbierto": "Impossibile aprire l'assistenza",
+    "motivos": {
+      "name": "Nome o titolo offensivo",
+      "avatar": "Foto inappropriata",
+      "harassment": "Molestie o minacce",
+      "impersonation": "Sostituzione di persona"
+    }
   },
   "duelo": {
     "rivalOculto": "Rivale nascosto",
@@ -166,7 +172,7 @@
   },
   "convivencia": {
     "titulo": "Convivenza e sicurezza",
-    "cuerpo": "Non sono ammessi molestie, minacce, furti d'identità né contenuti offensivi. Nomi, titoli e foto vengono controllati prima di essere mostrati agli altri: nel frattempo vedranno un alias e un'immagine neutri. Il tuo profilo conserva i tuoi dati.",
+    "cuerpo": "Non sono ammessi molestie, minacce, furti d'identità né contenuti offensivi. Un filtro automatico controlla nomi, titoli e foto prima di mostrarli agli altri. Se qualcosa non passa o è ancora in attesa, vedranno un alias e un'immagine neutri. Se non autorizzi il filtro per una foto, attende una revisione manuale. Puoi segnalare e bloccare chiunque. Il tuo profilo conserva i tuoi dati.",
     "bloqueado": "Utente bloccato",
     "desbloquear": "Sblocca"
   },

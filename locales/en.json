@@ -1,0 +1,16 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "NIVL uses the camera for your evidence photos, your profile picture and your progress photos. Images are only sent to the coach when you send them.",
+    "NSPhotoLibraryUsageDescription": "NIVL uses your photo library to choose evidence photos, your profile picture and your progress photos. Images are only sent to the coach when you send them.",
+    "NSMicrophoneUsageDescription": "NIVL only uses the microphone when you ask: to dictate to your coach while you hold the voice button. It never records in the background.",
+    "NSPhotoLibraryAddUsageDescription": "NIVL only saves to your photos the cards you choose to save when sharing.",
+    "NSHealthShareUsageDescription": "NIVL reads from Health only the categories you choose (workouts, steps, active energy, heart rate, sleep and weight) to show your progress and check what you log.",
+    "NSHealthUpdateUsageDescription": "NIVL saves to Health the workouts you measure with the app, if you allow it.",
+    "NSLocationWhenInUseUsageDescription": "NIVL uses your location during the run or ride you start, even with the screen off, to calculate distance, pace and route. It does not use it outside that session.",
+    "NSSpeechRecognitionUsageDescription": "NIVL converts your voice to text to send it to your coach. It is processed on your device when possible.",
+    "NSCalendarsUsageDescription": "If you connect your calendar, NIVL copies the title and times of your next 14 days to your account, and your coach can use them if you allowed it. It only reads it: it never changes anything.",
+    "NSRemindersUsageDescription": "NIVL only reads your calendar. It does not read or change your reminders.",
+    "NSCalendarsFullAccessUsageDescription": "If you connect your calendar, NIVL copies the title and times of your next 14 days to your account, and your coach can use them if you allowed it. It only reads it: it never changes anything.",
+    "NSRemindersFullAccessUsageDescription": "NIVL only reads your calendar. It does not read or change your reminders."
+  }
+}

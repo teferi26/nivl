@@ -1,0 +1,74 @@
+{
+  "descargo": "O NIVL não é um serviço médico, nutricional nem psicológico. Em caso de dor, lesão ou problema de saúde, consulta um profissional.",
+  "crisis": {
+    "completa": "Se estiveres mesmo a passar mal, liga para o {{crisis}} (24 horas). Em caso de perigo imediato, para o {{emergencias}}.",
+    "sinEmergencias": "Se estiveres mesmo a passar mal, liga para o {{crisis}} (24 horas). Em caso de perigo imediato, liga para o número de emergência do teu país.",
+    "soloEmergencias": "Se estiveres mesmo a passar mal ou houver perigo imediato, liga para o {{emergencias}}.",
+    "generica": "Se estiveres mesmo a passar mal ou houver perigo imediato, liga para o número de emergência do teu país."
+  },
+  "ia": {
+    "eyebrow": "ANTES DO COACH",
+    "titulo": "Os teus dados e a IA",
+    "intro": "O coach funciona com modelos de IA de outras empresas. Para te responder e planear o teu dia, o NIVL envia-lhes em cada turno:",
+    "aQuien": "A quem é enviado",
+    "fueraEee": "Parte desse tratamento ocorre fora do Espaço Económico Europeu, em países onde os teus dados podem não ter a mesma proteção que na UE.",
+    "paraQue": "O NIVL envia estes dados para o coach te responder. O NIVL não os utiliza para publicidade.",
+    "consentimiento": "Ao aceitar, dás o teu consentimento explícito para que estes dados, incluindo os de saúde, sejam tratados e enviados a estes fornecedores, também fora do EEE. Podes retirá-lo quando quiseres em Perfil: os novos pedidos de IA param. Os dados de um pedido já enviado não podem ser recuperados.",
+    "sinAceptar": "Se não aceitares, podes continuar a usar gratuitamente os teus hábitos, a tua organização e o teu progresso, sem o coach.",
+    "aceptar": "Aceito e ativo o coach",
+    "rechazar": "Agora não",
+    "datos": {
+      "salud": {
+        "titulo": "Saúde e treino",
+        "detalle": "Peso, ficha física (altura, idade, lesões, notas de saúde), ginásio, cardio e nutrição."
+      },
+      "medicion": {
+        "titulo": "Relógio e medição",
+        "detalle": "Se ativares a medição: duração, distância, desnível, ritmo, frequência cardíaca média e máxima, sono, variabilidade cardíaca e frequência cardíaca em repouso. A rota GPS e a série de frequência cardíaca não são enviadas."
+      },
+      "diario": {
+        "titulo": "O teu diário",
+        "detalle": "O que escreves, o teu humor e a tua energia."
+      },
+      "finanzas": {
+        "titulo": "As tuas finanças",
+        "detalle": "Contas, movimentos e orçamentos que registares em Economia."
+      },
+      "dia": {
+        "titulo": "O teu dia",
+        "detalle": "Missões, campanhas, agenda, regras e o que falas com o coach."
+      },
+      "calendario": {
+        "titulo": "O teu calendário",
+        "detalle": "Se o ligares: o título e as horas dos teus próximos eventos."
+      },
+      "fotos": {
+        "titulo": "As tuas fotos",
+        "detalle": "Apenas as que anexares ao chat, e apenas nesse turno."
+      }
+    },
+    "anthropic": {
+      "donde": "Armazenamento nos EUA; processamento por predefinição nos EUA, Europa, Ásia e Austrália.",
+      "cuando": "O coach em todos os planos e na experiência de 7 dias, com as fotos que anexares, os resumos, os textos das notificações, a classificação de movimentos e outras tarefas curtas."
+    }
+  },
+  "salud": {
+    "title": "Os teus dados de saúde",
+    "purpose": "Com a tua autorização, o NIVL guarda e utiliza o teu peso, ficha física, treinos, alimentação e diário de bem-estar para mostrar a tua evolução e oferecer as funções do coach. Se os ligares, também guarda na tua conta, nos nossos servidores, o que medires com o Apple Watch ou leres da app Saúde da Apple (frequência cardíaca, sono, passos, energia ativa e sessões) e as rotas GPS dos teus treinos, que mostram a tua localização durante cada sessão. O diário, as fotos, os planos, a sua memória e os registos criados ou alterados pelo coach podem misturar saúde com outros dados.",
+    "storage": "O responsável pelo tratamento é {{responsable}} (soporte@nivl.app). Os dados estão alojados na Supabase, em Frankfurt. Esta autorização não ativa a IA nem permite por si só envios aos seus fornecedores: o coach pede um consentimento separado.",
+    "choice": "É opcional. Sem aceitar, podes continuar com hábitos gerais, campanhas, metas gerais e economia. O coach e o oráculo precisam desta autorização porque a conversa e o histórico podem incluir dados de saúde.",
+    "withdrawal": "Podes retirar esta autorização em Perfil e apagar os dados identificados como saúde, TODO o diário, as fotos, a memória e os registos marcados pelo coach. Antes poderás exportá-los. Mantêm-se os teus pontos, os valores e contas de Economia e os registos gerais sem essas marcas. Em Economia, as anotações são retiradas e as regras automáticas marcadas como texto de IA são desativadas. O texto geral anterior não identificado como saúde não é apagado automaticamente.",
+    "checkbox": "Consinto explicitamente que o NIVL guarde e utilize os meus dados de saúde para estas finalidades.",
+    "erase": "Serão apagados a tua ficha física, peso, treinos com as respetivas rotas GPS e dados de frequência cardíaca, os dados da app Saúde da Apple e do Apple Watch (frequência cardíaca, sono, passos e energia ativa), alimentação, metas físicas, objetivos e cartas marcados como saúde, hábitos e regras físicos com os seus registos, TODO o diário e as suas fotos, fotos de missões, conversas, memória, resumos e planos. Também os hábitos, regras, campanhas, agenda, compras e metas criados ou alterados pelo coach e marcados como conteúdo misto. Podem misturar saúde com outros dados: é apagado o registo completo. Em Economia, as anotações são retiradas e as regras automáticas marcadas como texto de IA são desativadas; as contas, movimentos e valores mantêm-se. Os teus pontos e os registos gerais sem marcas de saúde ou do coach mantêm-se. O texto geral anterior não identificado como saúde não é apagado automaticamente. Exporta antes se quiseres uma cópia. Esta ação não pode ser anulada."
+  },
+  "errores": {
+    "versionObsoleta": "O texto mudou. Atualiza o NIVL para o rever.",
+    "borradoPendiente": "Termina o apagamento pendente antes de voltar a ativar a saúde.",
+    "noGuardado": "Não foi possível guardar a autorização.",
+    "activaSalud": "Ativa a autorização de saúde em Perfil antes de usar este registo.",
+    "borradoIncompleto": "O apagamento não terminou. Os dados ficam bloqueados quando a retirada é registada. Podes verificar e tentar de novo em Perfil.",
+    "edadNoGuardada": "A confirmação não foi guardada. Tenta de novo.",
+    "actualizaFotos": "Atualiza o NIVL para usar as fotos de progresso.",
+    "eligeMotivo": "Escolhe um motivo para a denúncia."
+  }
+}

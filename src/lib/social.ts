@@ -1,3 +1,4 @@
+import { t } from '@/i18n';
 // La capa social (efectos): amigos, solicitudes y el marcador. La lógica pura
 // —ordenar, etiquetar, la línea de rivalidad— vive en socialmath.ts.
 //
@@ -214,7 +215,7 @@ export async function unblockSocialUser(userId: string): Promise<void> {
 }
 
 export async function reportSocialUser(userId: string, reason: ReportReason): Promise<void> {
-  if (!isReportReason(reason)) throw new ErrorVisible('Elige un motivo para la denuncia.');
+  if (!isReportReason(reason)) throw new ErrorVisible(t('legal:errores.eligeMotivo'));
   const { error } = await supabase.rpc('social_report_user', { p_user: userId, p_reason: reason });
   if (error) throw error;
 }

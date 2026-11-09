@@ -1,32 +1,45 @@
-// NIVL · Apple Watch: «Mármol y tinta» en la muñeca.
-// Los mismos tokens que src/design/tokens.ts (ink0 a ink10, sin color): el
-// énfasis va en la inversión (blanco con texto negro, una por pantalla), el
-// trazo y el grano. Cinzel solo para cifras grandes y rótulos grabados;
+// NIVL · Apple Watch: «Ónix» en la muñeca.
+// Los mismos tokens que src/design/tokens.ts: fondo casi negro, botón hueso y el
+// oro solo como hilo, nunca de relleno. Playfair para cifras grandes y títulos;
 // el texto que se lee, en la fuente del sistema (lo más legible a 40 mm).
 
 import SwiftUI
 
 enum Ink {
-  static let ink0 = Color(red: 0, green: 0, blue: 0)
-  static let ink1 = Color(white: 0x0B / 255)
-  static let ink2 = Color(white: 0x16 / 255)
-  static let ink3 = Color(white: 0x24 / 255)
-  static let ink4 = Color(white: 0x3A / 255)
-  static let ink6 = Color(white: 0x8C / 255)
-  static let ink8 = Color(white: 0xBD / 255)
-  static let ink9 = Color(white: 0xED / 255)
-  static let ink10 = Color(white: 1)
+  private static func hex(_ v: UInt32) -> Color {
+    Color(red: Double(v >> 16 & 255) / 255, green: Double(v >> 8 & 255) / 255, blue: Double(v & 255) / 255)
+  }
+  static let ink0 = hex(0x09090B)
+  static let ink1 = hex(0x151517)
+  static let ink2 = hex(0x1D1D1F)
+  static let ink3 = hex(0x2A2A2C)
+  static let ink4 = hex(0x4A494C)
+  static let ink6 = hex(0x8F8C85)
+  static let ink8 = hex(0xB8B4AB)
+  static let ink9 = hex(0xF5F2EC)
+  /// Hueso: el botón principal y lo invertido.
+  static let ink10 = hex(0xEDEAE3)
+}
+
+/// El oro: trazos, barras y rótulos. Nunca el relleno de un botón.
+enum Oro {
+  static let hilo = Color(red: 0xC9 / 255, green: 0xA9 / 255, blue: 0x61 / 255)
+}
+
+enum Radio {
+  static let tarjeta: CGFloat = 14
+  static let control: CGFloat = 12
 }
 
 enum Tipo {
-  /// Cifras grandes (racha, nivel, reloj): Cinzel 600 con su escalado.
+  /// Cifras grandes (racha, nivel, reloj): Playfair 700 con su escalado.
   static func cifra(_ tam: CGFloat, relativoA estilo: Font.TextStyle = .largeTitle) -> Font {
-    .custom("Cinzel-SemiBold", size: tam, relativeTo: estilo)
+    .custom("PlayfairDisplay-Bold", size: tam, relativeTo: estilo)
   }
 
   /// Lo grabado: «RANGO D», rótulos de pantalla.
   static func inscripcion(_ tam: CGFloat = 13) -> Font {
-    .custom("Cinzel-Bold", size: tam, relativeTo: .footnote)
+    .custom("PlayfairDisplay-Bold", size: tam, relativeTo: .footnote)
   }
 
   static let rotulo = Font.system(size: 11, weight: .bold)
@@ -43,7 +56,7 @@ struct Rotulo: View {
     Text(texto.uppercased())
       .font(Tipo.rotulo)
       .tracking(2)
-      .foregroundStyle(Ink.ink6)
+      .foregroundStyle(Oro.hilo)
       // Una línea siempre: en 40 mm «BLOQUE 2 DE 4 · IPHONE» partía en dos
       // por el punto medio. Encoge antes que partir.
       .lineLimit(1)
@@ -52,7 +65,7 @@ struct Rotulo: View {
   }
 }
 
-/// La acción principal: la inversión (blanco, texto negro, radio 0).
+/// La acción principal: hueso con texto oscuro. Una por pantalla.
 struct BotonInvertido: ButtonStyle {
   var activo = true
   func makeBody(configuration: Configuration) -> some View {
@@ -62,14 +75,14 @@ struct BotonInvertido: ButtonStyle {
       .textCase(.uppercase)
       .frame(maxWidth: .infinity, minHeight: 44)
       .foregroundStyle(activo ? Ink.ink0 : Ink.ink6)
-      .background(activo ? Ink.ink10 : Ink.ink2)
-      .overlay(Rectangle().stroke(activo ? Color.clear : Ink.ink4, lineWidth: 1))
+      .background(activo ? Ink.ink10 : Ink.ink2, in: RoundedRectangle(cornerRadius: Radio.control))
+      .overlay(RoundedRectangle(cornerRadius: Radio.control).stroke(activo ? Color.clear : Ink.ink4, lineWidth: 1))
       .scaleEffect(configuration.isPressed ? 0.97 : 1)
       .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
   }
 }
 
-/// Lo secundario: contorno de 1 sobre negro.
+/// Lo secundario: contorno fino sobre el fondo.
 struct BotonContorno: ButtonStyle {
   func makeBody(configuration: Configuration) -> some View {
     configuration.label
@@ -78,25 +91,15 @@ struct BotonContorno: ButtonStyle {
       .textCase(.uppercase)
       .frame(maxWidth: .infinity, minHeight: 44)
       .foregroundStyle(Ink.ink9)
-      .background(configuration.isPressed ? Ink.ink2 : Ink.ink0)
-      .overlay(Rectangle().stroke(Ink.ink4, lineWidth: 1))
+      .background(configuration.isPressed ? Ink.ink2 : Ink.ink0, in: RoundedRectangle(cornerRadius: Radio.control))
+      .overlay(RoundedRectangle(cornerRadius: Radio.control).stroke(Ink.ink4, lineWidth: 1))
   }
 }
 
-/// El grano (logro, racha): puntos finos ink6 sobre negro. Decoración: el
-/// texto nunca va encima.
-struct Grano: View {
+/// El hilo de oro: separa lo logrado. Decoración, el lector de pantalla lo omite.
+struct HiloOro: View {
   var body: some View {
-    Canvas { ctx, size in
-      var gen = SplitMix(semilla: 7)
-      let n = Int(size.width * size.height / 60)
-      for _ in 0..<n {
-        let x = CGFloat(gen.siguiente() % UInt64(max(1, Int(size.width))))
-        let y = CGFloat(gen.siguiente() % UInt64(max(1, Int(size.height))))
-        ctx.fill(Path(CGRect(x: x, y: y, width: 1, height: 1)), with: .color(Ink.ink3))
-      }
-    }
-    .accessibilityHidden(true)
+    Rectangle().fill(Oro.hilo).frame(height: 1).accessibilityHidden(true)
   }
 }
 
@@ -114,19 +117,6 @@ struct Trama: View {
       ctx.stroke(p, with: .color(Ink.ink3), lineWidth: 1)
     }
     .accessibilityHidden(true)
-  }
-}
-
-/// Generador fijo para que el grano no baile en cada repintado.
-struct SplitMix {
-  var estado: UInt64
-  init(semilla: UInt64) { estado = semilla }
-  mutating func siguiente() -> UInt64 {
-    estado &+= 0x9E37_79B9_7F4A_7C15
-    var z = estado
-    z = (z ^ (z >> 30)) &* 0xBF58_476D_1CE4_E5B9
-    z = (z ^ (z >> 27)) &* 0x94D0_49BB_1331_11EB
-    return z ^ (z >> 31)
   }
 }
 

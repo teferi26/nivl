@@ -16,11 +16,12 @@ import type * as ReconocimientoTipo from 'expo-speech-recognition';
 import { requireOptionalNativeModule } from 'expo';
 import { Platform } from 'react-native';
 import { fijarSilencio } from './hablar';
+import { idiomaVozActual } from './idioma';
 
 type Modulo = typeof ReconocimientoTipo.ExpoSpeechRecognitionModule;
 type Suscripcion = { remove: () => void };
 
-/** Idioma del dictado. */
+/** Idioma de dictado por defecto; el real sale de `idiomaVozActual()`. */
 export const IDIOMA_DICTADO = 'es-ES';
 
 export type CodigoErrorDictado =
@@ -121,12 +122,12 @@ export function disponibleDictado(): boolean {
   }
 }
 
-function esEsEs(locale: string): boolean {
-  return locale.replace('_', '-').toLowerCase() === IDIOMA_DICTADO.toLowerCase();
+function esElIdiomaActual(locale: string): boolean {
+  return locale.replace('_', '-').toLowerCase() === idiomaVozActual().toLowerCase();
 }
 
 /**
- * ¿Transcribe este dispositivo es-ES sin red? Pide al sistema el soporte
+ * ¿Transcribe este dispositivo su idioma sin red? Pide al sistema el soporte
  * local y la lista de idiomas instalados; no pide permisos. Ante cualquier
  * duda (Android ≤ 12, error, lista vacía), false.
  */
@@ -149,7 +150,7 @@ async function localPreferido(): Promise<boolean> {
     if (!m.supportsOnDeviceRecognition()) return false;
     const { locales, installedLocales } = await m.getSupportedLocales({});
     const lista = Platform.OS === 'ios' ? [...(installedLocales ?? []), ...(locales ?? [])] : installedLocales ?? [];
-    return lista.some(esEsEs);
+    return lista.some(esElIdiomaActual);
   } catch {
     return false;
   }
@@ -276,7 +277,7 @@ export async function dictar(op: OpcionesDictado = {}): Promise<ResultadoDictado
       }),
     );
     m.start({
-      lang: IDIOMA_DICTADO,
+      lang: idiomaVozActual(),
       interimResults: true,
       continuous: false,
       requiresOnDeviceRecognition: local || (Platform.OS === 'ios' && (await localPreferido())),

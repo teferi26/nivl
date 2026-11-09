@@ -69,7 +69,8 @@
     "estadisticas": "Stats",
     "statA11y": "{{stat}}: {{puntos}} points",
     "statNota": "One point for every 100 XP in the area.",
-    "cargandoA11y": "Loading your gladiator sheet"
+    "cargandoA11y": "Loading your gladiator sheet",
+    "suscripcion": "Your subscription"
   },
   "ajustes": {
     "paraQue": "What I use NIVL for",
@@ -137,9 +138,9 @@
     "rotulo": "What you lose",
     "cuerpo": "Your profile, missions, campaigns, journal, body and money data, your conversation with the coach, your photos and all your progress are deleted. There's no going back.",
     "suscripcion": {
-      "android": "Deleting your account doesn't cancel a NIVL Pro subscription: cancel it in Play Store > Payments & subscriptions > Subscriptions.",
-      "ios": "Deleting your account doesn't cancel a NIVL Pro subscription: cancel it in Settings > your name > Subscriptions.",
-      "otra": "Deleting your account doesn't cancel a NIVL Pro subscription: cancel it in the store where you bought it."
+      "android": "Deleting your account doesn't cancel a NIVL subscription: cancel it in Play Store > Payments & subscriptions > Subscriptions.",
+      "ios": "Deleting your account doesn't cancel a NIVL subscription: cancel it in Settings > your name > Subscriptions.",
+      "otra": "Deleting your account doesn't cancel a NIVL subscription: cancel it in the store where you bought it."
     },
     "creador": "You're a creator in the program. If you delete your account, your code is deactivated; the balance already earned is still paid to you: write to support to give us your payment details.",
     "etiqueta": "Type {{palabra}} to confirm",
@@ -209,5 +210,15 @@
     "fila": "Usage measurement",
     "activada": "On. Only the steps of the journey, never what you write.",
     "desactivada": "Off. Nothing is stored or sent."
+  },
+  "filtro": {
+    "titulo": "Send your photo to the filter?",
+    "eyebrow": "Before others see it",
+    "cuerpo": "To show it to your friends, an automatic filter checks it. Only this photo is sent to Anthropic, which processes the image for this purpose. You can also wait for manual review: until then, others will see a neutral image.",
+    "permitir": "Send to the filter",
+    "manual": "Manual review",
+    "avisoTitulo": "Only you will see it",
+    "fotoRechazada": "This photo didn't pass the filter. Others will see a neutral image. If you think it's a mistake, contact support.",
+    "nombreRechazado": "This name didn't pass the filter. Others will see a neutral alias. If you think it's a mistake, contact support."
   }
 }

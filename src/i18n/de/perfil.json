@@ -69,7 +69,8 @@
     "estadisticas": "Attribute",
     "statA11y": "{{stat}}: {{puntos}} Punkte",
     "statNota": "Ein Punkt pro 100 XP im Bereich.",
-    "cargandoA11y": "Dein Gladiatorenprofil wird geladen"
+    "cargandoA11y": "Dein Gladiatorenprofil wird geladen",
+    "suscripcion": "Dein Abo"
   },
   "ajustes": {
     "paraQue": "Wofür ich NIVL nutze",
@@ -137,9 +138,9 @@
     "rotulo": "Was verloren geht",
     "cuerpo": "Gelöscht werden dein Profil, Missionen, Kampagnen, Tagebuch, Körper- und Finanzdaten, das Gespräch mit dem Coach, deine Fotos und dein gesamter Fortschritt. Es gibt kein Zurück.",
     "suscripcion": {
-      "android": "Das Löschen des Kontos kündigt kein NIVL Pro-Abo: Kündige es im Play Store > Zahlungen und Abos > Abos.",
-      "ios": "Das Löschen des Kontos kündigt kein NIVL Pro-Abo: Kündige es unter Einstellungen > dein Name > Abonnements.",
-      "otra": "Das Löschen des Kontos kündigt kein NIVL Pro-Abo: Kündige es in dem Store, in dem du es abgeschlossen hast."
+      "android": "Das Löschen des Kontos kündigt kein NIVL-Abo: Kündige es im Play Store > Zahlungen und Abos > Abos.",
+      "ios": "Das Löschen des Kontos kündigt kein NIVL-Abo: Kündige es unter Einstellungen > dein Name > Abonnements.",
+      "otra": "Das Löschen des Kontos kündigt kein NIVL-Abo: Kündige es in dem Store, in dem du es abgeschlossen hast."
     },
     "creador": "Du bist Creator im Programm. Wenn du das Konto löschst, wird dein Code deaktiviert; das bereits erwirtschaftete Guthaben wird dir weiter ausgezahlt: Schreib dem Support, um uns deine Zahlungsdaten zu geben.",
     "etiqueta": "Gib {{palabra}} ein, um zu bestätigen",
@@ -209,5 +210,15 @@
     "fila": "Nutzungsmessung",
     "activada": "Aktiviert. Nur die Schritte des Ablaufs, nie, was du schreibst.",
     "desactivada": "Deaktiviert. Es wird nichts gespeichert oder gesendet."
+  },
+  "filtro": {
+    "titulo": "Foto an den Filter senden?",
+    "eyebrow": "Bevor andere es sehen",
+    "cuerpo": "Damit deine Freunde es sehen können, prüft es ein automatischer Filter. Nur dieses Foto geht an Anthropic, das das Bild zu diesem Zweck verarbeitet. Du kannst auch auf eine manuelle Prüfung warten: Bis dahin sehen andere ein neutrales Bild.",
+    "permitir": "An den Filter senden",
+    "manual": "Manuelle Prüfung",
+    "avisoTitulo": "Nur du siehst es",
+    "fotoRechazada": "Dieses Foto hat den Filter nicht bestanden. Andere sehen ein neutrales Bild. Wenn du das für einen Fehler hältst, schreib dem Support.",
+    "nombreRechazado": "Dieser Name hat den Filter nicht bestanden. Andere sehen einen neutralen Alias. Wenn du das für einen Fehler hältst, schreib dem Support."
   }
 }

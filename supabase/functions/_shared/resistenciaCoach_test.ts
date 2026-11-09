@@ -123,7 +123,7 @@ const CORRER = { deporte: 'carrera', fecha: '', hora: '', duracion_min: 50, dist
 
 Deno.test('definiciones: las cuatro nuevas, sin strict ni uniones', () => {
   const nombres = TOOL_DEFS.map((t) => t.name);
-  assertEquals(nombres.length, 30);
+  assertEquals(nombres.length, 32);
   for (const n of ['cuando_salir', 'fijar_carrera', 'ajustar_sesion_plan', 'registrar_entreno']) assert(nombres.includes(n), n);
   const texto = JSON.stringify(TOOL_DEFS);
   assert(!texto.includes('"strict"'));

@@ -37,7 +37,7 @@
       "eyebrow": "Schwur besiegelt",
       "titulo": "Jetzt: wer ihn anführt.",
       "linea": "Dein Schwur ist besiegelt. Der Coach kann ab morgen deinen Tag anführen.",
-      "enlace": "NIVL Pro ansehen",
+      "enlace": "Abos ansehen",
       "contexto": "Dein Schwur ist besiegelt. NIVL bleibt komplett kostenlos; Pro fügt den Coach hinzu, der ihn anführt."
     }
   },
@@ -77,7 +77,7 @@
     "losCuatroModos": "Alle vier Modi",
     "soloModo": "Nur {{modo}}",
     "notaTodos": "IRON, FOCUS, WORK und FOUNDER, jeweils mit Coach.",
-    "notaUno": "Nur dieser Modus und sein Coach.",
+    "notaUno": "Dieser Modus, sein Coach und der allgemeine Coach.",
     "filaUno": "Ein Modus und sein Coach",
     "filaTodos": "Alle vier Modi, mit ihrem Coach",
     "noDisponible": "Abos sind in dieser Version der App nicht verfügbar.",
@@ -118,8 +118,9 @@
         "android": "Du verwaltest und kündigst es jederzeit unter Google Play > Zahlungen und Abos > Abos.",
         "otra": "Du verwaltest und kündigst es jederzeit in dem Store, in dem du es abgeschlossen hast."
       },
-      "base": "NIVL und deine Gewohnheiten bleiben kostenlos.",
-      "avisoIa": "NIVL ist eine KI, keine medizinische Fachkraft."
+      "base": "Die NIVL-Grundfunktionen und deine Gewohnheiten bleiben kostenlos. Ein Modus fügt seine Welt und seinen Coach hinzu, dazu den allgemeinen Coach.",
+      "avisoIa": "NIVL ist eine KI, keine medizinische Fachkraft.",
+      "uso": "Automatisierte oder ungewöhnliche Nutzung kann den Coach vorübergehend pausieren."
     },
     "enlace": {
       "restaurar": "Wiederherstellen",
@@ -133,7 +134,8 @@
       "pendiente": "Kauf vom Store bestätigt. Der Modus öffnet sich in wenigen Sekunden; falls nicht, tippe auf Wiederherstellen.",
       "programada": "Änderung vom Store bestätigt. Sie gilt ab deiner nächsten Verlängerung; bis dahin bleibt dein aktueller Tarif.",
       "sinPermiso": "Für den Coach musst du der Übermittlung deiner Daten an den KI-Anbieter zustimmen. Ohne diese Erlaubnis wird nichts berechnet.",
-      "nada": "Dieses Store-Konto hat kein aktives NIVL Abo."
+      "nada": "Dieses Store-Konto hat kein aktives NIVL Abo.",
+      "cambio": "Du hast {{actual}}. Es kann nur ein Abo aktiv sein: {{nuevo}} ersetzt dein aktuelles, und du verlierst diesen Modus, sobald die Änderung gilt. Der Store zeigt dir, wann."
     },
     "salida": {
       "gratis": "Kostenlos weiter",
@@ -154,6 +156,49 @@
         "work": "Finanzen, Kalender und sein Coach, der deinen Arbeitstag schützt.",
         "founder": "Kalender, Geschäftszahlen und sein Coach, der dich nach den Zahlen fragt."
       }
-    }
+    },
+    "planAnterior": "dein bisheriges Abo"
+  },
+  "plan": {
+    "titulo": "Der Coach ist bei dir.",
+    "subPruebaTienda": "Deine Gratistage. Danach bucht der Store dein Abo ab, wenn du nicht vorher kündigst.",
+    "subPrueba": "Deine 7-Tage-Testphase. Briefing, Tagesplan, Training, Ernährung, Wochenrückblick und Gedächtnis. Am Ende wird nichts berechnet: keine Verlängerung.",
+    "subActivo": "Briefing, Tagesplan, Training, Ernährung, Wochenrückblick und Gedächtnis. Alles aktiv.",
+    "secEnergia": "Coach-Energie in diesem Monat",
+    "secCoach": "Dein Coach",
+    "a11yEnergia": "Coach-Energie: {{pct}} %",
+    "agotadaFecha": "Für diesen Monat aufgebraucht. Auffüllung am {{fecha}}. Deine Missionen, deine Serie und alle Module funktionieren weiter.",
+    "agotadaDia1": "Für diesen Monat aufgebraucht. Auffüllung am 1. Deine Missionen, deine Serie und alle Module funktionieren weiter.",
+    "queda": "Es sind noch {{pct}} % von dem übrig, was der Coach diesen Monat für dich durchdenken kann.",
+    "quedaFecha": "Es sind noch {{pct}} % von dem übrig, was der Coach diesen Monat für dich durchdenken kann. Volle Auffüllung am {{fecha}}.",
+    "tuPlan": "Dein Abo",
+    "filaPlan": "Abo",
+    "pruebaAuto": "Kostenlose Testphase",
+    "prueba7": "7-Tage-Testphase",
+    "filaModos": "Modi",
+    "renovacion": "Nächste Verlängerung",
+    "activoHasta": "Aktiv bis",
+    "gestionar": "Abo verwalten oder kündigen",
+    "gestionarNota": "Dort wechselst du das Abo, siehst die Verlängerung oder kündigst.",
+    "fuera": "Dieses Abo wurde außerhalb dieser App abgeschlossen: Verwalte und kündige es dort, wo du es abgeschlossen hast.",
+    "hablar": "Mit dem Coach sprechen",
+    "usoCoach": "Keine Zähler und keine Zusatzkosten für den Coach. Zum Schutz des Dienstes kann automatisierte oder ungewöhnliche Nutzung ihn vorübergehend pausieren; der Rest von NIVL bleibt verfügbar.",
+    "noComprobar": "Dein Abo konnte nicht geprüft werden.",
+    "volver": "Zurück"
+  },
+  "tienda": {
+    "sesion": "Melde dich an, um ein Abo abzuschließen.",
+    "noVinculada": "Der Store ist noch nicht mit diesem Konto verknüpft. Schließe NIVL, öffne es erneut und versuche es noch einmal.",
+    "cuentaCambio": "Das Konto hat sich geändert. Versuche es noch einmal.",
+    "otraCuenta": "Dieser Kauf gehört zu einem anderen NIVL-Konto. Melde dich mit diesem Konto an, um ihn zu nutzen.",
+    "yaTiene": "Dein Store-Konto hat dieses Abo bereits. Tippe auf Käufe wiederherstellen, um es zurückzuholen.",
+    "enCurso": "Es läuft bereits ein Vorgang mit dem Store. Warte, bis er abgeschlossen ist.",
+    "noResponde": "Der Store antwortet gerade nicht. Es wurde keine neue Zahlung ausgeführt: Versuche es in ein paar Minuten erneut.",
+    "noPermite": "Dieses Gerät erlaubt keine Käufe. Prüfe die Einschränkungen des Stores.",
+    "noDisponible": "Dieses Abo ist im Store gerade nicht verfügbar.",
+    "esperaPrecio": "Warte, bis der Store-Preis geladen ist.",
+    "canceladaVigente": "Dein Abo ist gekündigt, aber noch gültig. Reaktiviere es unter Abo verwalten oder kündigen.",
+    "yaActivo": "Dieses Abo ist im Store bereits aktiv. Wenn du es in NIVL nicht siehst, tippe auf Käufe wiederherstellen.",
+    "pendientePago": "Die Zahlung wartet im Store auf Genehmigung. Heute wurde nichts berechnet: Der Coach wird aktiviert, sobald der Store sie bestätigt. Wenn es dauert, tippe auf Käufe wiederherstellen."
   }
 }

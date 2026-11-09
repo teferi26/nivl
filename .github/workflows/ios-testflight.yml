@@ -31,6 +31,10 @@ on:
         description: Subir a TestFlight al terminar
         type: boolean
         default: true
+      sin_reloj:
+        description: Compilar solo el iPhone, sin los targets del reloj (hasta tener su App Group y perfiles)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -87,7 +91,14 @@ jobs:
 
       - run: npm ci
 
-      - run: npm install --global eas-cli@21.2.0
+      - run: npm install --global eas-cli@27.5.0
+
+      # EAS no crea en modo no interactivo los perfiles de los targets nuevos ni
+      # asigna el App Group con la clave de API: sin eso, el reloj tumba al iPhone.
+      - name: Quitar el reloj de este binario
+        if: ${{ inputs.sin_reloj }}
+        run: |
+          node -e "const f='app.json',fs=require('fs'),j=JSON.parse(fs.readFileSync(f));j.expo.plugins=j.expo.plugins.filter(p=>p!=='@bacons/apple-targets');fs.writeFileSync(f,JSON.stringify(j,null,2))"
 
       - name: Compilar en este runner
         run: |

@@ -106,7 +106,7 @@
     "clasificadoTitulo": "Le système a classé",
     "sinCambios": "Aucun changement",
     "autoTitulo": "Classement automatique",
-    "autoMensaje": "Laisser le système classer à ta place fait partie de NIVL Pro. Tu peux continuer à classer à la main : touche un mouvement et le système apprend la règle.",
+    "autoMensaje": "Laisser le système classer à ta place fait partie de l'abonnement. Tu peux continuer à classer à la main : touche un mouvement et le système apprend la règle.",
     "elSistema": "Le système",
     "aprendido_one": "{{count}} mouvement classé. Désormais, il le fait tout seul.",
     "aprendido_other": "{{count}} mouvements classés. Désormais, il le fait tout seul.",
@@ -199,7 +199,7 @@
       "alertaSinClasificar_other": "{{count}} dépenses ne sont pas classées.",
       "aviso": "Ceci n'est pas un conseil financier.",
       "escribir": "Laisser le système l'écrire",
-      "sinPro": "Le bilan rédigé et les conseils font partie de NIVL Pro. Les chiffres restent à toi."
+      "sinPro": "Le bilan rédigé et les conseils font partie de l'abonnement. Les chiffres restent à toi."
     },
     "importar": {
       "rotulo": "Importer un relevé",
@@ -232,7 +232,7 @@
       "mismaCuenta": "Choisis deux comptes différents.",
       "sinColumnas": "Je ne reconnais pas les colonnes de ce fichier. Il faut date, libellé et montant.",
       "vacio": "Je n'ai trouvé aucune opération dans le fichier.",
-      "pdfPro": "Lire un PDF fait partie de NIVL Pro. Le CSV de ta banque est lu gratuitement."
+      "pdfPro": "Lire un PDF fait partie de l'abonnement. Le CSV de ta banque est lu gratuitement."
     },
     "confirmar": {
       "archivarTitulo": "Archiver {{nombre}} ?",

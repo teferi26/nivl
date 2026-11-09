@@ -70,7 +70,6 @@ struct VistaFocus: View {
     VStack(spacing: 2) {
       Text(fase)
         .font(Tipo.inscripcion(14))
-        .tracking(3)
         .foregroundStyle(Ink.ink10)
         .accessibilityAddTraits(.isHeader)
       Rotulo(texto: linea)
@@ -105,7 +104,7 @@ struct VistaFocus: View {
   }
 
   /// Con el pomodoro del iPhone en marcha, el reloj lleva su propia cuenta
-  /// atrás hasta el mismo fin: así vibra en la muñeca aunque esté bajada.
+  /// atrás hasta el mismo fin: así vibra en la muñeca aunque esté bajada (por notificación local).
   private func seguirIphone() {
     guard !almacen.modoDemo, let f = delIphone, f.situacion == "en_marcha" else {
       espejo.parar()
@@ -145,7 +144,7 @@ struct VistaFocus: View {
   }
 }
 
-/// El anillo del pomodoro: pista ink4 de 6, avance ink10, cifra en Cinzel.
+/// El anillo del pomodoro: pista ink4 de 6, avance en oro, cifra en Playfair.
 struct Anillo: View {
   let progreso: Double
   let texto: String
@@ -159,7 +158,7 @@ struct Anillo: View {
       Circle().stroke(Ink.ink4, lineWidth: 6)
       Circle()
         .trim(from: 0, to: progreso)
-        .stroke(Ink.ink10, style: StrokeStyle(lineWidth: 6, lineCap: .butt))
+        .stroke(Oro.hilo, style: StrokeStyle(lineWidth: 6, lineCap: .round))
         .rotationEffect(.degrees(-90))
       Text(texto)
         .font(Tipo.cifra(30 * Anillo.lado / 112, relativoA: .title))

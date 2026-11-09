@@ -236,7 +236,7 @@
     "crudo": {
       "rotulo": "Avant de continuer",
       "titulo": "Je vais être cash avec toi.",
-      "cuerpo": "Je ne suis pas là pour te plaire. Je suis là pour que dans 90 jours tu ne sois plus la même personne.",
+      "cuerpo": "Je ne suis pas là pour vous plaire. Je suis là pour que, dans 90 jours, vous puissiez regarder en arrière et voir ce que vous avez fait.",
       "detalle": "Je te dirai quand tu te mens. Je te préviendrai quand tu voudras te défiler. Et je serai là chaque fois que tu tiendras parole.",
       "pregunta": "Comment veux-tu que je te parle ?",
       "duro": "Sans filtre. Dis-moi tout",
@@ -287,8 +287,8 @@
       }
     },
     "veredicto": {
-      "duro": "{{cuanto}} que tu veux ça, et ton excuse, c'est « {{freno}} ». Avec {{min}} par jour, ça suffit. Ce qui ne suffit pas, c'est de continuer à attendre.",
-      "tacto": "{{cuanto}} que tu le veux. C'est normal de bloquer sur « {{freno}} ». Avec {{min}} par jour, tu y arrives, et je t'y emmène."
+      "duro": "{{cuanto}} à vouloir cela et votre excuse, c'est « {{freno}} ». Avec {{min}} par jour, vous pouvez commencer. Ce qui n'aide pas, c'est d'attendre encore.",
+      "tacto": "{{cuanto}} à le vouloir. C'est normal de bloquer sur « {{freno}} ». Avec {{min}} par jour, vous pouvez commencer à avancer, et je vous accompagne."
     },
     "hitos": {
       "deportista": {
@@ -330,7 +330,7 @@
         },
         "dia90": {
           "titulo": "Le bilan",
-          "detalle": "Des résultats que tu peux montrer."
+          "detalle": "Ce que vous avez fait, mesuré."
         }
       },
       "emprendedor": {

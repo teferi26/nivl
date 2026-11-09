@@ -69,7 +69,8 @@
     "estadisticas": "Statistiche",
     "statA11y": "{{stat}}: {{puntos}} punti",
     "statNota": "Un punto ogni 100 XP dell'area.",
-    "cargandoA11y": "Caricamento della tua scheda da gladiatore"
+    "cargandoA11y": "Caricamento della tua scheda da gladiatore",
+    "suscripcion": "Il tuo abbonamento"
   },
   "ajustes": {
     "paraQue": "Per cosa uso NIVL",
@@ -137,9 +138,9 @@
     "rotulo": "Cosa si perde",
     "cuerpo": "Si cancellano il tuo profilo, le missioni, le campagne, il diario, i dati del corpo e dei soldi, la conversazione con il coach, le tue foto e tutti i tuoi progressi. Non si torna indietro.",
     "suscripcion": {
-      "android": "Eliminare l'account non annulla un abbonamento a NIVL Pro: annullalo in Play Store > Pagamenti e abbonamenti > Abbonamenti.",
-      "ios": "Eliminare l'account non annulla un abbonamento a NIVL Pro: annullalo in Impostazioni > il tuo nome > Abbonamenti.",
-      "otra": "Eliminare l'account non annulla un abbonamento a NIVL Pro: annullalo nello store in cui l'hai sottoscritto."
+      "android": "Eliminare l'account non annulla un abbonamento a NIVL: annullalo in Play Store > Pagamenti e abbonamenti > Abbonamenti.",
+      "ios": "Eliminare l'account non annulla un abbonamento a NIVL: annullalo in Impostazioni > il tuo nome > Abbonamenti.",
+      "otra": "Eliminare l'account non annulla un abbonamento a NIVL: annullalo nello store in cui l'hai sottoscritto."
     },
     "creador": "Sei un creator del programma. Se elimini l'account, il tuo codice si disattiva; il saldo già generato ti viene comunque pagato: scrivi all'assistenza per darci i tuoi dati di pagamento.",
     "etiqueta": "Scrivi {{palabra}} per confermare",
@@ -209,5 +210,15 @@
     "fila": "Misurazione dell'uso",
     "activada": "Attivata. Solo i passaggi del percorso, mai quello che scrivi.",
     "desactivada": "Disattivata. Non viene salvato né inviato nulla."
+  },
+  "filtro": {
+    "titulo": "Inviare la foto al filtro?",
+    "eyebrow": "Prima che gli altri la vedano",
+    "cuerpo": "Per mostrarla ai tuoi amici, un filtro automatico la controlla. Viene inviata solo questa foto ad Anthropic, che tratta l'immagine per questo scopo. Puoi anche attendere una revisione manuale: nel frattempo gli altri vedranno un'immagine neutra.",
+    "permitir": "Invia al filtro",
+    "manual": "Revisione manuale",
+    "avisoTitulo": "La vedrai solo tu",
+    "fotoRechazada": "Questa foto non ha superato il filtro. Gli altri vedranno un'immagine neutra. Se pensi sia un errore, scrivi all'assistenza.",
+    "nombreRechazado": "Questo nome non ha superato il filtro. Gli altri vedranno un alias neutro. Se pensi sia un errore, scrivi all'assistenza."
   }
 }

@@ -1,10 +1,10 @@
 # Moderación social de NIVL
 
-Estado: controles preparados en la migración 0032. Este documento describe el procedimiento; no acredita que una revisión humana ya se haya realizado. Antes de enviar a Apple debe haber una persona responsable operando esta cola y debe comprobarse en el binario conectado al servidor actualizado.
+Estado: controles de la migración 0032, con filtro automático desde la 0143. Este documento describe el procedimiento; no acredita que una revisión humana ya se haya realizado. Antes de enviar a Apple debe haber una persona responsable operando esta cola y debe comprobarse en el binario conectado al servidor actualizado.
 
 ## Qué se comparte
 
-Amigos y ludus no tienen chat. Comparten marcadores, alias, título y retrato. El servidor solo publica alias, título y retrato después de revisión humana. Los perfiles existentes también quedan pendientes al aplicar 0032. Hasta aprobarlos, otras personas ven un alias neutro y una inicial. El propietario conserva sus datos. Cada cambio de nombre, título o ruta del avatar invalida la aprobación. Las rutas de avatar son inmutables: el servidor prohíbe sobrescribir bytes y reutilizar una ruta borrada; cada foto nueva necesita ruta nueva y aprobación. No se usa una lista de palabras como única protección de fotografías.
+Amigos y ludus no tienen chat. Comparten marcadores, alias, título y retrato. Cada alias, título y retrato nuevo queda oculto hasta pasar el filtro automático (`perfil-filtro`, Haiku 5.5). Alias y título: lista de términos en la base y, con el consentimiento de IA aceptado, el modelo; si el modelo falla, valen con la lista. Foto: solo va al modelo con permiso expreso para esa foto y cualquier fallo la deja oculta. Las fotos sin permiso o sin veredicto (`foto_estado` = `pendiente` o `revision`) esperan en la bandeja de `/moderacion`; marcar el perfil como revisado las publica. Los perfiles publicados antes de la 0143 no se han vuelto a filtrar.
 
 En Amigos, el botón de tres puntos de cada usuario (también solicitudes y ludus) permite denunciar con cuatro motivos: nombre/título ofensivo, foto inapropiada, acoso/amenazas o suplantación. Se confirma el registro sin prometer un tiempo de resolución. El enlace Contactar con soporte abre https://nivl-web.vercel.app/soporte.
 

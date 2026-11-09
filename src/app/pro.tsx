@@ -44,7 +44,7 @@ import {
   MODOS_DE_PAGO,
   planDePago,
   planLabel,
-  textoGestionTienda,
+  gestionTienda,
   purchasesAvailable,
   type AiStatus,
   type DerechosModos,
@@ -179,8 +179,8 @@ export default function Pro() {
     // que luego salte a otro.
     return (
       <Screen>
-        <EncabezadoArena onVolver={salir} eyebrow="NIVL Pro" titulo="" />
-        <CargaArena etiqueta="Cargando NIVL Pro" formas={['rotulo', 'filas', 'tarjeta']} />
+        <EncabezadoArena onVolver={salir} eyebrow="NIVL" titulo="" />
+        <CargaArena etiqueta="Cargando NIVL" formas={['rotulo', 'filas', 'tarjeta']} />
       </Screen>
     );
   }
@@ -188,7 +188,7 @@ export default function Pro() {
   const errorPlan = errorEstado ? (
     <ErrorSistema
       compacto
-      mensaje="No se ha podido comprobar tu plan."
+      mensaje={t('oferta:plan.noComprobar')}
       onReintentar={refrescar}
       reintentando={refreshing}
       style={styles.error}
@@ -202,11 +202,11 @@ export default function Pro() {
       <Screen refreshing={refreshing} onRefresh={refrescar}>
         <>
           <Entrada indice={0}>
-            <EncabezadoArena onVolver={salir} eyebrow="NIVL Pro" titulo="Tu plan" />
+            <EncabezadoArena onVolver={salir} eyebrow="NIVL" titulo={t('oferta:plan.tuPlan')} />
           </Entrada>
           <Entrada indice={1}>{errorPlan}</Entrada>
           <Entrada indice={2}>
-            <Button title="Volver" variant="secondary" onPress={salir} />
+            <Button title={t('oferta:plan.volver')} variant="secondary" onPress={salir} />
           </Entrada>
         </>
       </Screen>
@@ -253,13 +253,13 @@ export default function Pro() {
             <EncabezadoArena
               onVolver={salir}
               eyebrow={elite ? 'NIVL Élite' : parcial ? nombreModos ?? 'NIVL' : 'NIVL Pro'}
-              titulo="El coach está contigo."
+              titulo={t('oferta:plan.titulo')}
               subtitulo={
                 pruebaTienda
-                  ? 'Tus días gratis. Al acabar, la tienda cobra tu plan salvo que lo canceles antes.'
+                  ? t('oferta:plan.subPruebaTienda')
                   : prueba
-                    ? 'Tu prueba de 7 días. Brief, plan del día, entreno, dieta, revisión semanal y memoria. Al acabar no se cobra nada: no se renueva sola.'
-                    : 'Brief, plan del día, entreno, dieta, revisión semanal y memoria. Todo activo.'
+                    ? t('oferta:plan.subPrueba')
+                    : t('oferta:plan.subActivo')
               }
             />
           </Entrada>
@@ -267,14 +267,14 @@ export default function Pro() {
           {errorPlan}
 
           <Entrada indice={1}>
-            <Section title={prueba ? 'Energía del coach este mes' : 'Tu coach'} meta={prueba ? `${pct} %` : undefined}>
-              {prueba ? <Barra ratio={queda} alto={8} tono={agotada ? 'ink8' : 'blanco'} etiqueta={`Energía del coach: ${pct} %`} /> : null}
+            <Section title={t(prueba ? 'oferta:plan.secEnergia' : 'oferta:plan.secCoach')} meta={prueba ? `${pct} %` : undefined}>
+              {prueba ? <Barra ratio={queda} alto={8} tono={agotada ? 'ink8' : 'blanco'} etiqueta={t('oferta:plan.a11yEnergia', { pct })} /> : null}
               <Text style={styles.energia}>
                 {!prueba
-                  ? 'Úsalo cuanto quieras: sin contadores ni pagos extra.'
+                  ? t('oferta:plan.usoCoach')
                   : agotada
-                  ? `Agotada por este mes. ${recarga ? `Se recarga el ${recarga}.` : 'Se recarga el día 1.'} Tus misiones, tu racha y todos los módulos siguen funcionando.`
-                  : `Queda el ${pct} % de lo que el coach puede pensar por ti este mes.${recarga ? ` Se recarga entera el ${recarga}.` : ''}`}
+                  ? (recarga ? t('oferta:plan.agotadaFecha', { fecha: recarga }) : t('oferta:plan.agotadaDia1'))
+                  : recarga ? t('oferta:plan.quedaFecha', { pct, fecha: recarga }) : t('oferta:plan.queda', { pct })}
               </Text>
               <UsoIa status={status} onRecargada={() => void refrescar()} sinBarra />
             </Section>
@@ -282,24 +282,24 @@ export default function Pro() {
 
           <Entrada indice={2}>
             <View style={styles.bloque}>
-              <TarjetaArena variante="contorno" rotulo="Tu plan">
+              <TarjetaArena variante="contorno" rotulo={t('oferta:plan.tuPlan')}>
                 <Row
                   first
-                  title="Plan"
+                  title={t('oferta:plan.filaPlan')}
                   trailing={
                     // RowValue por defecto pinta en ink6 y en Cinzel: el plan es el dato fuerte, en ink9.
-                    <Text style={styles.planValor}>{prueba ? (status?.plan === 'prueba_auto' ? 'Prueba de NIVL Pro' : 'Prueba de 7 días') : planLabel(status?.plan ?? null)}</Text>
+                    <Text style={styles.planValor}>{prueba ? (t(status?.plan === 'prueba_auto' ? 'oferta:plan.pruebaAuto' : 'oferta:plan.prueba7')) : planLabel(status?.plan ?? null)}</Text>
                   }
                 />
-                {nombreModos ? <Row title="Modos" trailing={<Text style={styles.valor}>{nombreModos}</Text>} /> : null}
+                {nombreModos ? <Row title={t('oferta:plan.filaModos')} trailing={<Text style={styles.valor}>{nombreModos}</Text>} /> : null}
                 {renueva ? (
-                  <Row title={dePago ? 'Próxima renovación' : 'Activo hasta'} trailing={<Text style={styles.valor}>{renueva}</Text>} />
+                  <Row title={t(dePago ? 'oferta:plan.renovacion' : 'oferta:plan.activoHasta')} trailing={<Text style={styles.valor}>{renueva}</Text>} />
                 ) : null}
               </TarjetaArena>
               {deTienda ? (
                 <>
                   <Button
-                    title="Gestionar o cancelar suscripción"
+                    title={t('oferta:plan.gestionar')}
                     variant="ghost"
                     size="md"
                     icon="open-outline"
@@ -307,7 +307,7 @@ export default function Pro() {
                     style={styles.gestionar}
                   />
                   <Text style={styles.nota}>
-                    Ahí cambias de plan, ves la renovación o la cancelas. {textoGestionTienda(Platform.OS)}
+                    {t('oferta:plan.gestionarNota')} {gestionTienda(Platform.OS)}
                   </Text>
                   {avisoGestion ? (
                     <Text style={[styles.nota, styles.aviso]} accessibilityRole="alert">
@@ -318,8 +318,8 @@ export default function Pro() {
               ) : dePago ? (
                 <Text style={styles.nota}>
                   {provider === 'stripe'
-                    ? 'Esta suscripción se contrató fuera de esta app: se gestiona y se cancela desde donde la contrataste.'
-                    : textoGestionTienda(Platform.OS)}
+                    ? t('oferta:plan.fuera')
+                    : gestionTienda(Platform.OS)}
                 </Text>
               ) : null}
             </View>
@@ -328,7 +328,7 @@ export default function Pro() {
           <Entrada indice={3}>
             {/* Una inversión por estado: con la oferta abierta, manda su acción. */}
             <Button
-              title="Hablar con el coach"
+              title={t('oferta:plan.hablar')}
               variant={mejorable && verOferta ? 'secondary' : 'primary'}
               icon="shield-half"
               onPress={() => router.replace('/(tabs)/coach')}

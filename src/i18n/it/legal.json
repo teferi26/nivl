@@ -1,0 +1,74 @@
+{
+  "descargo": "NIVL non è un servizio medico, nutrizionale o psicologico. In caso di dolore, infortunio o problemi di salute, rivolgiti a un professionista.",
+  "crisis": {
+    "completa": "Se stai davvero male, chiama il {{crisis}} (24 ore). In caso di pericolo immediato, il {{emergencias}}.",
+    "sinEmergencias": "Se stai davvero male, chiama il {{crisis}} (24 ore). In caso di pericolo immediato, chiama il numero di emergenza del tuo paese.",
+    "soloEmergencias": "Se stai davvero male o c'è un pericolo immediato, chiama il {{emergencias}}.",
+    "generica": "Se stai davvero male o c'è un pericolo immediato, chiama il numero di emergenza del tuo paese."
+  },
+  "ia": {
+    "eyebrow": "PRIMA DEL COACH",
+    "titulo": "I tuoi dati e l’IA",
+    "intro": "Il coach funziona con modelli di IA di altre aziende. Per risponderti e pianificare la tua giornata, NIVL invia loro a ogni turno:",
+    "aQuien": "A chi vengono inviati",
+    "fueraEee": "Parte di questo trattamento avviene fuori dallo Spazio economico europeo, in paesi in cui i tuoi dati potrebbero non avere la stessa protezione che nell'UE.",
+    "paraQue": "NIVL invia questi dati affinché il coach possa risponderti. NIVL non li usa per la pubblicità.",
+    "consentimiento": "Accettando dai il tuo consenso esplicito al trattamento di questi dati, compresi quelli sulla salute, e al loro invio a questi fornitori, anche fuori dal SEE. Puoi revocarlo quando vuoi in Profilo: le nuove richieste di IA si interrompono. I dati di una richiesta già inviata non possono essere recuperati.",
+    "sinAceptar": "Se non accetti, puoi continuare a usare gratis le tue abitudini, la tua organizzazione e i tuoi progressi, senza il coach.",
+    "aceptar": "Accetto e attivo il coach",
+    "rechazar": "Non ora",
+    "datos": {
+      "salud": {
+        "titulo": "Salute e allenamento",
+        "detalle": "Peso, scheda fisica (altezza, età, infortuni, note sulla salute), palestra, cardio e nutrizione."
+      },
+      "medicion": {
+        "titulo": "Orologio e misurazioni",
+        "detalle": "Se attivi le misurazioni: durata, distanza, dislivello, ritmo, frequenza cardiaca media e massima, sonno, variabilità cardiaca e frequenza cardiaca a riposo. Il percorso GPS e la serie della frequenza cardiaca non vengono inviati."
+      },
+      "diario": {
+        "titulo": "Il tuo diario",
+        "detalle": "Ciò che scrivi, il tuo umore e la tua energia."
+      },
+      "finanzas": {
+        "titulo": "Le tue finanze",
+        "detalle": "Conti, movimenti e budget che registri in Economia."
+      },
+      "dia": {
+        "titulo": "La tua giornata",
+        "detalle": "Missioni, campagne, agenda, regole e ciò che dici al coach."
+      },
+      "calendario": {
+        "titulo": "Il tuo calendario",
+        "detalle": "Se lo colleghi: il titolo e gli orari dei tuoi prossimi eventi."
+      },
+      "fotos": {
+        "titulo": "Le tue foto",
+        "detalle": "Solo quelle che alleghi alla chat, e solo per quel turno."
+      }
+    },
+    "anthropic": {
+      "donde": "Archiviazione negli Stati Uniti; trattamento predefinito negli Stati Uniti, in Europa, Asia e Australia.",
+      "cuando": "Il coach in tutti i piani e durante la prova di 7 giorni, con le foto che alleghi, i riassunti, i testi delle notifiche, la classificazione dei movimenti e altre attività brevi."
+    }
+  },
+  "salud": {
+    "title": "I tuoi dati sulla salute",
+    "purpose": "Con il tuo permesso, NIVL conserva e utilizza peso, scheda fisica, allenamenti, alimentazione e diario del benessere per mostrare i tuoi progressi e offrirti le funzioni del coach. Se li colleghi, conserva anche nel tuo account, sui nostri server, ciò che misuri con Apple Watch o leggi da Apple Salute (frequenza cardiaca, sonno, passi, energia attiva e sessioni) e i percorsi GPS dei tuoi allenamenti, che mostrano la tua posizione durante ogni sessione. Il diario, le foto, i piani, la sua memoria e i dati creati o modificati dal coach possono mescolare salute e altri dati.",
+    "storage": "Il titolare del trattamento è {{responsable}} (soporte@nivl.app). I dati sono ospitati su Supabase, a Francoforte. Questo permesso non attiva l’IA né autorizza da solo gli invii ai suoi fornitori: il coach chiede un consenso separato.",
+    "choice": "È facoltativo. Senza accettarlo puoi continuare a usare abitudini generali, campagne, obiettivi generali ed economia. Il coach e l'oracolo richiedono questo permesso perché le loro conversazioni e la loro cronologia possono includere dati sulla salute.",
+    "withdrawal": "Puoi revocare questo permesso in Profilo e cancellare i dati identificati come salute, TUTTO il diario, le foto, la memoria e i dati contrassegnati dal coach. Prima potrai esportarli. Restano i tuoi punti, gli importi e i conti di Economia e i dati generali senza quei contrassegni. In Economia le annotazioni vengono rimosse e le regole automatiche contrassegnate come testo di IA vengono disattivate. Il testo generale precedente non identificato come salute non viene cancellato automaticamente.",
+    "checkbox": "Acconsento esplicitamente a che NIVL conservi e utilizzi i miei dati sulla salute per queste finalità.",
+    "erase": "Saranno cancellati la tua scheda fisica, il peso, gli allenamenti con i percorsi GPS e i dati della frequenza cardiaca, i dati di Apple Salute e Apple Watch (frequenza cardiaca, sonno, passi ed energia attiva), l'alimentazione, gli obiettivi fisici, gli obiettivi e le lettere contrassegnati come salute, le abitudini e le regole fisiche con i relativi dati, TUTTO il diario e le sue foto, le foto delle missioni, le conversazioni, la memoria, i riassunti e i piani. Anche abitudini, regole, campagne, agenda, spesa e obiettivi creati o modificati dal coach e contrassegnati come contenuto misto. Possono mescolare salute e altri dati: viene cancellato l'intero record. In Economia le annotazioni vengono rimosse e le regole automatiche contrassegnate come testo di IA vengono disattivate; conti, movimenti e importi restano. I tuoi punti e i dati generali senza contrassegni di salute o del coach restano. Il testo generale precedente non identificato come salute non viene cancellato automaticamente. Esporta prima se vuoi una copia. Questa azione non può essere annullata."
+  },
+  "errores": {
+    "versionObsoleta": "Il testo è cambiato. Aggiorna NIVL per rivederlo.",
+    "borradoPendiente": "Completa la cancellazione in sospeso prima di riattivare la salute.",
+    "noGuardado": "Non è stato possibile salvare il permesso.",
+    "activaSalud": "Attiva il permesso per la salute in Profilo prima di usare questo registro.",
+    "borradoIncompleto": "La cancellazione non è terminata. I dati restano bloccati quando viene registrata la revoca. Puoi controllare e riprovare da Profilo.",
+    "edadNoGuardada": "La conferma non è stata salvata. Riprova.",
+    "actualizaFotos": "Aggiorna NIVL per usare le foto dei progressi.",
+    "eligeMotivo": "Scegli un motivo per la segnalazione."
+  }
+}

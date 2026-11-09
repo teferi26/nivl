@@ -461,7 +461,7 @@
       "iaRevisar": "Controlla prima di salvare",
       "iaOtraVez": "Altro testo",
       "iaQuitar": "Togli la carta {{pregunta}}",
-      "iaSinPro": "Generare carte con l'IA fa parte di NIVL Pro. A mano funzionano lo stesso: incolla domanda e risposta, una per riga.",
+      "iaSinPro": "Generare carte con l'IA fa parte dell'abbonamento. A mano funzionano lo stesso: incolla domanda e risposta, una per riga.",
       "iaAMano": "Incollale a mano",
       "iaNada": "Da quel testo non sono uscite carte. Prova con un brano più lungo."
     },

@@ -24,13 +24,13 @@ struct VistaHoy: View {
           Text("Día nuevo. Abre NIVL en el iPhone para traer las misiones de hoy.")
             .font(Tipo.detalle)
             .foregroundStyle(Ink.ink8)
-            .listRowBackground(Trama())
+            .listRowBackground(Trama().clipShape(RoundedRectangle(cornerRadius: Radio.tarjeta)))
         }
         if e.misiones.isEmpty {
           Text("Sin misiones hoy. El coach o tú las ponéis en el iPhone.")
             .font(Tipo.detalle)
             .foregroundStyle(Ink.ink8)
-            .listRowBackground(Rectangle().fill(Ink.ink1))
+            .listRowBackground(RoundedRectangle(cornerRadius: Radio.tarjeta).fill(Ink.ink1))
         }
         ForEach(e.misiones) { m in
           NavigationLink {
@@ -38,13 +38,12 @@ struct VistaHoy: View {
           } label: {
             FilaMision(mision: m, enCamino: almacen.enCamino.contains(m.id))
           }
-          .listRowBackground(Rectangle().fill(Ink.ink1))
+          .listRowBackground(RoundedRectangle(cornerRadius: Radio.tarjeta).fill(Ink.ink1))
         }
       } header: {
         HStack(alignment: .firstTextBaseline) {
           Text("HOY")
             .font(Tipo.inscripcion(16))
-            .tracking(3)
             .foregroundStyle(Ink.ink10)
             .accessibilityAddTraits(.isHeader)
           Spacer()
@@ -140,7 +139,6 @@ struct ConfirmarMision: View {
           .fixedSize(horizontal: false, vertical: true)
         Text(m.textoPremio.uppercased())
           .font(Tipo.inscripcion(12))
-          .tracking(2)
           .foregroundStyle(Ink.ink8)
 
         if let razon = razonBloqueo(m) {
@@ -149,8 +147,8 @@ struct ConfirmarMision: View {
             .foregroundStyle(Ink.ink9)
             .padding(8)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Trama())
-            .overlay(Rectangle().stroke(Ink.ink4, lineWidth: 1))
+            .background(Trama().clipShape(RoundedRectangle(cornerRadius: Radio.control)))
+            .overlay(RoundedRectangle(cornerRadius: Radio.control).stroke(Ink.ink4, lineWidth: 1))
             .fixedSize(horizontal: false, vertical: true)
         }
         if let aviso {
