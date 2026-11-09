@@ -93,9 +93,15 @@ const conFake = async <T>(op: Parameters<typeof instalar>[0], fn: (f: ReturnType
 
 Deno.test('academico: sin modo FOCUS el estado no cambia un byte', async () => {
   await conFake({ filas: FILAS_BASE }, async () => {
-    for (const op of [undefined, {}, { modo: null }, { modo: 'iron' as const }, { modo: 'work' as const }]) {
+    for (const op of [undefined, {}, { modo: null }, { modo: 'iron' as const }]) {
       equal(await sha256((await buildContext(sb(), USER_ID, HOY, op)).text), HASH_SIN_FOCUS, JSON.stringify(op));
     }
+    // WORK añade su sección al final: lo anterior sigue siendo idéntico y de FOCUS no hay nada.
+    const conWork = (await buildContext(sb(), USER_ID, HOY, { modo: 'work' })).text;
+    const corte = conWork.indexOf('\n\n## Trabajo ahora');
+    ok(corte > 0, conWork);
+    equal(await sha256(conWork.slice(0, corte)), HASH_SIN_FOCUS, 'WORK solo añade su sección');
+    ok(!conWork.includes('## FOCUS'), conWork);
   });
 });
 
@@ -308,7 +314,7 @@ const noHayPago = (fake: { llamadas: Llamada[] }) => {
 };
 
 Deno.test('academico: esquema de las herramientas (sin strict, sin uniones, clasificadas)', () => {
-  equal(TOOL_DEFS.length, 28);
+  equal(TOOL_DEFS.length, 32);
   for (const n of ['marcar_tema', 'apuntar_estudio']) {
     const def = TOOL_DEFS.find((t) => t.name === n)! as any;
     ok(def && !('strict' in def), n);
