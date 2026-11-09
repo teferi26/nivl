@@ -10,7 +10,7 @@ Fecha: 9 de noviembre de 2026. Estado de GitHub Actions leído a las 09:50 UTC. 
 4. Hay dos incumplimientos reales que el revisor quizá no vea, pero que no se deben enviar así: perfiles publicados sin filtro (CON-01, norma 1.2) y cambiar de modo sin avisar de que sustituye al actual antes de cobrar (PAG-02, norma 3.1.2).
 5. Nada es insalvable: de los nueve bloqueantes, cinco son trabajo en tus cuentas y tu web, dos son de código y dos compartidos. Android no está en condiciones de ir a producción y no debe frenar a iOS.
 
-**Antes de enviar, orden fijo.** Build final 44 (`5fedf54`, con reloj). Las capturas son de `010100a`: entre ese commit y el build no cambia ninguna pantalla que salga en ellas (solo Android, login y Avance). Faltan aplicar la 0143 y desplegar `perfil-filtro`, porque las notas y Amigos describen ese filtro. Sin comprobar en aparato físico. `onboarding-ipad` pasa en verde con la cuenta real (run 42644885480); eso cubre la entrada en iPad, no el recorrido entero.
+**Antes de enviar, orden fijo.** Build final 44 (`5fedf54`, con reloj). Capturas y vídeos definitivos de `43c75ce`, subidos: valen para ese build según `nivl-capturas`. Faltan aplicar la 0143 y desplegar `perfil-filtro`, porque las notas y Amigos describen ese filtro. Sin comprobar en aparato físico. `onboarding-ipad` pasa en verde con la cuenta real (run 42644885480); eso cubre la entrada en iPad, no el recorrido entero.
 
 **Riesgo principal de rechazo: la compra real queda sin probar.** Decisión del dueño (09/11/2026): no probará la compra en TestFlight salvo que sea obligatorio, y Apple no le obliga a hacerlo. Se sustituye por comprobaciones indirectas: los diez productos en `READY_TO_SUBMIT` y adjuntos, los ids de App Store Connect iguales a los de `planesmodo.ts` (comprobado), la clave de RevenueCat en el binario (en EAS, leído en el log) y `STORE_SANDBOX_ACCESS` (sin comprobar: es un secreto de Supabase). Ninguna demuestra que una compra funcione de principio a fin. Si el revisor compra y falla, es rechazo por 2.1.
 
@@ -87,8 +87,8 @@ Otros documentos, sin repetirlos: [productos](PRODUCTOS.md) · [plataformas y co
 
 ### 9. PLAT-04. Capturas de la 1.1 [SUBIDAS a App Store Connect, en es-ES]
 
-- **Hecho por API:** tanda final del commit `010100a`: iPhone 6,9 (10), iPhone 6,3 (10), iPad 13 (10), reloj (5) y vídeos de iPhone e iPad. Las otras localizaciones usan las de es-ES. Quedaban en proceso en Apple al subirlas.
-- **Falta:** si el binario final cambia pantallas visibles, repetir la tanda. Android no tiene capturas: su flujo de CI es de la 1.0.8. La rejilla de 28 días de Avance ya está arreglada (`8b8e243`), sin capturas nuevas.
+- **Hecho por API:** tanda definitiva del commit `43c75ce`: iPhone 6,9 (10), iPhone 6,3 (10), iPad 13 (10), reloj (5) y vídeos de iPhone e iPad. Las otras localizaciones usan las de es-ES. Quedaban en proceso en Apple al subirlas.
+- **Falta:** si el binario final cambia pantallas visibles, repetir la tanda. Android no tiene capturas: su flujo de CI es de la 1.0.8. La rejilla de 28 días de Avance ya está arreglada (`8b8e243`) y sale en las capturas.
 - **Norma:** [Apple 2.3 y 2.3.3][a-meta], [especificaciones][a-capt].
 
 ## 3. Riesgos, en orden
