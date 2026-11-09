@@ -45,12 +45,12 @@ Otros documentos, sin repetirlos: [productos](PRODUCTOS.md) · [plataformas y co
 - **Quién:** el dueño, pasos 1 a 3 de la sección 7. La opción de compilar sin reloj ya existe en `ios-testflight.yml` (`sin_reloj`). **Tamaño:** pequeño, pero exige su cuenta.
 - **Lo cierra:** run de `ios-testflight.yml` verde hasta "Subir a TestFlight" y build VALID en App Store Connect.
 
-### 4. PAG-04. Los diez productos [CREADOS en Apple y RevenueCat iOS; falta captura y prueba]
+### 4. PAG-04. Los diez productos [READY_TO_SUBMIT en Apple; compra sin probar]
 
 - **Hecho por API el 09/11/2026:** los diez en el grupo `NIVL`, 165 territorios como los de Pro, precios por equalización desde España, 7 días gratis solo en los cinco anuales. Localizados en es-ES, en-US, en-GB y fr-FR. Comprobado leyendo la API. Los antiguos, intactos.
 - **RevenueCat iOS, configurado en el panel (lo comunica otra sesión, no comprobado aquí):** los diez productos, offering `modos` como Current con diez paquetes, `default` activa, In-App Purchase Key válida, Restore Behavior «Transfer to new App User ID», Sandbox access «Anybody», webhook activo. Sin comprobar: los entornos por evento del webhook. Android sin tocar.
 - **Captura de revisión subida a los diez** (proceso de Apple terminado): sale de la app real en simulador, con datos ficticios y sin StoreKit; la nota de cada producto se lo dice a Apple. Si la rechazan, se sustituye por una de TestFlight.
-- **Estado:** en la web de App Store Connect, `nivl_iron_mensual` sale «En preparación para el envío», sin avisos y con «Añadir a revisión» activo (visto por otra sesión; los otros nueve sin abrir). La API sigue dando `MISSING_METADATA` en los diez: no se toma como bloqueo, pero queda sin explicar.
+- **Estado:** los diez en `READY_TO_SUBMIT`, leído por API. Faltaba el precio en los diez territorios no disponibles (Afganistán, Bielorrusia, China, Hong Kong, Birmania, Macao, Rusia, Venezuela, Kosovo y Yemen): Apple lo exige aunque no se venda allí, y Pro lo tiene. Ahora hay 175 precios por producto.
 - **Adjuntar a la 1.1:** la API solo tiene `subscriptionSubmissions`, que los manda a revisión; por eso no se ha usado. Se hace en el momento del envío.
 - **Norma:** [Apple 2.1][a-compl] y [3.1.1][a-iap], [Play Billing][g-billing].
 - **Quién:** el dueño, sección 7. **Lo cierra:** estado `READY_TO_SUBMIT` en los diez y compra sandbox de cada uno con `mis_modos` correcto.
