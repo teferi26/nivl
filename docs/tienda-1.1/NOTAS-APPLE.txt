@@ -1,0 +1,52 @@
+BORRADOR INTERNO (1.1.0): quitar esta linea y todas las [INTERNO]; rellenar y borrar las marcas [CAMPOS]. Credenciales solo en los campos privados de App Store Connect, nunca aqui. Maximo 4.000 caracteres tras rellenar.
+[INTERNO] No enviar hasta cerrar: build 1.1 real (PLAT-01), diez productos adjuntos y STORE_SANDBOX_ACCESS vacio o all (PAG-04), Terminos (PAG-01), Privacidad (P1), etiquetas App Privacy (ADV-1), capturas (PLAT-04).
+[INTERNO] SOCIAL describe lo que hay hoy (0087). Si CON-01 cambia, reescribir ese bloque. Mientras amigos:convivencia.cuerpo diga que hay revision previa (CON-02), la app contradice esta nota.
+[INTERNO] Si el reloj sale del binario, borrar WATCH y la mencion en PLATFORMS. Si se retira mindfulness (P9), quitarlo de WATCH. Si se renombra la fila NIVL Pro, cambiar la ruta.
+[INTERNO] Apple TV no va en la 1.1 y no se nombra aqui (CON-14): PLATFORMS lo cubre sin citarla. No afirmar el video hasta que exista.
+[INTERNO] Antes de enviar: modos_activos encendido, prueba_auto_activa apagado, idiomas decididos, y no tocarlos durante la revision (CON-06).
+
+NIVL 1.1.0 ([CAMPOS: build])
+
+VIDEO: [CAMPOS: link or attachment, iPhone model, iOS, date].
+
+WHAT IT IS
+Habit and personal organisation app for people 16+ (declared at entry; body photos 18+). Habits, planning, progress and manual logs are free. Optional paid modes add an AI coach. Labels below are quoted in Spanish. [CAMPOS: if languages are on, add "UI follows the device language"]
+
+ACCESS
+Credentials are in the App Review sign-in fields. Cover > "Ya tengo cuenta" > "Entrar". Confirm age if asked. No permission is pre-accepted. No hardware or bank needed. [CAMPOS: a free account and an all-modes account, both in the private fields, with a demo friend]
+Perfil = profile icon, top right of Hoy.
+
+SUBSCRIPTIONS
+Perfil > Cuenta > "NIVL Pro" (legacy label of the plans screen). Pick one mode or all four, "Anual" or "Mensual". Prices come from StoreKit; annual has a 7-day intro offer if eligible. Another single mode replaces the current one. The AI consent sheet comes before payment. "Restaurar", Terms, Privacy and EULA are on that screen. Older plans are not offered.
+Ten product IDs: nivl_{iron,focus,work,founder,todos}_{mensual,anual}.
+
+HEALTHKIT
+Why: show the user's activity and avoid double logging. Reads what the user selects: workouts and routes, heart rate, resting heart rate, active energy, steps, sleep, weight. Writes workouts, routes and distance only if enabled. Perfil > "Salud y bienestar" > "Revisar permiso de salud", tick, "Aceptar y activar salud". Then "Conexión con Salud" > "Activar la medición" > "Continuar a Salud" > Apple's dialog. If refused, the app works with manual logs. The UI says "Salud de Apple". No ads, no iCloud.
+
+BACKGROUND GPS
+Why: distance, pace and route with the phone pocketed. Hoy > "Cardio" > "Medir con el GPS del iPhone" (needs the steps above). "Continuar", allow While Using, "Carrera" or "Bici", "Empezar". Blue indicator on. "Terminar" stops it. Runs only in a session the user starts; Always is never requested.
+
+WATCH
+Optional companion: missions, streak, FOCUS and rest timers, workouts with HealthKit and watch GPS, complication. Modes: workout-processing; mindfulness for the timers. Without a Watch the iPhone app is complete.
+
+AI
+Anthropic (Claude) only. A sheet names it, the data including health data, and the countries: "Acepto y activo el coach". Sent: name, missions, agenda with connected calendar titles and times, journal, weight, messages, attached photos, measured workouts with average and max heart rate. Daily Health summary only with the separate switch "Compartir con el coach", off by default. Never GPS routes, heart-rate series or email. Withdraw: Perfil > "Datos y la IA". Each reply has "Denunciar respuesta". After 3 full days without reply the coach pauses; "Reactivar coach".
+
+SOCIAL
+No person-to-person chat. Alias, title and photo are seen only through requests, friends and groups, appear at once and are reviewed weekly afterwards. Arena > "Ajustes de la arena" > a user's row or three dots > "Enviar denuncia" or "Bloquear usuario". "Convivencia y seguridad" has "Contactar con soporte".
+
+DELETION
+Perfil > Cuenta > "Eliminar cuenta", type ELIMINAR, "Eliminar para siempre", confirm. Use a disposable account. It does not cancel a store subscription.
+
+NOTICES
+Not a medical, nutritional or psychological service: stated at onboarding, in Cardio and in Perfil. Finance only records entries or a file the user imports: no bank connection, never moves money, no investment advice.
+
+NOTHING HIDDEN
+Server switches turn modes and languages on for everyone; review state is release state. Staff-only panels (server-enforced): moderation, metrics. Creator panel: enrolled creators only.
+
+PLATFORMS
+iPhone and iPad, optional Watch companion; no other platform app. [CAMPOS: Mac and Apple Vision: "Not offered in this version" if unticked]
+
+Privacy: https://nivl.app/privacidad
+Terms: https://nivl.app/terminos
+Support: https://nivl.app/soporte
