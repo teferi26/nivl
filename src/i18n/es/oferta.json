@@ -37,8 +37,8 @@
       "eyebrow": "Juramento sellado",
       "titulo": "Ahora, quién lo dirige.",
       "linea": "Tu juramento está sellado. El coach puede dirigir tu día desde mañana.",
-      "enlace": "Ver NIVL Pro",
-      "contexto": "Tu juramento está sellado. NIVL sigue gratis entera; Pro añade el coach que lo dirige."
+      "enlace": "Ver planes",
+      "contexto": "Tu juramento está sellado. NIVL sigue gratis entera; un modo añade el coach que lo dirige."
     }
   },
   "web": {
@@ -119,7 +119,8 @@
         "otra": "La gestionas y la cancelas cuando quieras desde la tienda donde la contrataste."
       },
       "base": "NIVL y tus hábitos siguen gratis.",
-      "avisoIa": "NIVL es una IA, no un profesional sanitario."
+      "avisoIa": "NIVL es una IA, no un profesional sanitario.",
+      "uso": "Un uso automatizado o fuera de lo normal puede pausar el coach temporalmente."
     },
     "enlace": {
       "restaurar": "Restaurar",
@@ -133,7 +134,8 @@
       "pendiente": "Compra confirmada por la tienda. El modo se abre en unos segundos; si no aparece, pulsa Restaurar.",
       "programada": "Cambio confirmado por la tienda. Se aplica en tu próxima renovación; hasta entonces sigues con tu plan actual.",
       "sinPermiso": "Para usar el coach hace falta aceptar el envío de tus datos al proveedor de IA. Sin ese permiso no se cobra nada.",
-      "nada": "Esta cuenta de la tienda no tiene ninguna suscripción de NIVL activa."
+      "nada": "Esta cuenta de la tienda no tiene ninguna suscripción de NIVL activa.",
+      "cambio": "Tienes {{actual}}. Solo puede haber una suscripción activa: {{nuevo}} sustituye a la que tienes y dejarás de tener ese modo cuando el cambio se aplique. La tienda te indica cuándo."
     },
     "salida": {
       "gratis": "Seguir gratis",
@@ -154,6 +156,7 @@
         "work": "Economía, agenda y su coach, que protege tu jornada.",
         "founder": "Agenda, economía del negocio y su coach, que te pide las cifras."
       }
-    }
+    },
+    "planAnterior": "tu plan anterior"
   }
 }

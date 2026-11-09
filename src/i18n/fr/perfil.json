@@ -69,7 +69,8 @@
     "estadisticas": "Statistiques",
     "statA11y": "{{stat}} : {{puntos}} points",
     "statNota": "Un point pour 100 XP dans le domaine.",
-    "cargandoA11y": "Chargement de ta fiche de gladiateur"
+    "cargandoA11y": "Chargement de ta fiche de gladiateur",
+    "suscripcion": "Ton abonnement"
   },
   "ajustes": {
     "paraQue": "Pour quoi j'utilise NIVL",
@@ -137,9 +138,9 @@
     "rotulo": "Ce qui sera perdu",
     "cuerpo": "Ton profil, tes missions, campagnes, journal, données de corps et d'argent, la conversation avec le coach, tes photos et toute ta progression sont effacés. Pas de retour en arrière.",
     "suscripcion": {
-      "android": "Supprimer le compte n'annule pas un abonnement NIVL Pro : annule-le dans Play Store > Paiements et abonnements > Abonnements.",
-      "ios": "Supprimer le compte n'annule pas un abonnement NIVL Pro : annule-le dans Réglages > ton nom > Abonnements.",
-      "otra": "Supprimer le compte n'annule pas un abonnement NIVL Pro : annule-le dans le store où tu l'as souscrit."
+      "android": "Supprimer le compte n'annule pas un abonnement NIVL : annule-le dans Play Store > Paiements et abonnements > Abonnements.",
+      "ios": "Supprimer le compte n'annule pas un abonnement NIVL : annule-le dans Réglages > ton nom > Abonnements.",
+      "otra": "Supprimer le compte n'annule pas un abonnement NIVL : annule-le dans le store où tu l'as souscrit."
     },
     "creador": "Tu es créateur du programme. Si tu supprimes ton compte, ton code est désactivé ; le solde déjà généré continue de t'être versé : écris au support pour nous donner tes coordonnées de paiement.",
     "etiqueta": "Écris {{palabra}} pour confirmer",

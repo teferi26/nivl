@@ -37,7 +37,7 @@
       "eyebrow": "Serment scellé",
       "titulo": "Maintenant, qui le dirige.",
       "linea": "Ton serment est scellé. Le coach peut diriger ta journée dès demain.",
-      "enlace": "Voir NIVL Pro",
+      "enlace": "Voir les abonnements",
       "contexto": "Ton serment est scellé. NIVL reste entièrement gratuit ; Pro ajoute le coach qui le dirige."
     }
   },
@@ -119,7 +119,8 @@
         "otra": "Tu le gères et tu l'annules quand tu veux depuis la boutique où tu l'as souscrit."
       },
       "base": "NIVL et tes habitudes restent gratuits.",
-      "avisoIa": "NIVL est une IA, pas un professionnel de santé."
+      "avisoIa": "NIVL est une IA, pas un professionnel de santé.",
+      "uso": "Une utilisation automatisée ou anormale peut mettre le coach en pause temporairement."
     },
     "enlace": {
       "restaurar": "Restaurer",
@@ -133,7 +134,8 @@
       "pendiente": "Achat confirmé par la boutique. Le mode s'ouvre dans quelques secondes ; s'il n'apparaît pas, touche Restaurer.",
       "programada": "Changement confirmé par la boutique. Il s'applique à ton prochain renouvellement ; d'ici là, tu gardes ta formule actuelle.",
       "sinPermiso": "Pour utiliser le coach, il faut accepter l'envoi de tes données au fournisseur d'IA. Sans cette autorisation, rien n'est facturé.",
-      "nada": "Ce compte de la boutique n'a aucun abonnement NIVL actif."
+      "nada": "Ce compte de la boutique n'a aucun abonnement NIVL actif.",
+      "cambio": "Tu as {{actual}}. Un seul abonnement peut être actif : {{nuevo}} remplace celui que tu as, et tu perds ce mode quand le changement s’applique. La boutique t’indique quand."
     },
     "salida": {
       "gratis": "Continuer gratuitement",
@@ -154,6 +156,7 @@
         "work": "Finances, agenda et son coach, qui protège ta journée de travail.",
         "founder": "Agenda, finances de l'entreprise et son coach, qui te demande les chiffres."
       }
-    }
+    },
+    "planAnterior": "ton ancien forfait"
   }
 }

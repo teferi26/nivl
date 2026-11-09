@@ -106,7 +106,7 @@
     "clasificadoTitulo": "The system has categorized",
     "sinCambios": "No changes",
     "autoTitulo": "Auto-categorization",
-    "autoMensaje": "Having the system categorize for you is part of NIVL Pro. You can keep categorizing by hand: tap a transaction and the system learns the rule.",
+    "autoMensaje": "Having the system categorize for you is part of a subscription. You can keep categorizing by hand: tap a transaction and the system learns the rule.",
     "elSistema": "The system",
     "aprendido_one": "{{count}} transaction categorized. From now on it does it on its own.",
     "aprendido_other": "{{count}} transactions categorized. From now on it does it on its own.",
@@ -199,7 +199,7 @@
       "alertaSinClasificar_other": "There are {{count}} uncategorised expenses.",
       "aviso": "This is not financial advice.",
       "escribir": "Let the system write it",
-      "sinPro": "The written brief and the tips are part of NIVL Pro. The figures are yours anyway."
+      "sinPro": "The written brief and the tips are part of a subscription. The figures are yours anyway."
     },
     "importar": {
       "rotulo": "Import statement",
@@ -232,7 +232,7 @@
       "mismaCuenta": "Choose two different accounts.",
       "sinColumnas": "I don't recognise this file's columns. It needs date, description and amount.",
       "vacio": "I found no transactions in the file.",
-      "pdfPro": "Reading a PDF is part of NIVL Pro. Your bank's CSV is read for free."
+      "pdfPro": "Reading a PDF is part of a subscription. Your bank's CSV is read for free."
     },
     "confirmar": {
       "archivarTitulo": "Archive {{nombre}}?",

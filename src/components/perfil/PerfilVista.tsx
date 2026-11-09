@@ -170,7 +170,7 @@ export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, accione
             <FilaArena icono="people-outline" titulo={t('perfil:vista.amigos')} meta={t('perfil:vista.ranking')} onPress={() => router.push('/amigos')} />
             <FilaArena
               icono="shield-half-outline"
-              titulo={elite ? 'NIVL Élite' : 'NIVL Pro'} // i18n-ok: nombres de los planes (la marca)
+              titulo={t('perfil:vista.suscripcion')}
               meta={tieneCoach === null ? undefined : tieneCoach ? t('perfil:vista.activo') : t('perfil:vista.activaCoach')}
               onPress={() => router.push('/pro')}
             />

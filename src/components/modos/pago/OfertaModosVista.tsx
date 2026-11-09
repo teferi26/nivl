@@ -47,6 +47,8 @@ export interface EstadoOfertaModos {
   precioDe: (alcance: ModoDePago | 'todos') => string | null;
   periodoGratis: string | null;
   esActual: boolean;
+  /** Comprar esto sustituye a la suscripción que hay: se dice antes de cobrar. */
+  avisoCambio?: string | null;
   puedeComprar: boolean;
   busy: 'compra' | 'restaurar' | null;
   aviso: string | null;
@@ -247,6 +249,7 @@ export function OfertaModosAcciones({
         : t('oferta:pago.cta.noDisponible');
   return (
     <View style={styles.acciones}>
+      {oferta.avisoCambio ? <Text style={styles.aviso}>{oferta.avisoCambio}</Text> : null}
       {aviso ? (
         <Text style={styles.aviso} accessibilityRole="alert">
           {aviso}

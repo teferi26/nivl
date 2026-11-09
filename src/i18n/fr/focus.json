@@ -461,7 +461,7 @@
       "iaRevisar": "Vérifie avant d'enregistrer",
       "iaOtraVez": "Autre texte",
       "iaQuitar": "Retirer la carte {{pregunta}}",
-      "iaSinPro": "Générer des cartes avec l'IA fait partie de NIVL Pro. À la main, ça marche pareil : colle question et réponse, une par ligne.",
+      "iaSinPro": "Générer des cartes avec l'IA fait partie de l'abonnement. À la main, ça marche pareil : colle question et réponse, une par ligne.",
       "iaAMano": "Les coller à la main",
       "iaNada": "Aucune carte n'est sortie de ce texte. Essaie avec un passage plus long."
     },

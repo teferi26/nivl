@@ -37,7 +37,7 @@
       "eyebrow": "Juramento selado",
       "titulo": "Agora, quem o dirige.",
       "linea": "O teu juramento está selado. O coach pode dirigir o teu dia a partir de amanhã.",
-      "enlace": "Ver NIVL Pro",
+      "enlace": "Ver planos",
       "contexto": "O teu juramento está selado. O NIVL continua totalmente gratuito; o Pro acrescenta o coach que o dirige."
     }
   },
@@ -119,7 +119,8 @@
         "otra": "Geres e cancelas quando quiseres na loja onde a contrataste."
       },
       "base": "O NIVL e os teus hábitos continuam grátis.",
-      "avisoIa": "O NIVL é uma IA, não um profissional de saúde."
+      "avisoIa": "O NIVL é uma IA, não um profissional de saúde.",
+      "uso": "Uma utilização automatizada ou fora do normal pode pausar o coach temporariamente."
     },
     "enlace": {
       "restaurar": "Restaurar",
@@ -133,7 +134,8 @@
       "pendiente": "Compra confirmada pela loja. O modo abre-se em alguns segundos; se não aparecer, toca em Restaurar.",
       "programada": "Alteração confirmada pela loja. Aplica-se na tua próxima renovação; até lá continuas com o teu plano atual.",
       "sinPermiso": "Para usar o coach é preciso aceitar o envio dos teus dados ao fornecedor de IA. Sem essa permissão não se cobra nada.",
-      "nada": "Esta conta da loja não tem nenhuma subscrição do NIVL ativa."
+      "nada": "Esta conta da loja não tem nenhuma subscrição do NIVL ativa.",
+      "cambio": "Tens {{actual}}. Só pode haver uma subscrição ativa: {{nuevo}} substitui a que tens e perdes esse modo quando a alteração se aplicar. A loja indica-te quando."
     },
     "salida": {
       "gratis": "Continuar grátis",
@@ -154,6 +156,7 @@
         "work": "Finanças, agenda e o seu coach, que protege o teu dia de trabalho.",
         "founder": "Agenda, finanças do negócio e o seu coach, que te pede os números."
       }
-    }
+    },
+    "planAnterior": "o teu plano anterior"
   }
 }

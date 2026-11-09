@@ -106,7 +106,7 @@
     "clasificadoTitulo": "El sistema ha clasificado",
     "sinCambios": "Sin cambios",
     "autoTitulo": "Clasificación automática",
-    "autoMensaje": "Que el sistema clasifique por ti es parte de NIVL Pro. Puedes seguir clasificando a mano: toca un movimiento y el sistema aprende la regla.",
+    "autoMensaje": "Que el sistema clasifique por ti es parte de la suscripción. Puedes seguir clasificando a mano: toca un movimiento y el sistema aprende la regla.",
     "elSistema": "El sistema",
     "aprendido_one": "{{count}} movimiento clasificado. A partir de ahora lo hace solo.",
     "aprendido_other": "{{count}} movimientos clasificados. A partir de ahora lo hace solo.",
@@ -199,7 +199,7 @@
       "alertaSinClasificar_other": "Hay {{count}} gastos sin clasificar.",
       "aviso": "No es asesoramiento financiero.",
       "escribir": "Que el sistema lo escriba",
-      "sinPro": "El brief escrito y los consejos son parte de NIVL Pro. Las cifras son tuyas igual."
+      "sinPro": "El brief escrito y los consejos son parte de la suscripción. Las cifras son tuyas igual."
     },
     "importar": {
       "rotulo": "Importar extracto",
@@ -232,7 +232,7 @@
       "mismaCuenta": "Elige dos cuentas distintas.",
       "sinColumnas": "No reconozco las columnas de este archivo. Hace falta fecha, concepto e importe.",
       "vacio": "No he encontrado movimientos en el archivo.",
-      "pdfPro": "Leer un PDF es parte de NIVL Pro. El CSV de tu banco se lee gratis."
+      "pdfPro": "Leer un PDF es parte de la suscripción. El CSV de tu banco se lee gratis."
     },
     "confirmar": {
       "archivarTitulo": "¿Archivar {{nombre}}?",

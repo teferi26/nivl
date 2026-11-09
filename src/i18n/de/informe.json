@@ -14,7 +14,7 @@
   "oraculo": {
     "normasRotas": "{{n}} gebrochene Regeln in 14 Tagen",
     "proTitulo": "Wochenanalyse",
-    "proMensaje": "Die Analyse des Orakels gehört zu NIVL Pro. Der Bericht bleibt deiner."
+    "proMensaje": "Die Analyse des Orakels gehört zum Abo. Der Bericht bleibt deiner."
   },
   "vista": {
     "hechoA11y": "{{titulo}}. {{detalle}}",

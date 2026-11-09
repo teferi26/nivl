@@ -166,7 +166,7 @@
   },
   "convivencia": {
     "titulo": "Vie commune et sécurité",
-    "cuerpo": "Harcèlement, menaces, usurpation d'identité et contenu offensant sont interdits. Les noms, titres et photos sont vérifiés avant d'être montrés aux autres : en attendant, ils verront un pseudo et une image neutres. Ton profil garde tes données.",
+    "cuerpo": "Harcèlement, menaces, usurpation d'identité et contenu offensant sont interdits. Les noms, titres et photos sont vérifiés régulièrement et à chaque signalement, et retirés s’ils enfreignent ces règles. Ton profil garde tes données.",
     "bloqueado": "Utilisateur bloqué",
     "desbloquear": "Débloquer"
   },

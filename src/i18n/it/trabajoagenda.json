@@ -1,7 +1,7 @@
 {
   "calendario": {
     "optInTitulo": "Collega il calendario del telefono",
-    "optInCuerpo": "Il titolo e gli orari dei tuoi prossimi 14 giorni vengono copiati sul tuo account NIVL. Sola lettura: NIVL non modifica il tuo calendario. Scollegando, ciò che è stato copiato viene cancellato.",
+    "optInCuerpo": "Il titolo e gli orari dei tuoi prossimi 14 giorni vengono copiati sul tuo account NIVL. Sola lettura: NIVL non modifica il tuo calendario. Scollegando, ciò che è stato copiato viene cancellato. Se lo hai permesso, il tuo coach può usarli per organizzare la giornata.",
     "conectar": "Collega",
     "desconectar": "Scollega e cancella la copia",
     "eyebrow": "Calendario",

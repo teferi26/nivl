@@ -14,7 +14,7 @@
   "oraculo": {
     "normasRotas": "{{n}} rules broken in 14 days",
     "proTitulo": "Weekly analysis",
-    "proMensaje": "The Oracle's analysis is part of NIVL Pro. The report is still yours."
+    "proMensaje": "The Oracle's analysis is part of a subscription. The report is still yours."
   },
   "vista": {
     "hechoA11y": "{{titulo}}. {{detalle}}",

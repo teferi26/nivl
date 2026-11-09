@@ -23,8 +23,7 @@
         "NSPhotoLibraryAddUsageDescription": "NIVL guarda en tus fotos solo las tarjetas que tú decides guardar al compartir.",
         "NSHealthShareUsageDescription": "NIVL lee de Salud solo las categorías que tú elijas (entrenos, pasos, energía activa, pulso, sueño y peso) para mostrar tu evolución y contrastar lo que registras.",
         "NSHealthUpdateUsageDescription": "NIVL guarda en Salud los entrenos que mides con la app, si tú lo permites.",
-        "NSLocationWhenInUseUsageDescription": "NIVL usa tu ubicación mientras mides una carrera o una salida en bici para calcular distancia, ritmo y ruta.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "NIVL usa tu ubicación durante la carrera o la salida en bici que tú arrancas, también con la pantalla apagada. Fuera de esa sesión no la usa.",
+        "NSLocationWhenInUseUsageDescription": "NIVL usa tu ubicación durante la carrera o la salida en bici que tú arrancas, también con la pantalla apagada, para calcular distancia, ritmo y ruta. Fuera de esa sesión no la usa.",
         "UIBackgroundModes": ["location"],
         "CFBundleDevelopmentRegion": "es",
         "CFBundleLocalizations": ["es", "en", "fr", "de", "pt", "it"],
@@ -78,7 +77,11 @@
         "android.permission.SCHEDULE_EXACT_ALARM",
         "android.permission.USE_EXACT_ALARM",
         "android.permission.READ_MEDIA_IMAGES",
-        "android.permission.READ_MEDIA_VIDEO"
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.FOREGROUND_SERVICE_MICROPHONE"
       ]
     },
     "web": {
@@ -114,7 +117,12 @@
           "resizeMode": "contain"
         }
       ],
-      "expo-secure-store",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ],
       "@bacons/apple-targets",
       "./plugins/withEscenas.js",
       [
@@ -128,7 +136,7 @@
       [
         "expo-calendar",
         {
-          "calendarPermission": "Si conectas tu calendario, NIVL copia a tu cuenta el título y las horas de tus próximos 14 días. Solo lo lee: nunca cambia nada en él.",
+          "calendarPermission": "Si conectas tu calendario, NIVL copia a tu cuenta el título y las horas de tus próximos 14 días, y tu coach puede usarlos si se lo permitiste. Solo lo lee: nunca cambia nada en él.",
           "remindersPermission": "NIVL solo lee tu calendario. No lee ni cambia tus recordatorios."
         }
       ]

@@ -37,7 +37,7 @@
       "eyebrow": "Giuramento sigillato",
       "titulo": "Ora, chi lo guida.",
       "linea": "Il tuo giuramento è sigillato. Il coach può guidare la tua giornata da domani.",
-      "enlace": "Vedi NIVL Pro",
+      "enlace": "Vedi i piani",
       "contexto": "Il tuo giuramento è sigillato. NIVL resta del tutto gratuito; Pro aggiunge il coach che lo guida."
     }
   },
@@ -119,7 +119,8 @@
         "otra": "Lo gestisci e lo disdici quando vuoi dallo store in cui l'hai attivato."
       },
       "base": "NIVL e le tue abitudini restano gratis.",
-      "avisoIa": "NIVL è un'IA, non un professionista sanitario."
+      "avisoIa": "NIVL è un'IA, non un professionista sanitario.",
+      "uso": "Un uso automatizzato o anomalo può mettere in pausa il coach temporaneamente."
     },
     "enlace": {
       "restaurar": "Ripristina",
@@ -133,7 +134,8 @@
       "pendiente": "Acquisto confermato dallo store. La modalità si apre tra qualche secondo; se non compare, tocca Ripristina.",
       "programada": "Modifica confermata dallo store. Si applica al prossimo rinnovo; fino ad allora resti con il tuo piano attuale.",
       "sinPermiso": "Per usare il coach serve accettare l'invio dei tuoi dati al fornitore di IA. Senza questo permesso non si paga nulla.",
-      "nada": "Questo account dello store non ha nessun abbonamento NIVL attivo."
+      "nada": "Questo account dello store non ha nessun abbonamento NIVL attivo.",
+      "cambio": "Hai {{actual}}. Può essere attivo un solo abbonamento: {{nuevo}} sostituisce quello che hai e perdi quella modalità quando il cambio si applica. Lo store ti indica quando."
     },
     "salida": {
       "gratis": "Continua gratis",
@@ -154,6 +156,7 @@
         "work": "Finanze, agenda e il suo coach, che protegge la tua giornata di lavoro.",
         "founder": "Agenda, finanze dell'attività e il suo coach, che ti chiede i numeri."
       }
-    }
+    },
+    "planAnterior": "il tuo piano precedente"
   }
 }

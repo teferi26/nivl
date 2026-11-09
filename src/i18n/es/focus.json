@@ -461,7 +461,7 @@
       "iaRevisar": "Revisa antes de guardar",
       "iaOtraVez": "Otro texto",
       "iaQuitar": "Quitar la tarjeta {{pregunta}}",
-      "iaSinPro": "Generar tarjetas con IA es parte de NIVL Pro. A mano funcionan igual: pega pregunta y respuesta, una por línea.",
+      "iaSinPro": "Generar tarjetas con IA es parte de la suscripción. A mano funcionan igual: pega pregunta y respuesta, una por línea.",
       "iaAMano": "Pegarlas a mano",
       "iaNada": "De ese texto no han salido tarjetas. Prueba con un fragmento más largo."
     },

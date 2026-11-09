@@ -1,7 +1,7 @@
 {
   "calendario": {
     "optInTitulo": "Connecter le calendrier du téléphone",
-    "optInCuerpo": "Le titre et les horaires de vos 14 prochains jours sont copiés sur votre compte NIVL. Lecture seule : NIVL ne modifie pas votre calendrier. Déconnecter supprime ce qui a été copié.",
+    "optInCuerpo": "Le titre et les horaires de vos 14 prochains jours sont copiés sur votre compte NIVL. Lecture seule : NIVL ne modifie pas votre calendrier. Déconnecter supprime ce qui a été copié. Si tu l’as autorisé, ton coach peut les utiliser pour organiser ta journée.",
     "conectar": "Connecter",
     "desconectar": "Déconnecter et supprimer la copie",
     "eyebrow": "Calendrier",

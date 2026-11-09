@@ -88,7 +88,7 @@
       "placeholder": "Ex. Pas de réseaux sociaux avant midi",
       "a11y": "Texte de la règle",
       "consecuenciaEtiqueta": "Conséquence si tu l'enfreins",
-      "consecuenciaPlaceholder": "Ex. Courir 5 km",
+      "consecuenciaPlaceholder": "Ex. Ranger la maison 30 minutes",
       "consecuenciaA11y": "Conséquence en cas d'infraction",
       "ayudaEditar": "S'applique dès aujourd'hui. La version précédente est archivée avec ses infractions. L'enfreindre coûte −{{xp}} XP.",
       "ayudaNueva": "L'enfreindre coûte −{{xp}} XP. Accomplir la conséquence le jour même te le rend."
@@ -109,11 +109,11 @@
     "plantilla": {
       "p1": {
         "texto": "Écrire le journal chaque jour : ce que j'ai vécu et le plan de la journée",
-        "consecuencia": "Courir 8 km"
+        "consecuencia": "1 jour sans réseaux sociaux"
       },
       "p2": {
         "texto": "Pas d'alcool",
-        "consecuencia": "1 jour à ne manger que sain"
+        "consecuencia": "1 jour sans séries ni streaming"
       },
       "p3": {
         "texto": "Pas de caféine",
@@ -121,11 +121,11 @@
       },
       "p4": {
         "texto": "Manger sain tous les jours",
-        "consecuencia": "Courir 4,5 km"
+        "consecuencia": "Ranger la maison 30 minutes"
       },
       "p5": {
         "texto": "Si je sors faire la fête sans l'avoir mérité",
-        "consecuencia": "1 semaine de régime strict"
+        "consecuencia": "1 semaine sans sortir faire la fête"
       },
       "p6": {
         "texto": "Aucun plan ne passe avant mes objectifs",
