@@ -50,10 +50,11 @@ describe('productos y precios', () => {
       expect(productoModo(modo, 'mensual').cents).toBe(1499);
       expect(productoModo(modo, 'anual').cents).toBe(5999);
     }
-    expect(productoModo('todos', 'mensual').cents).toBe(3000);
-    expect(productoModo('todos', 'anual').cents).toBe(9900);
+    expect(productoModo('todos', 'mensual').cents).toBe(2999);
+    expect(productoModo('todos', 'anual').cents).toBe(9999);
     expect(importeTabla(5999)).toBe('59,99 €');
-    expect(importeTabla(9900)).toBe('99 €');
+    expect(importeTabla(2000)).toBe('20 €');
+    expect(importeTabla(9999)).toBe('99,99 €');
   });
 
   test('el anual lleva 7 días gratis y el mensual no', () => {
@@ -156,7 +157,7 @@ describe('la compra', () => {
     expect(legalModo('nivl_iron_anual', '59,99 €', '7 días', 'ios')).toContain('7 días gratis y después 59,99 € al año');
     expect(legalModo('nivl_iron_anual', '59,99 €', null, 'ios')).not.toContain('gratis y después');
     expect(legalModo('nivl_iron_anual', null, null, 'ios')).toBeNull();
-    expect(legalModo('nivl_todos_mensual', '30 €', null, 'android')).toContain('renovación automática');
+    expect(legalModo('nivl_todos_mensual', '29,99 €', null, 'android')).toContain('renovación automática');
     expect(pasosPrueba('7 días').map((p) => p.dia)).toEqual(['Hoy', 'Día 7']);
     expect(pasosPrueba(null)).toEqual([]);
   });

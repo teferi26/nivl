@@ -10,8 +10,8 @@ import { OfertaModosVista, type EstadoOfertaModos } from './OfertaModosVista';
 
 const nada = () => {};
 const PRECIOS: Record<Periodo, { uno: string; todos: string }> = {
-  anual: { uno: '59,99 €', todos: '99 €' },
-  mensual: { uno: '14,99 €', todos: '30 €' },
+  anual: { uno: '59,99 €', todos: '99,99 €' },
+  mensual: { uno: '14,99 €', todos: '29,99 €' },
 };
 
 function useOfertaDemo(inicial: Partial<EstadoOfertaModos> & { modo?: ModoDePago } = {}): EstadoOfertaModos {

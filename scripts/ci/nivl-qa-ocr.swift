@@ -48,14 +48,17 @@ if pointMode {
     }
     modalHint = modalHint || observations.contains { ["ahora no", "not now"].contains(normalized($0.0)) }
     let confidentText = observations.filter { $0.1 >= 0.95 }
-    let knownLabels = Set(["tu edad", "tengo 16 años o más", "tengo 16 años o más.", "confirmar y continuar", "hoy", "entrar en la arena", "entra con tu correo y tu contraseña de nivl."])
+    let knownLabels = Set(["tu edad", "tengo 16 años o más", "tengo 16 años o más.", "confirmar y continuar", "hoy", "entrar en la arena", "¿en qué idioma hablamos?", "un par de cosas y empezamos.", "entra con tu correo y tu contraseña de nivl."])
+    let loginLabel = "entra con tu correo y tu contraseña de nivl."
     var knownScreen = false
+    var loginVisible = false
     for width in 1...3 {
         if observations.count >= width {
             for index in 0...(observations.count - width) {
                 let window = Array(observations[index..<(index + width)])
                 if window.allSatisfy({ $0.1 >= 0.95 }) && knownLabels.contains(normalized(window.map { $0.0 }.joined(separator: " "))) {
                     knownScreen = true
+                    if normalized(window.map { $0.0 }.joined(separator: " ")) == loginLabel { loginVisible = true }
                 }
             }
         }
@@ -74,9 +77,10 @@ if pointMode {
         let password_dialog: Bool
         let modal_hint: Bool
         let known_screen: Bool
+        let login_visible: Bool
         let point: String?
     }
-    if let data = try? JSONEncoder().encode(FixedPointResult(ocr_available: imageProcessed && !confidentText.isEmpty, password_dialog: titleFound, modal_hint: modalHint, known_screen: knownScreen, point: point)) {
+    if let data = try? JSONEncoder().encode(FixedPointResult(ocr_available: imageProcessed && !confidentText.isEmpty, password_dialog: titleFound, modal_hint: modalHint, known_screen: knownScreen, login_visible: loginVisible, point: point)) {
         FileHandle.standardOutput.write(data)
     }
 } else {

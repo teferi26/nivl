@@ -1,7 +1,7 @@
 // NIVL · El cobro por modos (1.1): productos, precios y derechos, en datos.
 //
 // Decisión del dueño: un modo (IRON, FOCUS, WORK o FOUNDER) cuesta 14,99 € al
-// mes o 59,99 € al año; los cuatro, 30 € al mes o 99 € al año. El anual lleva
+// mes o 59,99 € al año; los cuatro, 29,99 € al mes o 99,99 € al año. El anual lleva
 // 7 días gratis y el mensual no. No se venden combinaciones de 2 o 3: dos ya
 // cuestan lo mismo que los cuatro, y Apple permite una sola suscripción activa
 // por grupo. Los diez productos van en un solo grupo: de un modo a los cuatro
@@ -47,7 +47,7 @@ export interface ProductoModo {
 /** Los importes de la decisión del dueño. Si cambian, rehaz antes docs/PRECIOS.md y el freno de la 0140. */
 export const PRECIOS_CENTS: Readonly<Record<'uno' | 'todos', Record<Periodo, number>>> = {
   uno: { mensual: 1499, anual: 5999 },
-  todos: { mensual: 3000, anual: 9900 },
+  todos: { mensual: 2999, anual: 9999 },
 };
 
 export const DIAS_GRATIS_ANUAL = 7;
@@ -89,7 +89,7 @@ export function productoPorId(id: string | null | undefined): ProductoModo | nul
   return PRODUCTOS_MODO.find((p) => p.id === b) ?? null;
 }
 
-/** «14,99 €» o «30 €»: sin decimales cuando el importe es redondo. Solo para la tabla sin tienda. */
+/** «14,99 €» o «20 €»: sin decimales cuando el importe es redondo. Solo para la tabla sin tienda. */
 export function importeTabla(cents: number): string {
   const e = Math.round(cents) / 100;
   return moneda(e, Number.isInteger(e) ? 0 : 2);
@@ -285,7 +285,7 @@ export function periodoCorto(periodo: Periodo): string {
   return t(`oferta:pago.porPeriodo.${periodo}`);
 }
 
-/** El importe facturado tal como se destaca: «99 €/año», «14,99 €/mes». */
+/** El importe facturado tal como se destaca: «99,99 €/año», «14,99 €/mes». */
 export function importeConPeriodo(precio: string, periodo: Periodo): string {
   return t(`oferta:pago.importe.${periodo}`, { precio });
 }

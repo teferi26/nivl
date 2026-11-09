@@ -24,9 +24,9 @@ Regla de esta tabla: «verificado» es que alguien lo vio en una captura o en un
 |---|---|---|---|
 | **iPhone Duo plegado** | Simulador, pantalla exterior de 466 pt: Hoy, Avance, Arena, Campañas, Agenda, Coach (General, IRON, FOCUS), rueda, IRON Hoy, FOCUS Hoy y Temario, WORK Hoy. Títulos a tamaño completo y campo del Coach libre del emblema tras sus arreglos (Arena, Campañas, Avance, Temario; Coach de General y FOCUS). Cifras de Arena: microscópicas en 4 de 4 arranques antes del arreglo, bien en 4 de 4 después. | | Perfil plegado; Hábitos, solo la parte de arriba (el diálogo de avisos tapa el resto). Otros textos autoajustados con alto de línea fijo (código de amigo, racha, totales de WORK) tienen la misma combinación que encogía títulos y cifras y no se han revisado uno a uno. Con el teclado abierto, en el login la contraseña queda tapada hasta desplazar (anotado, sin arreglar). Binario con SDK 26, el que previsiblemente sale hoy de CI (§6). |
 | **iPhone Duo abierto** | Nada en nativo. | Ventana de iPad de 683 x 955, mismo camino de código: barra inferior y dos paneles. Tests del marco con 669. | **El Duo abierto en sí**: no se pudo desplegar sin interfaz. Pantalla interior de 669 x 951 solo leída del simulador. Insets reales, cambio plegado y abierto en caliente, Split View en el interior, barras verticales de iOS 27.1. |
-| **iPad** | iPad Pro 13 vertical (1032) y apaisado (1376), iPad mini vertical (744). Ventanas flotantes redimensionadas a 476 (solo WORK Hoy), 683, 761 y 895. Campañas con lista y detalle, Coach con plan al lado. | | Split View en mosaico. Mundos en apaisado a pantalla completa. Dispositivo físico. |
-| **Mac (app de iPad)** | Solo que Xcode ofrece el destino «My Mac, Designed for iPad». | Marco web en WebKit a 1280 y 1920, e iPad Pro 13 apaisado. Parecido, no igual: la web no pasa por el código nativo. | **Toda la ejecución en un Mac**: no hay identidad ni perfil de firma en la máquina de pruebas. Tamaño de ventana, márgenes, puntero, avisos, compra, dictado, enlaces. |
-| **Vision Pro (compatible)** | Instala y arranca en el simulador de visionOS 27.2 sin recompilar. Ventana de 1194 x 834, barra lateral. Medido: `isPad` true, `isVision` false, inset superior 0, inferior 20. Capturas de Hoy, Avance, Campañas, Arena, Coach, Hábitos, Agenda, Perfil, `/pro`, IRON, FOCUS y WORK, con el diálogo de avisos tapando el centro en casi todas. Por inspector: hápticos resuelven, compartir y reconocimiento de voz disponibles, cámara sin permiso cae a galería. | | Ventana redimensionada, hojas y modales (el simulador no acepta entrada sintética). FOUNDER. Mirada y gesto, tamaño de objetivo. Cámara tras conceder permiso. Dispositivo físico. |
+| **iPad (1.1, 09/11/2026)** | Flujo Maestro `onboarding-11*.yaml` ejecutado entero y en verde contra el simulado en iPad Air 11 (M3) vertical, con cuenta sin onboarding y con cuenta ya hecha, y en iPad Pro 13 (M5) vertical y apaisado: portada, cuestionario, entrada, idioma, nombre con teclado, modos, misiones, plan de 90 días, oferta y Hoy, con tres reaperturas en frío. Capturas en Pro 13 en las dos orientaciones: Hoy Ónix, rueda, los cuatro mundos, `MundoCerrado` real sin pago, y `OfertaModosVista` con tienda abierta (galería, precios de demo). En apaisado la contraseña quedaba bajo el teclado en `/login`: arreglado. | | Compra real y oferta del onboarding con tienda abierta. Toque seco sobre un sector de la rueda (con toque sintético se resalta y no elige; con arrastre mínimo sí). Split View en mosaico. Dispositivo físico. Binario de tienda: se usó el nativo de simulador con el JS empotrado. |
+| **Mac (app de iPad, 1.1)** | Nada ejecutado de la 1.1. Comprobado el 09/11/2026: 0 identidades de firma (`security find-identity -v -p codesigning`) y 0 perfiles en esta máquina. | Marco web en WebKit a 1280 y 1920, e iPad Pro 13 apaisado. Parecido, no igual: la web no pasa por el código nativo. | **Toda la ejecución en un Mac**: no se puede firmar aquí. Tamaño de ventana, márgenes, puntero, avisos, compra, dictado, enlaces. HealthKit, GPS en segundo plano y Watch no aplican en Mac. |
+| **Vision Pro (compatible, 1.1)** | Instala y arranca la 1.1 en el simulador de visionOS 27.2 sin recompilar, en ventana de iPad con barra lateral. Vistas sin diálogo de avisos: Hoy, Avance, Coach con plan al lado, Perfil, Hábitos, `/pro`, IRON Hoy y `MundoCerrado` con su oferta de solo lectura. Sesión sembrada en AsyncStorage y ruta forzada en una copia del JS, porque el simulador no acepta entrada y cada `nivl://` abre un diálogo del sistema. | | Toda la interacción: toques, hojas, modales, teclado, onboarding, ventana redimensionada (el simulador no acepta entrada sintética). Compra. Oferta con tienda abierta. Mirada y gesto, tamaño de objetivo. Cámara. FOCUS, WORK y FOUNDER. HealthKit, GPS en segundo plano y Watch no aplican. Dispositivo físico. |
 | **Chromium** | Build de producción con la CSP de `vercel.json` activa: 86 combinaciones de ruta y modo (58 rutas distintas) a 375, 768, 1280 y 1920, en Playwright 1194 y en Google Chrome instalado. Flujos: foto a JPG, tarjeta PNG, exportar JSON, importar, invitar. | | Vercel real, https y wss contra Supabase real. |
 | **Safari** | WebKit 26 de Playwright, mismas 344 combinaciones. Foto, adjunto, exportar, importar. | WebKit de Playwright frente a Safari real: mismo motor, otro producto. | Safari real, iOS Safari, teclado virtual, 100dvh real, safe areas, hoja de compartir real con archivo. `backdrop-filter` de la rueda (WebKit headless no lo pinta). |
 | **Edge** | Nada: no está instalado. | Es Chromium: se infiere de Chromium y Chrome. | Edge como producto. Con Edge instalado basta `--canal msedge`. |
@@ -39,8 +39,8 @@ Resultado de las 344 combinaciones por motor: 0 errores de consola, 0 de página
 Nada de esto lo puede hacer un agente.
 
 **Para Mac y Vision Pro** (App Store Connect, la app, Pricing and Availability)
-1. Comprobar que siguen marcadas **«Make this app available on Mac»** y **«Make this app available on Apple Vision Pro»**. Apple las ofrece activadas por defecto, así que no suele haber que activarlas; solo hay que asegurarse de que nadie las apagó. No se ha podido mirar desde aquí.
-2. Instalar la versión de TestFlight en un Mac con Apple Silicon y probarla. Es la única forma de pasar el Mac de «no verificado» a «verificado»: ventana, compra de sandbox, avisos, dictado, enlaces. Es lo primero que haría antes de decir en público que NIVL está en Mac.
+1. **Para la salida de la 1.1, desmarcar «Make this app available on Mac» y «Make this app available on Apple Vision Pro»** (recomendación del 09/11/2026). Apple las ofrece activadas por defecto, así que hay que apagarlas a mano; su estado actual no se ha podido mirar desde aquí. Se vuelven a activar sin binario nuevo. Motivo: en Mac la 1.1 no se ha ejecutado nunca, y en Vision solo se ha visto arrancar y pintar, sin un solo toque ni compra.
+2. Instalar la versión de TestFlight en un Mac con Apple Silicon y probarla: ventana, compra de sandbox, avisos, dictado, enlaces. Es la única forma de pasar el Mac de «no verificado» a «verificado» y de reactivar su casilla. Para Vision, lo mismo con unas gafas o a mano en el simulador.
 
 **Para el iPhone Duo**
 
@@ -225,3 +225,32 @@ Otro, en Safari de iPhone y iPad: para que la página no se amplíe al enfocar u
 - Plazo de SDK 27 (terceros, no es de Apple): https://useffect.sh/en/xcode-27-app-store-requirement
 
 **Del propio repo:** `node_modules` (podspec, `@expo/config-types`, `@expo/config-plugins`), Info.plist del binario de prueba, `.github/workflows/ios-testflight.yml`, y los informes del arnés de la QA adaptativa.
+
+## Android (1.1)
+
+Escrito el 09/11/2026 sobre la integración 1.1. Compilado en este Mac con Android SDK 36 y NDK 27.1, y ejecutado en un emulador Pixel 7 (Android 16, arm64) contra Supabase simulado con cuentas ficticias. **Ningún dispositivo físico, ninguna firma real y ninguna compra.**
+
+| Punto | Estado | Evidencia |
+|---|---|---|
+| AAB de release, cuatro arquitecturas | **Compila**: 72 MB, Gradle correcto | `bundleRelease` local, sin copias manuales. Firmado con la clave de depuración: la firma real la pone EAS |
+| Nativos nuevos (`expo-calendar`, `react-native-maps`, `expo-keep-awake`) | **Compilan** | La misma compilación |
+| P11, servicios en primer plano | **Confirmado en el manifiesto fusionado**: ningún permiso `FOREGROUND_SERVICE*` ni servicio con `foregroundServiceType` | `bundletool dump manifest` |
+| P12, `SYSTEM_ALERT_WINDOW` y almacenamiento | **Confirmado**: sin `SYSTEM_ALERT_WINDOW`; lectura hasta API 32 y escritura hasta API 28 | Igual. No se bloquean del todo: `expo-image-picker` pide escritura para la cámara por debajo de Android 10 |
+| Ubicación, salud, alarmas exactas, `READ_MEDIA_*`, `AD_ID` | Ausentes | `scripts/ci/comprobar-aab.mjs` sobre el AAB |
+| `targetSdk` y 16 KB | 36; `zipalign -P 16` correcto en el APK universal | `bundletool` y `zipalign` |
+| Ónix, onboarding completo, Hoy, Coach, Hábitos | **Visto en el emulador** | Maestro hasta el plan de 90 días, a mano el resto |
+| Rueda de modos, IRON, WORK; FOCUS elegido en la rueda | **Visto**, salvo FOUNDER | Pulsación larga y toque |
+| Oferta y mundo cerrado sin clave de RevenueCat | **Visto**: precios en solo lectura y «no disponibles» | Sin la clave no hay venta (PLAT-03) |
+
+**Tres arreglos que solo aparecieron al ejecutarlo:**
+- **Teclado.** Con `targetSdk` 36 la app va de borde a borde y `adjustResize` ya no encoge la ventana: el teclado tapaba el botón de continuar del onboarding y el campo del Coach. `src/components/ui/HuecoTecladoAndroid.tsx` deja un hueco en la raíz, solo en Android, y `TabBar` se oculta con el teclado abierto. Visto en onboarding, login, Coach y hojas.
+- **`reanimated` no enlazaba.** Busca `libworklets.so` en una carpeta que AGP 8.11 no rellena: la compilación moría en ninja. `plugins/withAndroidWorkletsPublicado.js` la publica ahí. El AAB 1.0.11 sí compiló en CI con las mismas versiones, así que puede que en Linux no haga falta; copiarla no estorba.
+- **Permisos y servicios** (P11 y P12), arriba.
+
+**El flujo del AAB** (`.github/workflows/android-play.yml`) falla si el AAB no está firmado, usa la clave de depuración, no llega a `targetSdk` 36, declara permisos prohibidos o conserva servicios con `foregroundServiceType`. Avisa si falta `EXPO_PUBLIC_RC_ANDROID_KEY`.
+
+**Sin verificar:** el run real en Linux y la firma de EAS, Google Play Billing, push (FCM), cámara, dictado y calendario reales, Android antiguo (minSdk 24), tablets y plegables Android.
+
+**Detalles anotados, sin arreglar:** en el mundo cerrado el botón Atrás del sistema no hace nada, aunque está «Volver a NIVL»; el Coach sin pagar sigue hablando de «NIVL Pro» aunque el cobro ya es por modos.
+
+**Para producción (cuenta personal):** 12 testers inscritos 14 días seguidos en la prueba cerrada, y después la revisión de Google. Última constancia en las notas internas, del 07/11/2026: la prueba cerrada existe y hay **0 de 12**. No se ha podido abrir Play Console para confirmarlo, así que lo que pide hoy la consola está sin verificar. Según la documentación preparada faltan: ficha, Data safety, clasificación, productos, `EXPO_PUBLIC_RC_ANDROID_KEY` en EAS y la huella SHA-256 de Play en `assetlinks.json`.

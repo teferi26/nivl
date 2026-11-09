@@ -21,6 +21,7 @@ import { FONDO_ONIX, ink, layout, oro, stroke, vidrio } from '@/design/tokens';
 import { fonts } from '@/lib/theme';
 import { ariaWeb } from './ariaWeb';
 import { destinoActivo, destinosDe, navItemDe, pulsarDestino } from './navItems';
+import { useTecladoAbierto } from './useTecladoAbierto';
 
 /** Ancho máximo de la franja de destinos: la columna móvil. */
 const ANCHO_MAX_BARRA = layout.compact.maxContent;
@@ -34,6 +35,11 @@ const ANCHO_MAX_BARRA = layout.compact.maxContent;
 export function TabBar({ state, descriptors, navigation, acento = ink.ink10, centro }: BottomTabBarProps & { acento?: string; centro?: ReactNode }) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
+  // En Android el hueco del teclado sube la app entera (HuecoTecladoAndroid):
+  // sin esto, la barra y el emblema quedaban encima del teclado, pisando el
+  // campo del coach. En iOS el teclado ya la tapa.
+  const teclado = useTecladoAbierto();
+  if (Platform.OS === 'android' && teclado) return null;
   const margen = Math.max(0, Math.floor((width - ANCHO_MAX_BARRA) / 2));
   const activo = destinoActivo(state.routes, state.index, 'tabs');
   const enfocada = state.routes[state.index]?.name;

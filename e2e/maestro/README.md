@@ -47,6 +47,16 @@ Compra, restauración, borrado de cuenta, denuncia y bloqueo, cierre del día, m
 
 No hay workflow de CI para estos flujos. Añadirlo (macOS, simulador y build) es decisión del coordinador: `.github/workflows/**`, `package.json` y `metro.config.js` son suyos.
 
+## Onboarding 1.1 en iPad (`onboarding-11*.yaml`)
+
+Regresión de `.github/workflows/qa-onboarding-ios.yml`: portada y cuestionario sin datos de salud, entrada con la cuenta demo, idioma, nombre con teclado, modos, misiones, plan de 90 días, oferta sin comprar, Hoy y tres reaperturas en frío. Sirve con onboarding pendiente y con cuenta ya hecha (entra por `nivl://onboarding`).
+
+- **Se ha ejecutado** el 09/11/2026 en iPad Air 11 (M3) y iPad Pro 13 (M5), en vertical y apaisado, iOS 27.2 de simulador, contra `e2e/web/mock-supabase.mjs` (`sin-onboarding@nivl.test` y `completo@nivl.test`). Con la cuenta real de capturas no se ha probado.
+- **Escribe** en la cuenta demo: nombre, perfil general, resumen del cuestionario sin salud, un modo elegido y `onboarding_done`. Solo la cuenta demo de capturas.
+- El workflow deja la demo con `onboarding_done=false` antes de cada ejecución, porque cada recorrido completo lo marca como hecho.
+- Dos partes, porque el aviso de guardar contraseña se resuelve fuera de Maestro: `onboarding-11.yaml` y luego `onboarding-11-continue.yaml`.
+- Maestro 2.10 solo admite `takeScreenshot` con ruta relativa dentro de `--test-output-dir`; el workflow copia las `qa-*.png` del tramo tras el login.
+
 ## Capturas de la App Store 1.0.8 (`capturas-108.yaml`)
 
 Las 7 escenas de la ficha de la tienda: Hoy, Coach, Perfil, Amigos, Campañas, Agenda y NIVL Pro. Se capturan en iPhone 6,9" y iPad 13" y las lanza `.github/workflows/screenshots.yml` con `-e SLUG=iphone-69|ipad-13`. Es una propuesta del Chat 1 @`20c1861`, revisada contra `winter2/integracion` @`21764de`. **No se ha ejecutado todavía.**

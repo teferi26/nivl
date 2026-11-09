@@ -1,0 +1,24 @@
+# Unselect every proposal so no mission is created. Without health consent the health
+# rows start unselected and tapping one would open the consent sheet, so they are only
+# tapped while the footer still counts missions (which means the demo already had consent).
+# Maestro does not read the checked state of these rows on iOS 27.
+appId: com.teferi.nivl
+name: NIVL 1.1 unselect starter missions
+---
+- tapOn: '^Trabajo o estudio 2 h$'
+- tapOn: '^Leer 20 minutos$'
+- runFlow:
+    when:
+      notVisible: '^Empezar sin misiones$'
+    commands:
+      - tapOn: '^Entrenar$'
+- runFlow:
+    when:
+      notVisible: '^Empezar sin misiones$'
+    commands:
+      - tapOn: '^Registrar comidas del día$'
+- runFlow:
+    when:
+      notVisible: '^Empezar sin misiones$'
+    commands:
+      - tapOn: '^Diario del día$'

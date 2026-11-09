@@ -211,7 +211,16 @@ function crearCoach() {
   };
 }
 
-export function crear() {
+/**
+ * Escenarios del simulado (los elige el correo de entrada, ver mock-supabase.mjs):
+ *   · completo: gladiador con todo pagado y datos llenos.
+ *   · sin-onboarding: cuenta recién creada, sin pagar, sin permisos de salud ni IA.
+ *   · sin-pago: onboarding hecho y modos activados, pero sin pagar ninguno
+ *     (la puerta MundoCerrado y la oferta por modos).
+ */
+export const ESCENARIOS = ['completo', 'sin-onboarding', 'sin-pago'];
+
+export function crear(escenario = 'completo') {
   const ahora = new Date().toISOString();
   const usuario = {
     id: ID,
@@ -334,8 +343,9 @@ export function crear() {
     { ...amigo(3, 'Tito', 1500, 2) },
   ];
 
-  return {
+  const salidaBase = {
     usuario,
+    ESCENARIOS,
     tablas: {
       profiles: [perfil],
       user_modes: modos,
@@ -379,6 +389,8 @@ export function crear() {
       accept_health_consent: { ok: true },
       my_ai_consent: { current_version: '2026-09-29', granted: true, action: 'accept', version: '2026-09-29', at: hace(30) },
       accept_ai_consent: { ok: true },
+      // Cobro por modos (0140): el servidor dice qué mundos abre la cuenta.
+      mis_modos: { modos: ['iron', 'focus', 'work', 'founder'], plan: 'modos_todos_anual', producto: 'nivl_modos_todos_anual', expira: dia(200), trial: false },
       ai_status: {
         entitled: true,
         plan: 'elite_mensual',
@@ -417,4 +429,35 @@ export function crear() {
     },
     funciones: {},
   };
+
+  if (escenario === 'sin-onboarding' || escenario === 'sin-pago') {
+    const gratis = { entitled: false, plan: null, tier: 'free', budget: 0, spent: 0, remaining: 0, trial: false, deep_allowed: false, deep_remaining: 0, deep_turns: 0, trial_available: true, vision: false, ia: null };
+    salidaBase.rpc.ai_status = gratis;
+    salidaBase.rpc.mis_modos = { modos: [], plan: null, producto: null, expira: null, trial: false };
+    salidaBase.rpc.my_ai_consent = { current_version: '2026-09-29', granted: false, action: null, version: null, at: null };
+  }
+  if (escenario === 'sin-onboarding') {
+    Object.assign(salidaBase.tablas.profiles[0], {
+      onboarding_done: false,
+      name: 'Gladiador',
+      display_name: 'Gladiador',
+      xp_total: 0,
+      xp_fue: 0,
+      xp_vit: 0,
+      xp_int: 0,
+      xp_agi: 0,
+      xp_per: 0,
+      streak_days: 0,
+      perfect_streak_days: 0,
+      bonus_points: 0,
+      protection_stones: 0,
+    });
+    salidaBase.tablas.quests = [];
+    salidaBase.tablas.user_modes = [];
+    salidaBase.tablas.mode_xp = [];
+    salidaBase.rpc.my_completions = [];
+    salidaBase.rpc.my_completion_stats = { total: 0, with_evidence: 0 };
+    salidaBase.rpc.my_health_consent = { accepted: false, version: null, current_version: '2026-09-27-salud-v1', revision: 0, erasure_pending: false };
+  }
+  return salidaBase;
 }
