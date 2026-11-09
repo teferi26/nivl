@@ -25,17 +25,13 @@ TV: para que alguien enlace una tele hay que aplicar sus migraciones y copiar `t
 
 ## Estado de la salida (09/11/2026)
 
-Autorizada por el dueño y **parada antes del paso 1**: no se ha aplicado ninguna migración, ni desplegado nada, ni hecho push. Falta confirmar que la clave de producción puede llamar a `claude-haiku-5-5`: el secreto `ANTHROPIC_API_KEY` existe, pero lo desplegado solo usa `claude-sonnet-5` y `claude-haiku-4-5`, y Supabase no devuelve el valor del secreto.
+**Aplicado en producción:** las 21 migraciones de la 0105 a la 0142, sin la 0113.
 
-Comprobado en producción, solo lectura:
-- `modos_1011` está encendido, así que la 1.0.11 manda `x-nivl-modo`. Las 8 suscripciones (5 `elite_anual`, 2 `cortesia`, 1 `owner`, todas manuales) tienen plan que abre los cuatro modos tras la 0140: ninguna recibiría 402.
-- `--dry --sin=0113` aplicaría 21 migraciones, de la 0105 a la 0142.
+**Desplegado, tras comprobar que la clave llega a `claude-haiku-5-5`:** `coach` v81, `ritual` v49, `economia` v3, `oracle` v24, `prevision` v1, `revenuecat-webhook` v10, `store-reconcile` v7, `stripe-webhook` v2, cada una con su `verify_jwt` anterior. `franky-auth` y las de borrado no cambian. Entre el final de las migraciones y el despliegue pasó un minuto largo con el coach antiguo.
 
-Comprobado en el código: la versión del permiso de salud no cambia; sin `x-nivl-modo` el coach es el General; `x-nivl-mode` se ignora; los productos Pro y Élite siguen abriendo todo.
+**Comprobado tras desplegar:** las cuatro funciones con IA llevan Haiku 5.5, sin Sonnet ni Opus; `coach`, `prevision` y `revenuecat-webhook` responden 401 sin autenticar; el permiso de salud sigue en v1 con las 9 aceptaciones intactas y ninguna medición activada. **No comprobado:** una respuesta real del coach con Haiku 5.5.
 
-Dos avisos para ejecutar la salida:
-- La 0136 cambia `ai_plans.routes` a Haiku 5.5 y las funciones antiguas aún leen esa columna. Entre migraciones y despliegue, el coach antiguo pediría un modelo que no conoce: hay que desplegar justo después.
-- La pausa de la 0135 también detiene los rituales de quien sigue en 1.0.11 tras 3 días sin escribir, y esa versión no tiene pantalla que lo explique. Escribir al coach la reactiva.
+**Pendiente:** push y binario, a falta de decidir las capturas que irían en la historia pública (`docs/rediseno-1.1/antes/`, `tv/capturas/`). Sin OTA ni envío a revisión. La 0113 no se aplica mientras haya móviles en 1.0.11, salvo decisión expresa.
 
 ## Orden de salida
 
