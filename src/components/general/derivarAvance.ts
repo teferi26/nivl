@@ -18,6 +18,19 @@ export const SEMANAS_AVANCE = 8;
 export const DIAS_CUMPLIMIENTO = 28;
 /** Lo que se pide para tener las 8 semanas: 56 días. */
 export const DIAS_CARGA = SEMANAS_AVANCE * 7;
+/** La rejilla de cumplimiento va por semanas: 4 filas de 7. */
+export const COLUMNAS_CUMPLIMIENTO = 7;
+
+/**
+ * El lado de una celda cuadrada para que quepan las columnas justas en `ancho`.
+ * Se redondea hacia abajo al píxel físico: una fracción de más y la última
+ * columna saltaría de fila. Devuelve 0 si aún no hay ancho medido o no cabe.
+ */
+export function ladoCelda(ancho: number, hueco: number, escala: number, columnas = COLUMNAS_CUMPLIMIENTO): number {
+  const libre = ancho - hueco * (columnas - 1);
+  if (libre <= 0) return 0;
+  return Math.floor((libre / columnas) * escala) / escala;
+}
 
 export interface DiaCumplimiento {
   fecha: string;
