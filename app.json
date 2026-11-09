@@ -143,6 +143,7 @@
       ],
       "./plugins/with-uiscene",
       "./plugins/withAndroidSinServiciosNiAlmacenamiento.js",
+      "./plugins/withAndroidWorkletsPublicado.js",
       [
         "expo-calendar",
         {

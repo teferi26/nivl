@@ -168,7 +168,12 @@ jobs:
                 console.log('QA_PREFLIGHT auth=true onboarding_done=' + onboardingDone + ' age_confirmed=' + ageConfirmed);
                 if (profileError || ageError || !profile || typeof age !== 'boolean') {
                   fail('READINESS_QUERY_FAILED');
-
+                } else if (onboardingDone) {
+                  // Each run finishes the demo's onboarding: start the next one from the same state.
+                  const { data: reabierto, error: resetError } = await client.from('profiles')
+                    .update({ onboarding_done: false }).eq('id', login.user.id).select('onboarding_done').maybeSingle();
+                  console.log('QA_PREFLIGHT_RESET onboarding_done=' + (reabierto?.onboarding_done === true));
+                  if (resetError || reabierto?.onboarding_done !== false) fail('RESET_FAILED');
                 }
               }
               await client.auth.signOut({ scope: 'local' });
@@ -270,6 +275,12 @@ jobs:
           PRIVATE="$RUNNER_TEMP/qa-private-debug"
           OCR_PRIVATE="$RUNNER_TEMP/qa-private-ocr.json"
           export PRIVATE
+          # Sanitized: only Maestro status lines; steps that type values are dropped.
+          for LOG in maestro-command body-command recovery-command; do
+            [ -f "$PRIVATE/$LOG.log" ] || continue
+            echo "QA_MAESTRO_LOG $LOG"
+            grep -viE 'input text|inputText|@|password|contrase' "$PRIVATE/$LOG.log" | cut -c1-180 | tail -14 || true
+          done
           # Only original failed-step screenshots, never final.png or recovery images.
           # Paths and OCR strings remain private; no screenshot/log/tree is uploaded.
           python3 - <<'PY' > "$RUNNER_TEMP/qa-private-images.list"
@@ -317,6 +328,12 @@ jobs:
           PRIVATE="$RUNNER_TEMP/qa-private-debug/recovery"
           OCR_PRIVATE="$RUNNER_TEMP/qa-private-recovery-ocr.json"
           export PRIVATE
+          # Sanitized: only Maestro status lines; steps that type values are dropped.
+          for LOG in maestro-command body-command recovery-command; do
+            [ -f "$PRIVATE/$LOG.log" ] || continue
+            echo "QA_MAESTRO_LOG $LOG"
+            grep -viE 'input text|inputText|@|password|contrase' "$PRIVATE/$LOG.log" | cut -c1-180 | tail -14 || true
+          done
           # Only original failed-step screenshots, never final.png or recovery images.
           # Paths and OCR strings remain private; no screenshot/log/tree is uploaded.
           python3 - <<'PY' > "$RUNNER_TEMP/qa-private-recovery-images.list"

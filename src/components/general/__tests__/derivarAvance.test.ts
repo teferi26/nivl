@@ -1,5 +1,5 @@
 import type { Completion, Quest } from '@/lib/types';
-import { derivarAvance, SEMANAS_AVANCE, DIAS_CUMPLIMIENTO } from '../derivarAvance';
+import { derivarAvance, ladoCelda, SEMANAS_AVANCE, DIAS_CUMPLIMIENTO } from '../derivarAvance';
 
 const HOY = '2026-10-21'; // miércoles
 const TODOS = [1, 2, 3, 4, 5, 6, 7];
@@ -84,5 +84,22 @@ describe('derivarAvance', () => {
     });
     expect(d.stats.find((s) => s.stat === 'FUE')).toEqual({ stat: 'FUE', total: 400, semana: 30 });
     expect(d.stats.find((s) => s.stat === 'INT')).toEqual({ stat: 'INT', total: 120, semana: 12 });
+  });
+});
+
+describe('ladoCelda', () => {
+  const HUECO = 5.5;
+  // Los anchos de tarjeta de un iPhone de 375 y 430 y de la columna de un iPad.
+  it.each([[309, 3], [364, 3], [640, 2], [692, 2], [300.5, 3]])('caben 7 columnas exactas en %p a escala %p', (ancho, escala) => {
+    const lado = ladoCelda(ancho, HUECO, escala);
+    const total = lado * 7 + HUECO * 6;
+    expect(total).toBeLessThanOrEqual(ancho);
+    expect(ancho - total).toBeLessThan(7 / escala + 1e-9);
+    expect(Number.isInteger(Number((lado * escala).toFixed(6)))).toBe(true);
+  });
+
+  it('sin ancho medido, o sin sitio, no pinta celdas', () => {
+    expect(ladoCelda(0, HUECO, 3)).toBe(0);
+    expect(ladoCelda(33, HUECO, 3)).toBe(0);
   });
 });

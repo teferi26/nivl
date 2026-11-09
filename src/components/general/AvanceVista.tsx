@@ -11,15 +11,15 @@
 //                botín de campañas y los niveles de cada modo.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState, type ReactNode } from 'react';
+import { PixelRatio, StyleSheet, Text, View } from 'react-native';
 import { Entrada, formatoMiles, ratioSeguro } from '@/components/arena';
 import { textoSiguiente } from '@/components/perfil/CaminoDeRangos';
 import { oro, radio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { STAT_ABBR, STAT_LABEL } from '@/lib/game';
 import { compararRangos, HITOS_RACHA, RANGO_DIAS, RANGOS } from '@/lib/progression';
-import type { DatosAvance } from './derivarAvance';
+import { ladoCelda, type DatosAvance, type DiaCumplimiento } from './derivarAvance';
 import {
   BarraGeneral,
   BarrasGeneral,
@@ -143,26 +143,7 @@ function Metricas({ a, informe, acciones }: { a: DatosAvance; informe: string | 
             texto={t('general:avance.cumplimiento28')}
             em={a.cumplimiento28 === null ? undefined : `${a.cumplimiento28} %`}
           />
-          <View style={styles.rejilla} accessible accessibilityLabel={t('general:avance.rejillaA11y', { dias: a.diasActivos28, pct: a.cumplimiento28 ?? 0 })}>
-            {a.dias.map((d) => {
-              const r = d.programadas > 0 ? Math.min(1, d.hechas / d.programadas) : 0;
-              return (
-                <View
-                  key={d.fecha}
-                  style={[
-                    styles.celda,
-                    d.programadas === 0
-                      ? styles.celdaLibre
-                      : r >= 1
-                        ? styles.celdaLlena
-                        : r > 0
-                          ? { backgroundColor: oroA(0.18 + 0.5 * r), borderColor: oro.borde }
-                          : styles.celdaVacia,
-                  ]}
-                />
-              );
-            })}
-          </View>
+          <RejillaCumplimiento dias={a.dias} accessibilityLabel={t('general:avance.rejillaA11y', { dias: a.diasActivos28, pct: a.cumplimiento28 ?? 0 })} />
           <View style={styles.leyenda}>
             <Text style={textoGeneral.detalle}>{t('general:avance.diasActivos', { n: a.diasActivos28 })}</Text>
             <View style={styles.leyendaDer}>
@@ -225,6 +206,38 @@ function Metricas({ a, informe, acciones }: { a: DatosAvance; informe: string | 
         </TarjetaGeneral>
       </Entrada>
     </>
+  );
+}
+
+// El lado sale del ancho medido: en iOS, un ancho en % con `aspectRatio` dentro
+// de un `flexWrap` no da altura y las celdas quedaban en rayas finas.
+function RejillaCumplimiento({ dias, accessibilityLabel }: { dias: DiaCumplimiento[]; accessibilityLabel: string }) {
+  const [ancho, setAncho] = useState(0);
+  const lado = ladoCelda(ancho, HUECO_CELDA, PixelRatio.get());
+  return (
+    <View style={styles.rejilla} accessible accessibilityLabel={accessibilityLabel} onLayout={(e) => setAncho(e.nativeEvent.layout.width)}>
+      {lado > 0
+        ? dias.map((d) => {
+            const r = d.programadas > 0 ? Math.min(1, d.hechas / d.programadas) : 0;
+            return (
+              <View
+                key={d.fecha}
+                style={[
+                  styles.celda,
+                  { width: lado, height: lado },
+                  d.programadas === 0
+                    ? styles.celdaLibre
+                    : r >= 1
+                      ? styles.celdaLlena
+                      : r > 0
+                        ? { backgroundColor: oroA(0.18 + 0.5 * r), borderColor: oro.borde }
+                        : styles.celdaVacia,
+                ]}
+              />
+            );
+          })
+        : null}
+    </View>
   );
 }
 
@@ -344,6 +357,7 @@ function Progresion({ d, arsenal, onCampanas }: { d: DatosProgresion; arsenal?: 
 }
 
 const LADO_LETRA = px(30);
+const HUECO_CELDA = px(5);
 
 const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
@@ -351,8 +365,8 @@ const styles = StyleSheet.create({
   apagado: { color: C.apagado },
   huecos: { gap: px(9) },
   eyebrow: { fontFamily: F.b, fontSize: fs(8.5), letterSpacing: 2, color: C.meta, textTransform: 'uppercase' },
-  rejilla: { flexDirection: 'row', flexWrap: 'wrap', gap: px(5), marginTop: px(10) },
-  celda: { width: `${(100 - 6 * 2.2) / 7}%`, aspectRatio: 1, borderRadius: radio.chip, borderWidth: 1 },
+  rejilla: { flexDirection: 'row', flexWrap: 'wrap', gap: HUECO_CELDA, marginTop: px(10) },
+  celda: { borderRadius: radio.chip, borderWidth: 1 },
   celdaLibre: { backgroundColor: 'transparent', borderColor: C.regla, borderStyle: 'dashed' },
   celdaVacia: { backgroundColor: C.hueco, borderColor: C.filete },
   celdaLlena: { backgroundColor: G, borderColor: G },
