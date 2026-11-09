@@ -172,7 +172,7 @@
   },
   "convivencia": {
     "titulo": "Vie commune et sécurité",
-    "cuerpo": "Un filtre automatique vérifie les noms, titres et photos avant de les montrer aux autres. Si quelque chose ne passe pas ou reste en attente, ils verront un pseudo et une image neutres. Si tu n'autorises pas le filtre pour une photo, elle attend une vérification manuelle. Tu peux signaler et bloquer n'importe qui.",
+    "cuerpo": "Harcèlement, menaces, usurpation d'identité et contenu offensant sont interdits. Un filtre automatique vérifie les noms, titres et photos avant de les montrer aux autres. Si quelque chose ne passe pas ou reste en attente, ils verront un pseudo et une image neutres. Si tu n'autorises pas le filtre pour une photo, elle attend une vérification manuelle. Tu peux signaler et bloquer n'importe qui. Ton profil garde tes données.",
     "bloqueado": "Utilisateur bloqué",
     "desbloquear": "Débloquer"
   },

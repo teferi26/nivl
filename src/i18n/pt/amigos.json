@@ -172,7 +172,7 @@
   },
   "convivencia": {
     "titulo": "Convivência e segurança",
-    "cuerpo": "Um filtro automático verifica nomes, títulos e fotos antes de os mostrar a outros. Se algo não passar ou continuar pendente, verão um pseudónimo e uma imagem neutros. Se não autorizares o filtro de uma foto, ela aguarda uma revisão manual. Podes denunciar e bloquear qualquer pessoa.",
+    "cuerpo": "Não se permite assédio, ameaças, usurpação de identidade nem conteúdo ofensivo. Um filtro automático verifica nomes, títulos e fotos antes de os mostrar a outros. Se algo não passar ou continuar pendente, verão um pseudónimo e uma imagem neutros. Se não autorizares o filtro de uma foto, ela aguarda uma revisão manual. Podes denunciar e bloquear qualquer pessoa. O teu perfil mantém os teus dados.",
     "bloqueado": "Utilizador bloqueado",
     "desbloquear": "Desbloquear"
   },
