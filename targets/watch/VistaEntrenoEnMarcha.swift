@@ -148,7 +148,7 @@ private struct MetricasEnMarcha: View {
         .foregroundStyle(Ink.ink0)
         .padding(.vertical, 2)
         .frame(maxWidth: .infinity)
-        .background(Ink.ink10)
+        .background(Ink.ink10, in: RoundedRectangle(cornerRadius: Radio.control))
         .accessibilityAddTraits(.isHeader)
     } else {
       Rotulo(texto: lineaDeporte)

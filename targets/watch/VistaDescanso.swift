@@ -84,7 +84,6 @@ struct VistaDescanso: View {
       VStack(spacing: 2) {
         Text("DESCANSO")
           .font(Tipo.inscripcion(14))
-          .tracking(3)
           .foregroundStyle(Ink.ink10)
           .accessibilityAddTraits(.isHeader)
         Rotulo(texto: "Entre series")
@@ -103,7 +102,7 @@ struct VistaDescanso: View {
             .font(Tipo.cifra(13, relativoA: .footnote))
             .frame(maxWidth: .infinity, minHeight: 36)
             .foregroundStyle(elegido == s ? Ink.ink10 : Ink.ink6)
-            .overlay(Rectangle().stroke(elegido == s ? Ink.ink10 : Ink.ink4, lineWidth: elegido == s ? 2 : 1))
+            .overlay(RoundedRectangle(cornerRadius: Radio.control).stroke(elegido == s ? Ink.ink10 : Ink.ink4, lineWidth: elegido == s ? 2 : 1))
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(s) segundos")

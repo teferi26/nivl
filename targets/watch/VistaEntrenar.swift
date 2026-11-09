@@ -46,7 +46,7 @@ struct VistaEntrenar: View {
             .font(Tipo.detalle)
             .foregroundStyle(Ink.ink9)
             .fixedSize(horizontal: false, vertical: true)
-            .listRowBackground(Trama())
+            .listRowBackground(Trama().clipShape(RoundedRectangle(cornerRadius: Radio.tarjeta)))
         }
         ForEach(DeporteReloj.enPantalla, id: \.self) { d in
           NavigationLink {
@@ -54,7 +54,7 @@ struct VistaEntrenar: View {
           } label: {
             FilaDeporte(deporte: d)
           }
-          .listRowBackground(Rectangle().fill(Ink.ink1))
+          .listRowBackground(RoundedRectangle(cornerRadius: Radio.tarjeta).fill(Ink.ink1))
           .accessibilityHint("Prepara un entreno de \(d.nombreEnPantalla.lowercased()).")
         }
         Toggle(isOn: $autoPausa) {
@@ -69,7 +69,6 @@ struct VistaEntrenar: View {
       } header: {
         Text("ENTRENAR")
           .font(Tipo.inscripcion(16))
-          .tracking(3)
           .foregroundStyle(Ink.ink10)
           .lineLimit(1)
           .minimumScaleFactor(0.7)
@@ -196,7 +195,6 @@ private struct SinPermiso: View {
       VStack(alignment: .leading, spacing: 8) {
         Text("SIN PERMISO")
           .font(Tipo.inscripcion(14))
-          .tracking(2)
           .foregroundStyle(Ink.ink10)
           .lineLimit(1)
           .minimumScaleFactor(0.7)
@@ -207,8 +205,8 @@ private struct SinPermiso: View {
           .fixedSize(horizontal: false, vertical: true)
           .padding(8)
           .frame(maxWidth: .infinity, alignment: .leading)
-          .background(Trama())
-          .overlay(Rectangle().stroke(Ink.ink4, lineWidth: 1))
+          .background(Trama().clipShape(RoundedRectangle(cornerRadius: Radio.control)))
+          .overlay(RoundedRectangle(cornerRadius: Radio.control).stroke(Ink.ink4, lineWidth: 1))
         Text(comoActivarlo)
           .font(Tipo.detalle)
           .foregroundStyle(Ink.ink8)

@@ -87,7 +87,7 @@ struct VistaComplicacion: View {
       AccessoryWidgetBackground()
       VStack(spacing: -2) {
         Text(entrada.resumen == nil ? "-" : "\(racha)")
-          .font(.custom("Cinzel-SemiBold", size: 20))
+          .font(.custom("PlayfairDisplay-Bold", size: 20))
           .minimumScaleFactor(0.5)
           .widgetAccentable()
         Text("RACHA")
@@ -100,7 +100,7 @@ struct VistaComplicacion: View {
 
   private var esquina: some View {
     Text(entrada.resumen == nil ? "-" : "\(racha)")
-      .font(.custom("Cinzel-SemiBold", size: 18))
+      .font(.custom("PlayfairDisplay-Bold", size: 18))
       .widgetCurvesContent()
       .widgetLabel {
         Text(textoPendientes)
@@ -122,7 +122,7 @@ struct VistaComplicacion: View {
       }
       .widgetAccentable()
       Text(entrada.resumen == nil ? "-" : "\(racha) días")
-        .font(.custom("Cinzel-SemiBold", size: 22))
+        .font(.custom("PlayfairDisplay-Bold", size: 22))
         .minimumScaleFactor(0.6)
       Text(textoPendientes)
         .font(.system(size: 13, weight: .medium))
@@ -153,7 +153,7 @@ struct NivlComplicacion: Widget {
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: "nivl.racha", provider: ProveedorNivl()) { entrada in
       VistaComplicacion(entrada: entrada)
-        .containerBackground(for: .widget) { Color.black }
+        .containerBackground(for: .widget) { Color(red: 0x09 / 255, green: 0x09 / 255, blue: 0x0B / 255) }
     }
     .configurationDisplayName("NIVL")
     .description("Tu racha y las misiones que te quedan hoy.")

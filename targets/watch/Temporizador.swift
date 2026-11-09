@@ -1,10 +1,11 @@
 // NIVL · Apple Watch: una cuenta atrás que no se duerme.
 //
 // Como el pomodoro del iPhone (src/focus/pomodoro.ts), no cuenta segundos:
-// guarda CUÁNDO acaba. Mientras corre, una sesión de ejecución extendida
-// (WKExtendedRuntimeSession, modo «mindfulness» en Info.plist) mantiene la
-// app delante con la muñeca bajada; al acabar, vibración. Por si el sistema
-// corta la sesión, se programa además un aviso local para el final.
+// guarda CUÁNDO acaba, así que seguir la cuenta no exige tener la app viva. Con
+// la muñeca bajada el sistema la duerme, y quien avisa al final es una
+// notificación local programada para ese instante. Con la app delante, o con un
+// entreno en marcha que la mantiene despierta, vibra ella misma. No usa el modo
+// «mindfulness»: un temporizador no es atención plena (guideline 2.5.4).
 //
 // Lo usan el FOCUS (cuando corre en el reloj) y el descanso entre series.
 
@@ -13,7 +14,7 @@ import UserNotifications
 import WatchKit
 
 @MainActor
-final class Temporizador: NSObject, ObservableObject {
+final class Temporizador: ObservableObject {
   @Published private(set) var finEn: Date?
   @Published private(set) var pausaRestante: TimeInterval?
   @Published private(set) var total: TimeInterval = 0
@@ -21,7 +22,6 @@ final class Temporizador: NSObject, ObservableObject {
 
   private let idAviso: String
   private let tituloAviso: String
-  private var sesion: WKExtendedRuntimeSession?
   private var reloj: Timer?
   private var pedirPermiso = true
 
@@ -89,7 +89,6 @@ final class Temporizador: NSObject, ObservableObject {
 
   private func correr(hasta fin: Date) {
     finEn = fin
-    arrancarSesion()
     programarAviso()
     reloj?.invalidate()
     reloj = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
@@ -101,31 +100,17 @@ final class Temporizador: NSObject, ObservableObject {
     guard let f = finEn, Date() >= f else { return }
     finEn = nil
     acabado = true
-    // Con la sesión viva, la vibración llega aunque la muñeca esté bajada.
-    if let s = sesion, s.state == .running {
-      s.notifyUser(hapticType: .notification)
-    } else {
-      WKInterfaceDevice.current().play(.notification)
-    }
-    soltar(cancelarAviso: true)
+    // Al volver de dormida ya sonó la notificación: no vibra otra vez tarde.
+    if Date().timeIntervalSince(f) < 2 { WKInterfaceDevice.current().play(.notification) }
+    soltar()
   }
 
   private func soltar(cancelarAviso: Bool = true) {
     reloj?.invalidate()
     reloj = nil
-    sesion?.invalidate()
-    sesion = nil
     if cancelarAviso {
       UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [idAviso])
     }
-  }
-
-  private func arrancarSesion() {
-    guard sesion == nil else { return }
-    let s = WKExtendedRuntimeSession()
-    s.delegate = self
-    s.start()
-    sesion = s
   }
 
   private func programarAviso() {
@@ -155,24 +140,6 @@ final class Temporizador: NSObject, ObservableObject {
       default:
         break
       }
-    }
-  }
-}
-
-extension Temporizador: WKExtendedRuntimeSessionDelegate {
-  nonisolated func extendedRuntimeSessionDidStart(_ extendedRuntimeSession: WKExtendedRuntimeSession) {}
-
-  nonisolated func extendedRuntimeSessionWillExpire(_ extendedRuntimeSession: WKExtendedRuntimeSession) {
-    // El sistema la corta en breve: el aviso local ya está programado.
-  }
-
-  nonisolated func extendedRuntimeSession(
-    _ extendedRuntimeSession: WKExtendedRuntimeSession,
-    didInvalidateWith reason: WKExtendedRuntimeSessionInvalidationReason,
-    error: Error?
-  ) {
-    Task { @MainActor in
-      if self.sesion === extendedRuntimeSession { self.sesion = nil }
     }
   }
 }

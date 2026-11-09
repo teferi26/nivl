@@ -11,7 +11,7 @@ module.exports = (config) => ({
   deploymentTarget: '11.0',
   icon: '../../assets/images/icon.png',
   colors: {
-    $accent: '#FFFFFF',
+    $accent: '#EDEAE3',
   },
   frameworks: ['SwiftUI', 'WatchConnectivity', 'WidgetKit', 'UserNotifications', 'HealthKit', 'CoreLocation'],
   entitlements: {

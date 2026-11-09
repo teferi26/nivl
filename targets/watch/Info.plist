@@ -6,12 +6,10 @@
 	<string>es</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Cinzel_600SemiBold.ttf</string>
-		<string>Cinzel_700Bold.ttf</string>
+		<string>PlayfairDisplay_700Bold.ttf</string>
 	</array>
 	<key>WKBackgroundModes</key>
 	<array>
-		<string>mindfulness</string>
 		<string>workout-processing</string>
 	</array>
 	<key>NSHealthShareUsageDescription</key>

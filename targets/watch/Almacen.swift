@@ -37,10 +37,14 @@ final class Almacen: NSObject, ObservableObject {
     modoDemo = false
     #endif
     super.init()
+    #if DEBUG
     if modoDemo {
       estado = Demo.estado()
       guardarResumen()
-    } else if let data = defaults.data(forKey: claveEstado),
+      return
+    }
+    #endif
+    if let data = defaults.data(forKey: claveEstado),
               let e = try? JSONDecoder().decode(EstadoReloj.self, from: data) {
       estado = e
     }
