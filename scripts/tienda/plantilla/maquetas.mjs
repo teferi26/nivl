@@ -138,7 +138,7 @@ const DIVIDIDA_WEB = { ...DIVIDIDA, marcoTop: 0.08, retratoAncho: 0.27, retratoR
 export const OBJETIVOS = {
   'iphone-69': { ancho: 1320, alto: 2868, medidas: TELEFONO, marco: 'telefono' },
   'iphone-63': { ancho: 1206, alto: 2622, medidas: TELEFONO, marco: 'telefono' },
-  android: { ancho: 1080, alto: 1920, medidas: { ...TELEFONO, padTop: 0.075, marcaGap: 0.04, marcoTop: 0.52, marcoAncho: 0.8 }, marco: 'telefono' },
+  android: { ancho: 1080, alto: 1920, medidas: { ...TELEFONO, padTop: 0.075, marcaGap: 0.04, marcoTop: 0.52, marcoAncho: 0.8, radio: 0.052 }, marco: 'telefono' },
   'duo-exterior': { ancho: 1398, alto: 2034, medidas: DUO_EXTERIOR, marco: 'telefono' },
   'duo-interior': { ancho: 2007, alto: 2853, medidas: TABLETA, marco: 'telefono' },
   'ipad-13': { ancho: 2064, alto: 2752, medidas: TABLETA, marco: 'tableta' },
