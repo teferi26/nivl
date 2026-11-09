@@ -10,6 +10,13 @@
 //     EXPO_PUBLIC_GALERIA=1 npx expo start --web --port 8101 --clear
 //
 // `fixtures.mjs` se relee en cada petición: se puede ampliar sin reiniciar.
+//
+// Escenarios (`ESCENARIOS` en fixtures.mjs): los elige el correo con el que se
+// entra (`sin-onboarding@nivl.test`, `sin-pago@nivl.test`; cualquier otro, la
+// cuenta completa). Viajan dentro del token, así que varios simuladores pueden
+// usar a la vez escenarios distintos. Lo que la app escribe en `profiles` se
+// recuerda por escenario hasta el siguiente login (para que un reinicio en frío
+// vea `onboarding_done`).
 
 import { createServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
@@ -21,17 +28,31 @@ const PUERTO = Number(process.env.MOCK_PORT ?? 8102);
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const RUTA_FIXTURES = join(AQUI, 'fixtures.mjs');
 
-async function fixtures() {
+async function fixtures(escenario) {
   const v = statSync(RUTA_FIXTURES).mtimeMs;
-  return (await import(`${pathToFileURL(RUTA_FIXTURES).href}?v=${v}`)).crear();
+  return await import(`${pathToFileURL(RUTA_FIXTURES).href}?v=${v}`).then((m) => m.crear(escenario));
 }
+
+const ESCENARIO_BASE = 'completo';
+/** El escenario va en el token; sin token, la cuenta completa. */
+function escenarioDe(req) {
+  const [, carga] = (req.headers.authorization ?? '').split('.');
+  if (!carga) return ESCENARIO_BASE;
+  try {
+    return JSON.parse(Buffer.from(carga, 'base64url').toString()).escenario ?? ESCENARIO_BASE;
+  } catch {
+    return ESCENARIO_BASE;
+  }
+}
+/** Lo escrito en `profiles`, por escenario. */
+const perfilEscrito = new Map();
 
 const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
 
-function sesion(usuario) {
+function sesion(usuario, escenario) {
   const expira = Math.floor(Date.now() / 1000) + 86400;
-  const access = `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ sub: usuario.id, email: usuario.email, role: 'authenticated', aud: 'authenticated', exp: expira })}.mock`;
-  return { access_token: access, refresh_token: 'mock-refresh', token_type: 'bearer', expires_in: 86400, expires_at: expira, user: usuario };
+  const access = `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ sub: usuario.id, email: usuario.email, role: 'authenticated', aud: 'authenticated', exp: expira, escenario })}.mock`;
+  return { access_token: access, refresh_token: `mock-refresh.${escenario}`, token_type: 'bearer', expires_in: 86400, expires_at: expira, user: usuario };
 }
 
 const CORS = {
@@ -78,10 +99,21 @@ createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PUERTO}`);
   const p = url.pathname;
   try {
-    const fx = await fixtures();
+    if (p.startsWith('/auth/v1/token') || p.endsWith('/auth/v1/verify')) {
+      const cuerpo = await leer(req);
+      const base = await fixtures(ESCENARIO_BASE);
+      const refresco = /^mock-refresh\.(.+)$/.exec(cuerpo?.refresh_token ?? '')?.[1];
+      const pedido = refresco ?? String(cuerpo?.email ?? '').split('@')[0];
+      const escenario = base.ESCENARIOS.includes(pedido) ? pedido : ESCENARIO_BASE;
+      if (!refresco) perfilEscrito.delete(escenario);
+      return enviar(res, 200, sesion((await fixtures(escenario)).usuario, escenario));
+    }
+    const escenario = escenarioDe(req);
+    const fx = await fixtures(escenario);
+    const escrito = perfilEscrito.get(escenario);
+    if (escrito) Object.assign(fx.tablas.profiles[0], escrito);
     if (p.startsWith('/auth/v1/')) {
       await leer(req);
-      if (p.endsWith('/token') || p.endsWith('/verify')) return enviar(res, 200, sesion(fx.usuario));
       if (p.endsWith('/user')) return enviar(res, 200, fx.usuario);
       if (p.endsWith('/signup')) return enviar(res, 200, { ...fx.usuario, confirmation_sent_at: new Date().toISOString() });
       if (p.endsWith('/settings')) return enviar(res, 200, { external: {}, mailer_autoconfirm: false });
@@ -107,6 +139,12 @@ createServer(async (req, res) => {
         return enviar(res, 200, req.method === 'HEAD' ? undefined : filas, rango);
       }
       if (req.method === 'DELETE') return enviar(res, 204);
+      if (tabla === 'profiles' && req.method === 'PATCH' && cuerpo && typeof cuerpo === 'object') {
+        perfilEscrito.set(escenario, { ...escrito, ...cuerpo });
+        Object.assign(fx.tablas.profiles[0], cuerpo);
+        const fila = fx.tablas.profiles[0];
+        return enviar(res, 200, uno ? fila : [fila]);
+      }
       const eco = Array.isArray(cuerpo) ? cuerpo : [cuerpo ?? {}];
       return enviar(res, req.method === 'POST' ? 201 : 200, uno ? eco[0] : eco);
     }

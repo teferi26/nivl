@@ -1,0 +1,14 @@
+# Diagnostic recovery ONLY. The original failed QA remains failed even if this passes.
+# Resume the SAME native demo session, no clearState/keychain and no new login.
+appId: com.teferi.nivl
+name: NIVL 1.1 diagnostic recovery (not original QA PASS)
+---
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible: '^(Ahora no|Not Now|No guardar|Más tarde)$'
+    commands:
+      - tapOn: '^(Ahora no|Not Now|No guardar|Más tarde)$'
+- runFlow: login-postchecks.yaml
+- runFlow: onboarding-11-body.yaml

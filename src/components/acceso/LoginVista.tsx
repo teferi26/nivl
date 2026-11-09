@@ -100,7 +100,7 @@ export function LoginVista(p: LoginVistaProps) {
   const conFachada = useContext(ConFachada);
 
   return (
-    <Screen contentStyle={styles.contenido}>
+    <Screen contentStyle={[styles.contenido, plegada && styles.contenidoTeclado]}>
       <Entrada indice={0}>
         {conFachada ? null : plegada ? (
           <Text style={styles.marcaPlegada} accessibilityRole="header" maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
@@ -374,6 +374,8 @@ const micro = {
 
 const styles = StyleSheet.create({
   contenido: { flexGrow: 1, justifyContent: 'center', paddingTop: space.s6 },
+  // Con el teclado fuera, el formulario sube: centrado, en iPad apaisado la contraseña quedaba debajo del teclado.
+  contenidoTeclado: { justifyContent: 'flex-start' },
   portada: { alignItems: 'center', marginBottom: space.s6 },
   marca: {
     fontFamily: tipo.display.family,

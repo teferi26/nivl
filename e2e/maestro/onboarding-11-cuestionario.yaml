@@ -1,0 +1,50 @@
+# The Onix questionnaire, one question per screen. Answers avoid every health option
+# (no "Cuerpo y energia" or "Mente y calma", general goal), so no health consent is requested.
+appId: com.teferi.nivl
+name: NIVL 1.1 questionnaire (no health data)
+---
+- extendedWaitUntil:
+    visible: '^¿En qué quieres mejorar\?$'
+    timeout: 30000
+- tapOn: '^Disciplina y hábitos$'
+- takeScreenshot: 'qa-02-cuestionario'
+- tapOn: '^Continuar$'
+- extendedWaitUntil:
+    visible: '^¿Qué te describe mejor\?$'
+    timeout: 10000
+- tapOn: '^Quiero mi mejor versión$'
+- extendedWaitUntil:
+    visible: '^¿Qué quieres conseguir\?$'
+    timeout: 10000
+- tapOn: '^Tener disciplina de verdad$'
+- extendedWaitUntil:
+    visible: '^¿Cuánto llevas queriendo esto\?$'
+    timeout: 10000
+- tapOn: '^Unos meses$'
+- extendedWaitUntil:
+    visible: '^¿Qué te ha frenado hasta ahora\?$'
+    timeout: 10000
+- tapOn: '^Empiezo y lo dejo$'
+- tapOn: '^Continuar$'
+- extendedWaitUntil:
+    visible: '^¿Has tenido alguna vez un coach o entrenador\?$'
+    timeout: 10000
+- tapOn: '^Nunca$'
+- extendedWaitUntil:
+    visible: '^Voy a ser crudo contigo\.$'
+    timeout: 10000
+- takeScreenshot: 'qa-03-crudo'
+- tapOn: '^Directo, pero con tacto$'
+- extendedWaitUntil:
+    visible: '^¿Cuánto tiempo puedes darle cada día\?$'
+    timeout: 10000
+- tapOn: '^30 minutos$'
+- extendedWaitUntil:
+    visible: '^¿Cuándo rindes mejor\?$'
+    timeout: 10000
+- tapOn: '^Media mañana$'
+- extendedWaitUntil:
+    visible: '^Ya lo veo$'
+    timeout: 10000
+- takeScreenshot: 'qa-04-curva'
+- tapOn: '^Ya lo veo$'
