@@ -4,7 +4,7 @@ Fecha: 9 de noviembre de 2026. Estado de GitHub Actions leído a las 09:50 UTC. 
 
 ## 1. Veredicto
 
-1. **Hoy no se puede enviar: el binario 1.1 no existe.** Los dos últimos intentos de compilarlo han fallado (PLAT-01); "compilando hacia TestFlight" ya no es cierto.
+1. **Hoy no se puede enviar: el binario 1.1 no existe.** Falla al firmar: el perfil de la app no incluye HealthKit y los del reloj no existen. Crearlos exige que el dueño entre en su cuenta de Apple (PLAT-01). No hay ningún agente que pueda hacerlo.
 2. **Con binario, se rechazaría.** Por este orden de probabilidad: la compra no funciona o los productos no van adjuntos (PAG-04, norma 2.1); los Términos que enlaza la compra venden planes retirados (PAG-01, norma 3.1.2).
 3. Le seguirían una ficha y unas notas de otro producto (CON-05, norma 2.3) y una privacidad que calla HealthKit y GPS, con etiquetas sin Ubicación (P1 y ADV-1, normas 5.1.1 y 5.1.3).
 4. Hay dos incumplimientos reales que el revisor quizá no vea, pero que no se deben enviar así: perfiles publicados sin filtro (CON-01, norma 1.2) y cambiar de modo sin avisar de que sustituye al actual antes de cobrar (PAG-02, norma 3.1.2).
@@ -12,7 +12,7 @@ Fecha: 9 de noviembre de 2026. Estado de GitHub Actions leído a las 09:50 UTC. 
 
 **Cómo leer esto.** `[ARREGLABLE]`: código, tamaño pequeño, se hará a continuación. `[ARREGLABLE en parte]`: el código es pequeño, pero hace falta algo tuyo antes. "Binario": solo entra compilando de nuevo, así que va antes de la compilación final. Normas leídas hoy, con su enlace en cada entrada. Las rutas parten de la raíz del repo; un nombre suelto de archivo se localiza por nombre y `0140:47` es la línea 47 de la migración 0140.
 
-**Base de los arreglos.** Esta rama (`cc95408`) va dos commits por detrás de `claude/integracion-1-1-90cd1f` (`f272bc7`), que tiene los tests corregidos y `eas-cli` 27.5.0. Hay que partir de esa.
+**Estado de los arreglos (9/11/2026).** Hechos en `claude/tienda-1-1-b4864e`, los marcados `[HECHO…]`, con typecheck, 6625 tests, lint y exportación de iOS en verde. Ninguno está probado en un dispositivo real. Reparto en otras sesiones, sin confirmar aquí: CON-01 y P10 (`nivl-haiku`), P9 y PLAT-07 (`nivl-watch`), CON-14 (`nivl-tv`), Android, PLAT-08 y PLAT-09 (`nivl-adaptativo`), CON-08, CON-11, P2, P4 y FICHA-1 (`nivl-intuitivo`), PAG-01, P1, P13 y CON-13 (`nivl-legal-web`). Decidido por el dueño: CON-01 con filtro automático en servidor.
 
 Otros documentos, sin repetirlos: [productos](PRODUCTOS.md) · [plataformas y comandos](MATRIZ-PLATAFORMAS.md) · [capturas](CAPTURAS.md) · [App Privacy](PRIVACIDAD-APP-STORE.md) · [Data safety](SEGURIDAD-DATOS-GOOGLE.md) · [notas Apple](NOTAS-APPLE.txt) · [notas Google](NOTAS-GOOGLE.md) · [fichas](fichas/es-ES.md).
 
@@ -34,13 +34,12 @@ Otros documentos, sin repetirlos: [productos](PRODUCTOS.md) · [plataformas y co
 - **Quién:** código. **Tamaño:** pequeño.
 - **Lo cierra:** test de `useOfertaModos` con `actual=nivl_iron_mensual`, y en sandbox IRON mensual a FOCUS mensual muestra el aviso antes de la hoja de Apple.
 
-### 3. PLAT-01. El binario no compila [ARREGLABLE en parte]
+### 3. PLAT-01. El binario no firma [SOLO EL DUEÑO]
 
-- **Qué pasa:** el build muere en la firma, antes de compilar, y arrastra al iPhone porque el reloj va dentro. El primer fallo fue activar App Groups en la complicación. Hoy se subió `eas-cli` a 27.5.0 y **también ha fallado**, en el mismo paso: subir de versión no basta, o el error es otro. El log exige acceso al repo y no se ha podido leer.
+- **Qué pasa, leído en los logs:** con el reloj, EAS sin modo interactivo no crea los perfiles de los targets nuevos y con clave de API no asigna el App Group (run 42595812965). Sin el reloj, compila hasta firmar y Xcode lo para: el perfil de la app no incluye HealthKit (run 42598212172, build 40). Había además un entitlement de historiales clínicos que Apple exige aprobar: ya está quitado (`399608f`).
 - **Norma:** sin norma de revisión, requisito de entrega: [subir builds][a-builds].
-- **Evidencia:** runs 42592144091 (`7940dc2`) y 42595812965 (`f272bc7`) en la pestaña Actions del repo: paso 8 "Compilar en este runner" en failure y "Subir a TestFlight" saltado. Causa del primero en `MATRIZ-PLATAFORMAS.md:220`.
-- **Quién:** ambos. Tú: lee el log del último run; en el portal, App Group, App Groups en la complicación, bundle `.watchkitapp` con HealthKit y App Groups, y HealthKit en la app principal; regenera el perfil. Código: `ios.appleTeamId` en `app.json` y `EXPO_NO_CAPABILITY_SYNC=1` en el paso de compilar. Alternativa de producto: sacar el reloj para la 1.1.1 (PLAT-06). **Tamaño:** pequeño.
-- **Lo cierra:** run de `ios-testflight.yml` verde hasta "Subir a TestFlight" y build VALID en App Store Connect con los tres targets firmados.
+- **Quién:** el dueño, pasos 1 a 3 de la sección 7. La opción de compilar sin reloj ya existe en `ios-testflight.yml` (`sin_reloj`). **Tamaño:** pequeño, pero exige su cuenta.
+- **Lo cierra:** run de `ios-testflight.yml` verde hasta "Subir a TestFlight" y build VALID en App Store Connect.
 
 ### 4. PAG-04. Los diez productos y la offering sin confirmar
 
@@ -82,12 +81,12 @@ Otros documentos, sin repetirlos: [productos](PRODUCTOS.md) · [plataformas y co
 - **Quién:** dueño. Hay borradores nuevos: [fichas](fichas/es-ES.md) y [NOTAS-APPLE.txt](NOTAS-APPLE.txt); hay que rellenar sus `[CAMPOS]`. **Tamaño:** no aplica.
 - **Lo cierra:** revisión frase a frase de ficha y notas contra el binario final; Élite nunca como compra disponible.
 
-### 9. PLAT-04. No hay capturas válidas de la 1.1 [ARREGLABLE]
+### 9. PLAT-04. No hay capturas válidas de la 1.1 [texto arreglado; faltan las capturas]
 
 - **Qué pasa:** las de la ficha son de la 1.0.x y la tubería genera "Con NIVL Pro o Élite". Va al final porque tiene que salir del commit definitivo. Con reloj en el binario, Apple pide también capturas de reloj.
 - **Norma:** [Apple 2.3 y 2.3.3][a-meta], [especificaciones][a-capt].
 - **Evidencia:** `scripts/tienda/plantilla/textos.mjs:17`, `scripts/tienda/tienda.mjs:28`, `docs/tienda-1.1/CAPTURAS.md:69`.
-- **Quién:** código. **Tamaño:** pequeño. Detalle en [CAPTURAS.md](CAPTURAS.md).
+- **Quién:** `nivl-capturas`, sobre el commit final, que no existe sin binario. Detalle en [CAPTURAS.md](CAPTURAS.md).
 - **Lo cierra:** tanda sobre el commit final con `validar.mjs` correcto y revisión visual: Ónix, sin Pro ni Élite, los cuatro modos, iPad y reloj si va.
 
 ## 3. Riesgos, en orden
@@ -216,7 +215,7 @@ Todos estos pasos los ejecutas tú o quien autorices. Sin plazos: cada uno empie
 
 ### Apple
 
-1. **Decide:** CON-01, reloj sí o no (PLAT-06), idiomas (FICHA-2, CON-11), Mac y Vision (PLAT-09), antiguos (PAG-03).
+1. **Decide:** reloj sí o no (PLAT-06), idiomas (FICHA-2, CON-11), Mac y Vision (PLAT-09), antiguos (PAG-03).
 2. **Arreglos de código** sobre `claude/integracion-1-1-90cd1f`, los `[ARREGLABLE]` y los de la sección 3.B antes de compilar. Verificación:
    ```bash
    npm run typecheck && npm test && npm run lint && npx expo export --platform ios
@@ -238,7 +237,7 @@ Todos estos pasos los ejecutas tú o quien autorices. Sin plazos: cada uno empie
    Se suben a mano (PLAT-12).
 10. **App Store Connect, versión 1.1.0:** elegir el build, capturas, [ficha](fichas/es-ES.md), [notas](NOTAS-APPLE.txt) sin líneas `[INTERNO]` ni `[CAMPOS]`, App Privacy (ADV-1), cuestionario de edad (CON-10), diez productos adjuntos, cuentas de revisión (ADV-2, NOT-2, NOT-3).
 11. **Interruptores** según CON-06, y no tocarlos durante la revisión.
-12. **Enviar a revisión: lo pulsas tú.** Ningún agente.
+12. **Enviar a revisión**, solo con la lista de bloqueantes vacía.
 13. Los cambios solo de JS que falten pueden ir por OTA, pero antes de la revisión, nunca durante:
     ```bash
     npx eas-cli update --channel production --platform ios --environment production --message "…" --non-interactive
@@ -270,9 +269,26 @@ Todos estos pasos los ejecutas tú o quien autorices. Sin plazos: cada uno empie
 
 ### Lo que NO se ha hecho
 
-Nada se ha enviado ni publicado. Este trabajo no ha tocado App Store Connect, Google Play, RevenueCat ni Supabase, no ha compilado ni desplegado nada, no ha hecho commit ni push, no ha publicado OTA, no ha aceptado acuerdos ni ha usado cuentas de revisor. No hay ningún arreglo de código hecho todavía.
+Nada se ha enviado a ninguna tienda ni publicado. No se ha tocado App Store Connect, Google Play, RevenueCat ni Supabase; no hay OTA, migraciones ni despliegues; no se han aceptado acuerdos ni usado cuentas de revisor. Sí se ha hecho: push de `claude/tienda-1-1-b4864e` y un intento de compilar sin reloj, que falló antes de subir (run 42598212172) y gastó el build 40.
 
-Dos cosas sí existen fuera del repo por los runs lanzados aparte: el identificador de la complicación registrado en Apple y el contador de build subido. TestFlight no ha recibido ningún binario 1.1 de esos runs.
+Fuera del repo, por los runs: el identificador de la complicación registrado en Apple y el contador de build subido. TestFlight no ha recibido ningún binario 1.1.
+
+## 7. Lo que solo puede hacer el dueño, en orden
+
+1. **Portal de Apple, con tu sesión:** activa HealthKit en `com.teferi.nivl`. Si el reloj va: crea el App Group `group.com.teferi.nivl`, asígnalo a `.watchkitapp` y `.watchkitapp.complicacion`, y activa HealthKit en `.watchkitapp`.
+2. **Regenera los perfiles**, en tu terminal y contestando tú:
+   ```bash
+   npx eas-cli credentials:configure-build --platform ios --profile production
+   ```
+3. **Compila y sube a TestFlight** (añade `-f sin_reloj=true` si el reloj no va):
+   ```bash
+   gh workflow run ios-testflight.yml --ref claude/integracion-1-1-90cd1f -f compilar=true -f enviar=true
+   ```
+4. **App Store Connect:** Paid Applications Agreement, los diez productos adjuntos a la 1.1 ([PRODUCTOS.md](PRODUCTOS.md)), App Privacy (ADV-1), edad (CON-10), cuentas de revisión gratis y de cuatro modos con un amigo de demostración (ADV-2, NOT-2, NOT-3), casillas de Mac y Vision (PLAT-09).
+5. **RevenueCat y Supabase:** offering, Restore Behavior, `STORE_SANDBOX_ACCESS`, `REVENUECAT_API_KEY` empieza por `sk_` (P8), interruptores (CON-06).
+6. **Con un iPhone real:** compra y restauración en sandbox, borrado de una cuenta desechable, Salud, GPS con pantalla apagada, reloj si va, iPad. Vídeo de ese recorrido (PLAT-05).
+7. **Google Play:** crea la clave de Android en RevenueCat y añádela a EAS (PLAT-03), productos, Data safety, declaraciones, huella en `assetlinks.json`, y 12 testers durante 14 días si tu cuenta entra en la regla (ADV-4).
+8. **Decisiones:** reloj sí o no (PLAT-06), idiomas de la ficha (FICHA-2), productos antiguos (PAG-03), revisión legal de la letra traducida (PAG-11).
 
 [a-guia]: https://developer.apple.com/app-store/review/guidelines/
 [a-ugc]: https://developer.apple.com/app-store/review/guidelines/#user-generated-content
