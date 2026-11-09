@@ -47,7 +47,9 @@ Otros documentos, sin repetirlos: [productos](PRODUCTOS.md) · [plataformas y co
 
 - **Hecho por API el 09/11/2026:** los diez en el grupo `NIVL`, 165 territorios como los de Pro, precios por equalización desde España, 7 días gratis solo en los cinco anuales. Localizados en es-ES, en-US, en-GB y fr-FR. Comprobado leyendo la API. Los antiguos, intactos.
 - **RevenueCat iOS, configurado en el panel (lo comunica otra sesión, no comprobado aquí):** los diez productos, offering `modos` como Current con diez paquetes, `default` activa, In-App Purchase Key válida, Restore Behavior «Transfer to new App User ID», Sandbox access «Anybody», webhook activo. Sin comprobar: los entornos por evento del webhook. Android sin tocar.
-- **Falta:** los diez siguen en `MISSING_METADATA` porque cada uno pide la captura de revisión de la pantalla de compra real, que hará el dueño desde TestFlight. Después, adjuntarlos a la 1.1 y comprar en sandbox.
+- **Captura de revisión subida a los diez** (proceso de Apple terminado): sale de la app real en simulador, con datos ficticios y sin StoreKit; la nota de cada producto se lo dice a Apple. Si la rechazan, se sustituye por una de TestFlight.
+- **Falta:** los diez siguen en `MISSING_METADATA` aunque por API tienen 165 territorios, 165 precios, localizaciones, captura y, en anuales, prueba. La API no dice qué falta. La página de cada producto en App Store Connect lo indica.
+- **Adjuntar a la 1.1:** la API solo tiene `subscriptionSubmissions`, que los manda a revisión; por eso no se ha usado. Se hace en el momento del envío.
 - **Norma:** [Apple 2.1][a-compl] y [3.1.1][a-iap], [Play Billing][g-billing].
 - **Quién:** el dueño, sección 7. **Lo cierra:** estado `READY_TO_SUBMIT` en los diez y compra sandbox de cada uno con `mis_modos` correcto.
 
