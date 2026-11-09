@@ -9,6 +9,7 @@
     "userInterfaceStyle": "dark",
     "backgroundColor": "#000000",
     "ios": {
+      "appleTeamId": "X5D8A42K4R",
       "bundleIdentifier": "com.teferi.nivl",
       "supportsTablet": true,
       "associatedDomains": [
