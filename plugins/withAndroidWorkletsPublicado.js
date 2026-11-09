@@ -8,9 +8,10 @@
 // arquitecturas y con una sola. Aquí, al terminar la parte nativa de worklets,
 // se publica la biblioteca donde reanimated la espera y se garantiza ese orden.
 //
-// Si una versión de reanimated deja de usar esa ruta, esto no molesta: solo
-// copia un archivo de más. Comprobado después por `scripts/ci/comprobar-aab.mjs`
-// (el AAB existe y su manifiesto es el esperado).
+// Solo para compilar en local. En CI (EAS local en Linux) la carpeta ya se
+// rellena sola, y con esta copia reanimated moría al enlazar con «undefined
+// symbol: worklets::…» (run 42701320246); sin ella, la 1.0.11 compiló con estas
+// mismas versiones.
 
 const { withProjectBuildGradle } = require('expo/config-plugins');
 
@@ -18,7 +19,7 @@ const MARCA = '// NIVL: withAndroidWorkletsPublicado';
 
 const BLOQUE = `
 ${MARCA}
-subprojects { sub ->
+if (System.getenv('CI') == null && System.getenv('EAS_BUILD') == null) subprojects { sub ->
   if (sub.name == 'react-native-worklets') {
     sub.afterEvaluate {
       [Debug: ['Debug', 'debug'], Release: ['RelWithDebInfo', 'release']].each { variante, carpetas ->
