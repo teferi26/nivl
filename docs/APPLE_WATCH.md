@@ -28,7 +28,7 @@ La carpeta de la complicación tiene que ordenarse **después** de `watch` (el p
 3. **Completar sin el iPhone** (opción b del plan): leer la sesión de Supabase desde un keychain compartido y llamar a una RPC nueva que haga en el servidor las validaciones que hoy hace `completeQuest` en el cliente. Es migración y despliegue: queda planificado, no hecho.
 4. **FOCUS**: el reloj sigue y manda en el pomodoro del iPhone solo con FOCUS montado. Sin él, cuenta en el reloj como cronómetro que no registra sesión ni paga.
 5. **IRON**: el reloj enseña la serie que toca y cuenta el descanso; las series se siguen apuntando en el iPhone. El descanso sale de las repeticiones (`descansoSugerido`, doctrina de `knowledge.ts`) porque la prescripción no guarda descanso.
-6. **Ejecución extendida**: `WKBackgroundModes = mindfulness` (una sola clase por app). Se usa para FOCUS y para el descanso; si App Review lo discute para el gimnasio, la alternativa es un `HKWorkoutSession` (ya hay HealthKit: ver «Medición real»).
+6. **Temporizadores (FOCUS y descanso)**: no usan ejecución extendida ni el modo `mindfulness` (guideline 2.5.4). Guardan cuándo acaban; con la muñeca bajada avisa una notificación local programada para ese instante, y sin permiso de notificaciones no hay aviso hasta abrir la app. Con la app delante o con un entreno en marcha vibra el propio reloj. Si se quiere vibración garantizada en el gimnasio, el camino es abrir un `HKWorkoutSession` de fuerza.
 7. **Idioma**: la app del reloj está solo en español en la v1.
 
 ## Medición real (HealthKit, entrenos y GPS)
@@ -68,6 +68,14 @@ Reglas pactadas con nivl-game-balancer: solo paga lo de hoy (fecha local de `fin
 - Importación de Salud sin datos reales: en iOS 27 el diálogo de Salud pregunta cuánto historial compartir, así que lo anterior a lo elegido puede no llegar.
 
 Para repetir la sesión: `xcrun simctl location <reloj> start --speed=3 --interval=1 <puntos>` y lanzar con `-nivlAuto carrera -nivlAutoSegundos 45` (solo DEBUG). Con `-nivlBuzonPrueba YES`, solo el envío del reloj.
+
+### Lista de salida 1.1 (P5, P6, P9, CON-16, PLAT-07)
+
+- P5: `PrivacyInfo.xcprivacy` en reloj (UserDefaults y marcas de fecha de ficheros) y complicación (App Group). Se confirma al subir: sin aviso ITMS-91053.
+- P6: solo `NSLocationWhenInUseUsageDescription`, y el permiso que se pide es «al usarse». Se confirma con una carrera real y el indicador azul.
+- P9: sin `mindfulness`. Con reloj real hay que comprobar que la notificación llega con la muñeca bajada.
+- CON-16: `Demo.swift` solo existe en DEBUG. Las capturas de reloj de la tienda deben salir de un build Debug.
+- PLAT-07: Ónix (fondo #09090B, botón #EDEAE3, oro #C9A961 y Playfair) en app y complicación. Las complicaciones reales cogen el tinte de la esfera; se ven en un reloj real.
 
 ### Qué hay que dar de alta en Apple
 

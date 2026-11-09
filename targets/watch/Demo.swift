@@ -1,6 +1,8 @@
 // NIVL · Apple Watch: el día de ejemplo (el mismo que src/watch/demo.ts).
 // Solo con el interruptor de demo (`-nivlDemo YES`): sin iPhone ni servidor.
+// No existe en Release: nada de esto llega a la tienda.
 
+#if DEBUG
 import Foundation
 
 enum Demo {
@@ -92,3 +94,4 @@ enum Demo {
     return try? JSONDecoder().decode(EntrenoMedido.self, from: Data(json.utf8))
   }
 }
+#endif

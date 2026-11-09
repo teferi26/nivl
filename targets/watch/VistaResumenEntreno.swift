@@ -22,7 +22,7 @@ struct ResumenEntrenoVista: View {
       VStack(alignment: .leading, spacing: 8) {
         if let r = resumen {
           cabecera(r)
-          Grano().frame(height: 8)
+          HiloOro()
           ForEach(filas(r), id: \.etiqueta) { fila($0) }
           parciales(r)
           Text(enDisco
@@ -51,7 +51,6 @@ struct ResumenEntrenoVista: View {
     VStack(alignment: .leading, spacing: 2) {
       Text("ENTRENO CERRADO")
         .font(Tipo.inscripcion(13))
-        .tracking(2)
         .foregroundStyle(Ink.ink10)
         .lineLimit(1)
         .minimumScaleFactor(0.6)

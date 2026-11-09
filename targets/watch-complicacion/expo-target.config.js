@@ -9,8 +9,8 @@ module.exports = (config) => ({
   bundleIdentifier: `${config.ios.bundleIdentifier}.watchkitapp.complicacion`,
   deploymentTarget: '11.0',
   colors: {
-    $accent: '#FFFFFF',
-    $widgetBackground: '#000000',
+    $accent: '#EDEAE3',
+    $widgetBackground: '#09090B',
   },
   frameworks: ['SwiftUI', 'WidgetKit'],
   entitlements: {
