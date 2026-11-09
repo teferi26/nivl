@@ -83,7 +83,7 @@ export const TEXTOS = {
   },
   avances: {
     titular: ['Cada marca', 'cuenta'],
-    sub: ['Peso, fotos y tendencias.', 'Tu historia, en cifras.'],
+    sub: ['XP, cumplimiento y racha.', 'Tu historia, en cifras.'],
   },
   resumen: {
     titular: ['Cada semana', 'rindes cuentas'],
