@@ -41,10 +41,11 @@ Otros documentos, sin repetirlos: [productos](PRODUCTOS.md) · [plataformas y co
 - **Quién:** el dueño, pasos 1 a 3 de la sección 7. La opción de compilar sin reloj ya existe en `ios-testflight.yml` (`sin_reloj`). **Tamaño:** pequeño, pero exige su cuenta.
 - **Lo cierra:** run de `ios-testflight.yml` verde hasta "Subir a TestFlight" y build VALID en App Store Connect.
 
-### 4. PAG-04. Los diez productos [CREADOS en Apple; falta captura, RevenueCat y prueba]
+### 4. PAG-04. Los diez productos [CREADOS en Apple y RevenueCat iOS; falta captura y prueba]
 
 - **Hecho por API el 09/11/2026:** los diez en el grupo `NIVL`, 165 territorios como los de Pro, precios por equalización desde España, 7 días gratis solo en los cinco anuales. Localizados en es-ES, en-US, en-GB y fr-FR. Comprobado leyendo la API. Los antiguos, intactos.
-- **Falta:** los diez siguen en `MISSING_METADATA` porque cada uno pide la captura de revisión de la pantalla de compra real. Offering en RevenueCat, adjuntarlos a la 1.1 y compra en sandbox.
+- **RevenueCat iOS, configurado en el panel (lo comunica otra sesión, no comprobado aquí):** los diez productos, offering `modos` como Current con diez paquetes, `default` activa, In-App Purchase Key válida, Restore Behavior «Transfer to new App User ID», Sandbox access «Anybody», webhook activo. Sin comprobar: los entornos por evento del webhook. Android sin tocar.
+- **Falta:** los diez siguen en `MISSING_METADATA` porque cada uno pide la captura de revisión de la pantalla de compra real, que hará el dueño desde TestFlight. Después, adjuntarlos a la 1.1 y comprar en sandbox.
 - **Norma:** [Apple 2.1][a-compl] y [3.1.1][a-iap], [Play Billing][g-billing].
 - **Quién:** el dueño, sección 7. **Lo cierra:** estado `READY_TO_SUBMIT` en los diez y compra sandbox de cada uno con `mis_modos` correcto.
 
@@ -280,7 +281,7 @@ Fuera del repo, por los runs: el identificador de la complicación registrado en
    gh workflow run ios-testflight.yml --ref claude/integracion-1-1-90cd1f -f compilar=true -f enviar=true
    ```
 4. **App Store Connect, a mano:** App Privacy con Ubicación (ADV-1), cuestionario de edad (CON-10), Paid Applications Agreement, cuentas de revisión gratis y de cuatro modos con un amigo de demostración (ADV-2, NOT-2, NOT-3), casillas de Mac y Vision (PLAT-09). Captura de la pantalla de compra real en cada uno de los diez productos, y adjuntarlos a la 1.1.
-5. **RevenueCat, con tu cuenta:** no hay clave de administración configurada aquí. Pasos de [PRODUCTOS.md](PRODUCTOS.md) sección 9: importar los diez productos y crear la offering `modos`; revisar Restore Behavior y webhook. En Supabase: `STORE_SANDBOX_ACCESS`, `REVENUECAT_API_KEY` empieza por `sk_` (P8) e interruptores (CON-06). `EXPO_PUBLIC_RC_IOS_KEY` sí está en EAS (leído en el log del build, PAG-05).
+5. **Supabase y RevenueCat:** comprobar `STORE_SANDBOX_ACCESS`, que `REVENUECAT_API_KEY` empieza por `sk_` (P8), los interruptores (CON-06) y los entornos por evento del webhook. RevenueCat Android sigue sin configurar.
 6. **Con un iPhone real:** compra y restauración en sandbox, borrado de una cuenta desechable, Salud, GPS con pantalla apagada, reloj si va, iPad. Vídeo de ese recorrido (PLAT-05).
 7. **Google Play:** crea la clave de Android en RevenueCat y añádela a EAS (PLAT-03), productos, Data safety, declaraciones, huella en `assetlinks.json`, y 12 testers durante 14 días si tu cuenta entra en la regla (ADV-4).
 8. **Decisiones:** reloj sí o no (PLAT-06), idiomas de la ficha (FICHA-2), productos antiguos (PAG-03), revisión legal de la letra traducida (PAG-11).
