@@ -67,7 +67,7 @@ function correr(cmd, args, { cwd, env, log, archivoLog } = {}) {
 }
 
 /** El entorno del empaquetado y de prebuild: sin ninguna clave real. */
-function entornoArnes() {
+export function entornoArnes() {
   const env = { ...process.env };
   for (const k of Object.keys(env)) {
     if (k.startsWith('EXPO_PUBLIC_') || k === 'EXPO_TOKEN' || k.startsWith('NIVL_SHOTS_')) delete env[k];
@@ -111,7 +111,7 @@ function asegurarDependencias(src, log) {
 }
 
 /** Deja la copia como el commit más el arnés. Idempotente. */
-function prepararCopia(src, sha) {
+export function prepararCopia(src, sha) {
   correr('git', ['checkout', sha, '--', 'package.json', 'app.json', 'metro.config.js'], { cwd: src });
   const destino = path.join(src, DESTINO_ARNES);
   fs.rmSync(destino, { recursive: true, force: true });
@@ -125,6 +125,10 @@ function prepararCopia(src, sha) {
   const fApp = path.join(src, 'app.json');
   const app = JSON.parse(fs.readFileSync(fApp, 'utf8'));
   app.expo.ios.bundleIdentifier = BUNDLE_ID;
+  if (app.expo.android) {
+    app.expo.android.package = BUNDLE_ID;
+    delete app.expo.android.intentFilters;
+  }
   app.expo.ios.associatedDomains = [];
   app.expo.ios.entitlements = {};
   app.expo.updates = { enabled: false };

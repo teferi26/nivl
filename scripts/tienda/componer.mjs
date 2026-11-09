@@ -294,7 +294,7 @@ export async function cabeceraPng(ruta) {
   }
 }
 
-async function aplanar(origen, destino) {
+export async function aplanar(origen, destino) {
   await ejecutar('ffmpeg', ['-y', '-v', 'error', '-i', origen, '-frames:v', '1', '-vf', 'format=rgb24', '-update', '1', destino]);
 }
 

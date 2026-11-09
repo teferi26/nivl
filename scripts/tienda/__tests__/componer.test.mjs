@@ -7,6 +7,7 @@ import { TEMA, cssTema, mezclarTema } from '../plantilla/tema.mjs';
 const SALIDAS = {
   'iphone-69': [1320, 2868],
   'iphone-63': [1206, 2622],
+  android: [1080, 1920],
   'duo-exterior': [1398, 2034],
   'duo-interior': [2007, 2853],
   'ipad-13': [2064, 2752],

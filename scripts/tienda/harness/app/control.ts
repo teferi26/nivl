@@ -7,6 +7,7 @@
 // Cada orden deja el resultado en Documents/tienda-estado.json. Navega con el
 // router real y toca el ScrollView y los botones reales de la pantalla.
 import * as FS from 'expo-file-system/legacy';
+import { Platform } from 'react-native';
 import { router } from 'expo-router';
 import guion from './escenas.json';
 
@@ -28,6 +29,8 @@ let escenaActual: Escena | null = null;
 let cola: Promise<unknown> = Promise.resolve();
 
 async function escribirEstado(e: Record<string, unknown>): Promise<void> {
+  // Android: una build Release no deja leer sus archivos desde adb; el estado va por logcat.
+  if (Platform.OS === 'android') console.log(`TIENDA_ESTADO ${JSON.stringify({ ...e, avisos: estadoTienda.avisos })}`);
   try {
     await FS.writeAsStringAsync(`${FS.documentDirectory}tienda-estado.json`, JSON.stringify({ ...e, avisos: estadoTienda.avisos }));
   } catch (err) {
