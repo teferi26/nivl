@@ -1,7 +1,7 @@
 BORRADOR INTERNO (1.1.0): quitar esta linea y todas las [INTERNO]; rellenar y borrar las marcas [CAMPOS]. Credenciales solo en los campos privados de App Store Connect, nunca aqui. Maximo 4.000 caracteres tras rellenar.
 [INTERNO] No enviar hasta cerrar: build 1.1 real (PLAT-01), diez productos adjuntos y STORE_SANDBOX_ACCESS vacio o all (PAG-04), Terminos (PAG-01), Privacidad (P1), etiquetas App Privacy (ADV-1), capturas (PLAT-04).
-[INTERNO] SOCIAL describe lo que hay hoy (0087). Si CON-01 cambia, reescribir ese bloque. Mientras amigos:convivencia.cuerpo diga que hay revision previa (CON-02), la app contradice esta nota.
-[INTERNO] Si el reloj sale del binario, borrar WATCH y la mencion en PLATFORMS. Si se retira mindfulness (P9), quitarlo de WATCH. Si se renombra la fila NIVL Pro, cambiar la ruta.
+[INTERNO] SOCIAL describe lo que hay hoy (0087). Si CON-01 cambia, reescribir ese bloque.
+[INTERNO] Si el reloj sale del binario, borrar WATCH y la mencion en PLATFORMS. Si se retira mindfulness (P9), quitarlo de WATCH.
 [INTERNO] Apple TV no va en la 1.1 y no se nombra aqui (CON-14): PLATFORMS lo cubre sin citarla. No afirmar el video hasta que exista.
 [INTERNO] Antes de enviar: modos_activos encendido, prueba_auto_activa apagado, idiomas decididos, y no tocarlos durante la revision (CON-06).
 
@@ -17,7 +17,7 @@ Credentials are in the App Review sign-in fields. Cover > "Ya tengo cuenta" > "E
 Perfil = profile icon, top right of Hoy.
 
 SUBSCRIPTIONS
-Perfil > Cuenta > "NIVL Pro" (legacy label of the plans screen). Pick one mode or all four, "Anual" or "Mensual". Prices come from StoreKit; annual has a 7-day intro offer if eligible. Another single mode replaces the current one. The AI consent sheet comes before payment. "Restaurar", Terms, Privacy and EULA are on that screen. Older plans are not offered.
+Perfil > Cuenta > "Tu suscripción". Pick one mode or all four, "Anual" or "Mensual". Prices come from StoreKit; annual has a 7-day intro offer if eligible. Another single mode replaces the current one. The AI consent sheet comes before payment. "Restaurar", Terms, Privacy and EULA are on that screen. Older plans are not offered.
 Ten product IDs: nivl_{iron,focus,work,founder,todos}_{mensual,anual}.
 
 HEALTHKIT
