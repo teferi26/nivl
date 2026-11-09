@@ -1,0 +1,136 @@
+# Shared native QA body of the 1.1 onboarding; existing owned fictitious demo only.
+# Covers every optional branch the server may switch on: minimum age, language step,
+# usage measurement (always refused), questionnaire (repeated if this phone forgot it),
+# modes step and the offer (shown or skipped). No health or AI consent is accepted.
+appId: com.teferi.nivl
+name: NIVL 1.1 onboarding QA body
+---
+# EDAD_MINIMA=16 in consentmath.
+- runFlow:
+    when:
+      visible: '^Tu edad$'
+    commands:
+      - tapOn: '^Tengo 16 años o más$'
+      - tapOn: '^Confirmar y continuar$'
+      - extendedWaitUntil:
+          visible: '^(Hoy|¿En qué idioma hablamos\?|Un par de cosas y empezamos\.)$'
+          timeout: 30000
+# An account that already finished onboarding lands on Hoy: reopen the flow by deep link.
+- runFlow:
+    when:
+      visible: '^Hoy$'
+    commands:
+      - openLink: 'nivl://onboarding'
+      # iOS 27 asks before opening a URL scheme from outside the app.
+      - extendedWaitUntil:
+          visible: '^(Abrir|Open)$'
+          timeout: 8000
+          optional: true
+      - tapOn:
+          text: '^(Abrir|Open)$'
+          optional: true
+- extendedWaitUntil:
+    visible: '^(¿En qué idioma hablamos\?|Un par de cosas y empezamos\.)$'
+    timeout: 30000
+- runFlow:
+    when:
+      visible: '^¿En qué idioma hablamos\?$'
+    commands:
+      - takeScreenshot: 'qa-05-idioma'
+      - tapOn: '^Continuar$'
+      - extendedWaitUntil:
+          visible: '^Un par de cosas y empezamos\.$'
+          timeout: 30000
+- takeScreenshot: 'qa-06-bienvenida'
+- tapOn: '^Continuar$'
+# Measurement consent only with its server flag on: refuse it, same weight as accept.
+- runFlow:
+    when:
+      visible: '^¿Nos dejas medir cómo usas NIVL\?$'
+    commands:
+      - tapOn: '^Rechazar$'
+- extendedWaitUntil:
+    visible: '^(¿En qué quieres mejorar\?|¿Cómo te llamas\?)$'
+    timeout: 30000
+- runFlow:
+    when:
+      visible: '^¿En qué quieres mejorar\?$'
+    file: onboarding-11-cuestionario.yaml
+
+# Name: the fixed footer must stay reachable with the software keyboard open.
+- extendedWaitUntil:
+    visible: '^¿Cómo te llamas\?$'
+    timeout: 30000
+- tapOn: '^Tu nombre$'
+- takeScreenshot: 'qa-07-nombre-teclado'
+- assertVisible: '^Continuar$'
+- eraseText: 100
+- inputText: 'Gladiador QA'
+# The button enables once the typed name reaches React; do not race it.
+- waitForAnimationToEnd
+- tapOn: '^Continuar$'
+
+# Modes only with their server flag on. The general profile preselects none and the
+# step asks for at least one: FOCUS, which involves no health data. Choosing it does not pay it.
+- extendedWaitUntil:
+    visible: '^(Elige tus modos|Tus primeras misiones)$'
+    timeout: 30000
+- runFlow:
+    when:
+      visible: '^Elige tus modos$'
+    commands:
+      - tapOn: '^FOCUS.*'
+      - takeScreenshot: 'qa-08-modos'
+      - tapOn: '^Continuar$'
+      - extendedWaitUntil:
+          visible: '^Tus primeras misiones$'
+          timeout: 30000
+
+# Unselect every proposal the demo got, so no mission is created.
+- takeScreenshot: 'qa-09-misiones'
+- runFlow:
+    file: onboarding-11-misiones.yaml
+- assertVisible: '^Empezar sin misiones$'
+- tapOn: '^Empezar sin misiones$'
+
+# 90-day plan: it builds itself, then shows the verdict.
+- extendedWaitUntil:
+    visible: '^Quiero empezar$'
+    timeout: 30000
+- assertVisible: '^El veredicto$'
+- takeScreenshot: 'qa-10-plan'
+- tapOn: '^Quiero empezar$'
+
+# The full offer follows the plan unless the account already pays. Never buys or restores.
+- extendedWaitUntil:
+    visible: '^(Seguir gratis por ahora|Entrar en la arena|Hoy)$'
+    timeout: 30000
+- runFlow:
+    when:
+      visible: '^Seguir gratis por ahora$'
+    commands:
+      - assertVisible: '^Tu plan está listo\. Elige cómo seguir\.$'
+      - takeScreenshot: 'qa-11-oferta'
+      - tapOn: '^Seguir gratis por ahora$'
+- runFlow:
+    when:
+      visible: '^Entrar en la arena$'
+    commands:
+      - tapOn: '^Entrar en la arena$'
+- extendedWaitUntil:
+    visible: '^Hoy$'
+    timeout: 30000
+- assertNotVisible: '^Tu edad$'
+- takeScreenshot: 'qa-12-hoy'
+# Cold reopen: the finished account must go straight to Hoy.
+- repeat:
+    times: 3
+    commands:
+      - stopApp
+      - launchApp
+      - extendedWaitUntil:
+          visible: '^Hoy$'
+          timeout: 90000
+      - assertNotVisible: '^Tu edad$'
+      - assertNotVisible: '^Un par de cosas y empezamos\.$'
+- takeScreenshot: 'qa-13-reapertura'

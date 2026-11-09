@@ -119,10 +119,33 @@ jobs:
 
       - run: npm install --global eas-cli@21.2.0
 
+      # Sin esta clave el AAB compila y funciona, pero sale con la tienda cerrada.
+      # Solo se mira si existe: la salida no va al registro de un repo público.
+      - name: Clave de RevenueCat para Android
+        run: |
+          eas env:get --variable-name EXPO_PUBLIC_RC_ANDROID_KEY --variable-environment production \
+            --non-interactive --format short >/dev/null 2>&1 \
+          || echo "::warning::Falta EXPO_PUBLIC_RC_ANDROID_KEY en EAS (production): este AAB saldrá sin venta."
+
       - name: Compilar el AAB
         run: |
           eas build --platform android --profile production --local \
             --non-interactive --output "$RUNNER_TEMP/nivl.aab"
+
+      # Antes de exponer el artefacto: firma real, permisos y servicios del
+      # manifiesto fusionado. Si algo no cuadra, el AAB no se publica.
+      - name: Comprobar el AAB
+        env:
+          BUNDLETOOL_SHA256: 675786493983787ffa11550bdb7c0715679a44e1643f3ff980a529e9c822595c
+        run: |
+          set -euo pipefail
+          jar="$RUNNER_TEMP/bundletool.jar"
+          curl -fsSL --retry 4 --retry-all-errors --retry-delay 15 -m 240 -o "$jar" \
+            "https://github.com/google/bundletool/releases/download/1.18.1/bundletool-all-1.18.1.jar"
+          echo "$BUNDLETOOL_SHA256  $jar" | sha256sum -c -
+          node scripts/ci/test-comprobar-aab.mjs
+          node scripts/ci/comprobar-aab.mjs "$RUNNER_TEMP/nivl.aab" "$jar" \
+            --version "$(node -p "require('./app.json').expo.version")"
 
       - uses: actions/upload-artifact@v4
         with:

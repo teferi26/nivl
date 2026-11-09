@@ -142,6 +142,7 @@
         }
       ],
       "./plugins/with-uiscene",
+      "./plugins/withAndroidSinServiciosNiAlmacenamiento.js",
       [
         "expo-calendar",
         {

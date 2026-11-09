@@ -7,5 +7,5 @@ name: NIVL QA verify post-login screen
 - assertNotVisible: '^Confirma tu correo antes de entrar\..*$'
 - assertNotVisible: '^No se ha podido comprobar que no eres un robot\..*$'
 - extendedWaitUntil:
-    visible: '^(Hoy|Tu edad|Entrar en la arena)$'
+    visible: '^(Hoy|Tu edad|¿En qué idioma hablamos\?|Un par de cosas y empezamos\.)$'
     timeout: 30000

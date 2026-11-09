@@ -5,8 +5,9 @@
 # revisora de Apple ni las del ludus de demostración en flujos que escriben.
 # Selectores revisados contra winter2/integracion (CAPTURAS-108.md): «Correo
 # electrónico» y el SEGUNDO «Contraseña» son los campos (los primeros son
-# rótulos), y el envío es el «Entrar» que queda debajo del campo.
-# NO verificados todavía en un dispositivo: confirmar en la primera ejecución.
+# rótulos, Maestro compara sin distinguir mayúsculas), y se envía con Intro desde
+# el campo. Ejecutado en iPad con iOS 27.2 (simulador). Sin aserción `focused`:
+# los campos de RN no exponen ese atributo a Maestro en iOS 27.
 appId: com.teferi.nivl
 name: NIVL login (subflujo)
 ---
@@ -14,16 +15,10 @@ name: NIVL login (subflujo)
     visible: 'Entra con tu correo y tu contraseña de NIVL\.'
     timeout: 30000
 - tapOn: '^Correo electrónico$'
-- assertVisible:
-    text: '^Correo electrónico$'
-    focused: true
 - inputText: ${NIVL_QA_EMAIL}
 - tapOn:
     text: '^Contraseña$'
     index: 1
-- assertVisible:
-    text: '^Contraseña$'
-    focused: true
 - inputText: ${NIVL_QA_PASSWORD}
 # Submit from the focused native password field; no ambiguous label tap.
 - pressKey: Enter

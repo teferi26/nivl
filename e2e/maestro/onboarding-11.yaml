@@ -1,0 +1,34 @@
+# Reviewable simulator regression of the 1.1 Onix onboarding, existing NIVL_SHOTS demo ONLY.
+# WRITES to the demo: display name, general profile, non-health questionnaire summary (onboarding_goal),
+# modes (user_modes), language, onboarding_done and a local "modes novelty seen" mark.
+# No new Auth user, health consent, AI consent, purchase, trial, mission completion, XP or AI turn.
+# Part 1 of 2: entry funnel on a clean install, then login up to the submit. The system
+# password dialog is resolved outside Maestro (scripts/ci/nivl-qa-dismiss-password.sh);
+# onboarding-11-continue.yaml carries on in the same session.
+appId: com.teferi.nivl
+name: NIVL 1.1 entry funnel and demo login
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+    permissions:
+      notifications: deny
+# Without a session the app starts at /empezar: cover, then questionnaire, then account.
+- extendedWaitUntil:
+    visible: '^Crear mi plan$'
+    timeout: 90000
+- assertVisible: '^Ya tengo cuenta$'
+- takeScreenshot: 'qa-01-portada'
+- tapOn: '^Crear mi plan$'
+- runFlow: onboarding-11-cuestionario.yaml
+# The funnel lands on account creation; the demo already exists, so switch to sign in.
+# The tab accessibility label is unique ("Entrar" alone also matches the submit button).
+- extendedWaitUntil:
+    visible: '^Tu plan está casi listo\. Guárdalo\.$'
+    timeout: 30000
+- tapOn: '^Entrar con cuenta existente.*'
+- runFlow:
+    file: login-submit.yaml
+    env:
+      NIVL_QA_EMAIL: ${NIVL_QA_EMAIL}
+      NIVL_QA_PASSWORD: ${NIVL_QA_PASSWORD}
