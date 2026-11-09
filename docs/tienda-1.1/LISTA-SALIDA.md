@@ -2,6 +2,10 @@
 
 Fecha: 9 de noviembre de 2026. Estado de GitHub Actions leído a las 09:50 UTC. Para el dueño.
 
+## Estado actual: enviada a Apple
+
+La versión 1.1.0 (build 44) y las diez suscripciones se enviaron a revisión el 09/11/2026 («11 elementos enviados» en App Store Connect). El lanzamiento es manual: aprobada, no se publica sola. Sin más acciones en Apple salvo que responda. Google Play sigue pendiente. La compra real sigue sin probar. Lo que sigue es el análisis previo al envío.
+
 ## 1. Veredicto
 
 1. **Hoy no se puede enviar: el binario 1.1 no existe.** Falla al firmar: el perfil de la app no incluye HealthKit y los del reloj no existen. Crearlos exige que el dueño entre en su cuenta de Apple (PLAT-01). No hay ningún agente que pueda hacerlo.
