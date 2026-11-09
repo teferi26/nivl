@@ -78,13 +78,11 @@ Otros documentos, sin repetirlos: [productos](PRODUCTOS.md) · [plataformas y co
 - **Falta:** cambiar al build final. Repasar notas contra ese build: describen el filtro de perfiles y el reloj. Sin vídeo, las notas no lo citan. de, pt-PT e it no se han creado: dependen de encender `idiomas_1011`, y sin él las fichas en-US, en-GB y fr-FR tampoco son ciertas (FICHA-2).
 - **Norma:** [Apple 2.3.1 y 2.5.1][a-meta].
 
-### 9. PLAT-04. No hay capturas válidas de la 1.1 [texto arreglado; faltan las capturas]
+### 9. PLAT-04. Capturas de la 1.1 [SUBIDAS a App Store Connect, en es-ES]
 
-- **Qué pasa:** las de la ficha son de la 1.0.x y la tubería genera "Con NIVL Pro o Élite". Va al final porque tiene que salir del commit definitivo. Con reloj en el binario, Apple pide también capturas de reloj.
+- **Hecho por API:** tanda final del commit `010100a`: iPhone 6,9 (10), iPhone 6,3 (10), iPad 13 (10), reloj (5) y vídeos de iPhone e iPad. Las otras localizaciones usan las de es-ES. Quedaban en proceso en Apple al subirlas.
+- **Falta:** si el binario final cambia pantallas visibles, repetir la tanda. Android no tiene capturas: su flujo de CI es de la 1.0.8. La rejilla de 28 días de Avance se pinta rota (`src/components/general/AvanceVista.tsx:355`): no sale en capturas, pero un revisor puede verla.
 - **Norma:** [Apple 2.3 y 2.3.3][a-meta], [especificaciones][a-capt].
-- **Evidencia:** `scripts/tienda/plantilla/textos.mjs:17`, `scripts/tienda/tienda.mjs:28`, `docs/tienda-1.1/CAPTURAS.md:69`.
-- **Quién:** `nivl-capturas`, sobre el commit final, que no existe sin binario. Detalle en [CAPTURAS.md](CAPTURAS.md).
-- **Lo cierra:** tanda sobre el commit final con `validar.mjs` correcto y revisión visual: Ónix, sin Pro ni Élite, los cuatro modos, iPad y reloj si va.
 
 ## 3. Riesgos, en orden
 
