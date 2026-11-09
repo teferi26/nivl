@@ -32,7 +32,7 @@ const ESCENAS = [
 ];
 
 function compilar(ctx, f) {
-  const destino = path.join(CACHE, 'apps-nativas', `watch-${f.sha7}-${huellaXcode()}`, 'NivlReloj.app');
+  const destino = path.join(CACHE, 'apps-nativas', `watch-debug-${f.sha7}-${huellaXcode()}`, 'NivlReloj.app');
   if (fs.existsSync(path.join(destino, 'Info.plist'))) {
     ctx.log(`app de reloj en caché: ${destino}`);
     return destino;
@@ -42,17 +42,18 @@ function compilar(ctx, f) {
   if (!fs.existsSync(path.join(dir, 'node_modules/.bin/expo'))) {
     correr('npx', [...NPM, 'ci', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: dir, env, log: ctx.log });
   }
+  // Debug: los datos de demostración (-nivlDemo) solo existen ahí desde la 1.1.
   // El proyecto del reloj lo genera @bacons/apple-targets; el nativo no se guarda en el repo.
   correr('npx', ['expo', 'prebuild', '--platform', 'ios', '--clean', '--no-install'], { cwd: dir, env, log: ctx.log });
   const archivoLog = path.join(CACHE, `xcodebuild-watch-${f.sha7}.log`);
   ctx.log(`compilando Apple Watch; registro en ${archivoLog}`);
   correr('xcodebuild', [
-    '-project', 'ios/NIVL.xcodeproj', '-target', 'NivlReloj', '-configuration', 'Release',
+    '-project', 'ios/NIVL.xcodeproj', '-target', 'NivlReloj', '-configuration', 'Debug',
     '-sdk', 'watchsimulator', `ARCHS=${process.arch === 'arm64' ? 'arm64' : 'x86_64'}`,
     'ONLY_ACTIVE_ARCH=YES', 'CODE_SIGNING_ALLOWED=NO', 'build',
   ], { cwd: dir, env, log: ctx.log, archivoLog });
   fs.mkdirSync(path.dirname(destino), { recursive: true });
-  fs.cpSync(path.join(dir, 'ios/build/Release-watchsimulator/NivlReloj.app'), destino, { recursive: true, verbatimSymlinks: true });
+  fs.cpSync(path.join(dir, 'ios/build/Debug-watchsimulator/NivlReloj.app'), destino, { recursive: true, verbatimSymlinks: true });
   return destino;
 }
 
