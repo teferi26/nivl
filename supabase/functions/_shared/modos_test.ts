@@ -32,10 +32,11 @@ async function sha256(v: unknown): Promise<string> {
 // financieros, 024/112) y el encargo del ritual pasa al final de la parte estable.
 // 08/11/2026 (Resistencia): recalculados a propósito: doctrina de triatlón en knowledge.ts y mareos y
 // dolor al entrenar en AI_SAFETY_RULES. Después, la regla de la tirada y el cardio en la ruta de registro.
+// 09/11/2026 (salida 1.1): recalculados a propósito: crisis por país y freno de edad en calorías en knowledge.ts.
 const HASH_ANTES = {
-  chat: '63c5ad268079ca46be459d6f869323f11f3da5631a0dc583b48a1c9dfd7bf321',
-  brief: 'c280d966644ff26b892546a9fdbdda27446bd83868e6f1d9022b14c2f249dba3',
-  vacio: '764437181bbc6a3fa9fda3478938979cbeffc9c06029a05f62231827941d34da',
+  chat: 'c3746a99dac7d062e4119ff573448f6496270c72bf4d345133dae6001f4a2bfe',
+  brief: '86b5327fb94ae2a30700d052ceda84ed0bfda834e7395d15eafebc27c2ccf5fa',
+  vacio: 'a28c7c91f53568e7ccded00beee0bd1fe50ef175f6c4220199deb84a02eb9bfe',
   registro: '7227aac804f09a2a007f696bbbbe6f7a0437c5c028129a6a2baf600073acde5f',
 };
 
