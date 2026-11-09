@@ -270,6 +270,12 @@ jobs:
           PRIVATE="$RUNNER_TEMP/qa-private-debug"
           OCR_PRIVATE="$RUNNER_TEMP/qa-private-ocr.json"
           export PRIVATE
+          # Sanitized: only Maestro status lines; steps that type values are dropped.
+          for LOG in maestro-command body-command recovery-command; do
+            [ -f "$PRIVATE/$LOG.log" ] || continue
+            echo "QA_MAESTRO_LOG $LOG"
+            grep -viE 'input text|inputText|@|password|contrase' "$PRIVATE/$LOG.log" | cut -c1-180 | tail -14 || true
+          done
           # Only original failed-step screenshots, never final.png or recovery images.
           # Paths and OCR strings remain private; no screenshot/log/tree is uploaded.
           python3 - <<'PY' > "$RUNNER_TEMP/qa-private-images.list"
@@ -317,6 +323,12 @@ jobs:
           PRIVATE="$RUNNER_TEMP/qa-private-debug/recovery"
           OCR_PRIVATE="$RUNNER_TEMP/qa-private-recovery-ocr.json"
           export PRIVATE
+          # Sanitized: only Maestro status lines; steps that type values are dropped.
+          for LOG in maestro-command body-command recovery-command; do
+            [ -f "$PRIVATE/$LOG.log" ] || continue
+            echo "QA_MAESTRO_LOG $LOG"
+            grep -viE 'input text|inputText|@|password|contrase' "$PRIVATE/$LOG.log" | cut -c1-180 | tail -14 || true
+          done
           # Only original failed-step screenshots, never final.png or recovery images.
           # Paths and OCR strings remain private; no screenshot/log/tree is uploaded.
           python3 - <<'PY' > "$RUNNER_TEMP/qa-private-recovery-images.list"
