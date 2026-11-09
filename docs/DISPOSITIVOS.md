@@ -228,19 +228,29 @@ Otro, en Safari de iPhone y iPad: para que la página no se amplíe al enfocar u
 
 ## Android (1.1)
 
-Escrito el 09/11/2026. **Ningún binario de Android de la 1.1 se ha compilado ni ejecutado.** En la máquina de pruebas no hay Android SDK ni emulador, y aceptar su licencia es decisión del dueño.
+Escrito el 09/11/2026 sobre la integración 1.1. Compilado en este Mac con Android SDK 36 y NDK 27.1, y ejecutado en un emulador Pixel 7 (Android 16, arm64) contra Supabase simulado con cuentas ficticias. **Ningún dispositivo físico, ninguna firma real y ninguna compra.**
 
 | Punto | Estado | Evidencia |
 |---|---|---|
-| Flujo del AAB firmado | Listo para lanzar, no lanzado. La firma la pone EAS | `.github/workflows/android-play.yml`. Falla si la firma es de depuración o falta |
-| P11, servicios en primer plano | Corregido en el manifiesto de la app: permisos bloqueados y los dos servicios de `expo-audio` eliminados | `plugins/withAndroidSinServiciosNiAlmacenamiento.js` y `expo prebuild`. El manifiesto **fusionado** lo comprueba el flujo con `bundletool` |
-| P12, `SYSTEM_ALERT_WINDOW` | Bloqueado | Igual |
-| P12, almacenamiento heredado | Con tope: `READ` hasta API 32 y `WRITE` hasta API 28. No se bloquea: `expo-image-picker` lo necesita para la cámara por debajo de Android 10 | Igual |
-| JS de Android | Empaqueta (`expo export --platform android`) | Sin ejecutar en un dispositivo |
-| Gradle con `expo-calendar`, `react-native-maps` y `expo-keep-awake` | **Sin compilar** | Lo dirá el primer run |
-| Ónix, modos y oferta en Android | **Sin ver.** Revisado solo en el código: sin clave de RevenueCat la oferta sale en solo lectura | `src/lib/pro.ts`, `OfertaModosVista.tsx` |
-| Teclado con `edgeToEdgeEnabled` | **Por probar primero.** `onboarding.tsx`, `HojaTeclado.tsx` y `CoachVista.tsx` no pasan `behavior` en Android y dependen de `adjustResize` | Código |
+| AAB de release, cuatro arquitecturas | **Compila**: 72 MB, Gradle correcto | `bundleRelease` local, sin copias manuales. Firmado con la clave de depuración: la firma real la pone EAS |
+| Nativos nuevos (`expo-calendar`, `react-native-maps`, `expo-keep-awake`) | **Compilan** | La misma compilación |
+| P11, servicios en primer plano | **Confirmado en el manifiesto fusionado**: ningún permiso `FOREGROUND_SERVICE*` ni servicio con `foregroundServiceType` | `bundletool dump manifest` |
+| P12, `SYSTEM_ALERT_WINDOW` y almacenamiento | **Confirmado**: sin `SYSTEM_ALERT_WINDOW`; lectura hasta API 32 y escritura hasta API 28 | Igual. No se bloquean del todo: `expo-image-picker` pide escritura para la cámara por debajo de Android 10 |
+| Ubicación, salud, alarmas exactas, `READ_MEDIA_*`, `AD_ID` | Ausentes | `scripts/ci/comprobar-aab.mjs` sobre el AAB |
+| `targetSdk` y 16 KB | 36; `zipalign -P 16` correcto en el APK universal | `bundletool` y `zipalign` |
+| Ónix, onboarding completo, Hoy, Coach, Hábitos | **Visto en el emulador** | Maestro hasta el plan de 90 días, a mano el resto |
+| Rueda de modos, IRON, WORK; FOCUS elegido en la rueda | **Visto**, salvo FOUNDER | Pulsación larga y toque |
+| Oferta y mundo cerrado sin clave de RevenueCat | **Visto**: precios en solo lectura y «no disponibles» | Sin la clave no hay venta (PLAT-03) |
 
-`scripts/ci/comprobar-aab.mjs` falla si el AAB no está firmado, usa la clave de depuración, no llega a `targetSdk` 36, declara permisos prohibidos (primer plano, ubicación, salud, alarmas exactas, `READ_MEDIA_*`, `AD_ID`) o conserva servicios con `foregroundServiceType`.
+**Tres arreglos que solo aparecieron al ejecutarlo:**
+- **Teclado.** Con `targetSdk` 36 la app va de borde a borde y `adjustResize` ya no encoge la ventana: el teclado tapaba el botón de continuar del onboarding y el campo del Coach. `src/components/ui/HuecoTecladoAndroid.tsx` deja un hueco en la raíz, solo en Android, y `TabBar` se oculta con el teclado abierto. Visto en onboarding, login, Coach y hojas.
+- **`reanimated` no enlazaba.** Busca `libworklets.so` en una carpeta que AGP 8.11 no rellena: la compilación moría en ninja. `plugins/withAndroidWorkletsPublicado.js` la publica ahí. El AAB 1.0.11 sí compiló en CI con las mismas versiones, así que puede que en Linux no haga falta; copiarla no estorba.
+- **Permisos y servicios** (P11 y P12), arriba.
+
+**El flujo del AAB** (`.github/workflows/android-play.yml`) falla si el AAB no está firmado, usa la clave de depuración, no llega a `targetSdk` 36, declara permisos prohibidos o conserva servicios con `foregroundServiceType`. Avisa si falta `EXPO_PUBLIC_RC_ANDROID_KEY`.
+
+**Sin verificar:** el run real en Linux y la firma de EAS, Google Play Billing, push (FCM), cámara, dictado y calendario reales, Android antiguo (minSdk 24), tablets y plegables Android.
+
+**Detalles anotados, sin arreglar:** en el mundo cerrado el botón Atrás del sistema no hace nada, aunque está «Volver a NIVL»; el Coach sin pagar sigue hablando de «NIVL Pro» aunque el cobro ya es por modos.
 
 **Para producción (cuenta personal):** 12 testers inscritos 14 días seguidos en la prueba cerrada, y después la revisión de Google. Última constancia en las notas internas, del 07/11/2026: la prueba cerrada existe y hay **0 de 12**. No se ha podido abrir Play Console para confirmarlo, así que lo que pide hoy la consola está sin verificar. Según la documentación preparada faltan: ficha, Data safety, clasificación, productos, `EXPO_PUBLIC_RC_ANDROID_KEY` en EAS y la huella SHA-256 de Play en `assetlinks.json`.
