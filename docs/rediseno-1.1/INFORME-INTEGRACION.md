@@ -31,7 +31,7 @@ TV: para que alguien enlace una tele hay que aplicar sus migraciones y copiar `t
 
 **Comprobado tras desplegar:** las cuatro funciones con IA llevan Haiku 5.5, sin Sonnet ni Opus; `coach`, `prevision` y `revenuecat-webhook` responden 401 sin autenticar; el permiso de salud sigue en v1 con las 9 aceptaciones intactas y ninguna medición activada. **No comprobado:** una respuesta real del coach con Haiku 5.5.
 
-**Pendiente:** push y binario, a falta de decidir las capturas que irían en la historia pública (`docs/rediseno-1.1/antes/`, `tv/capturas/`). Sin OTA ni envío a revisión. La 0113 no se aplica mientras haya móviles en 1.0.11, salvo decisión expresa.
+**Binario:** rama subida en `dae3887` con la versión 1.1.0 y build lanzado: https://github.com/teferi26/nivl/actions/runs/42538054025. El dueño aprobó publicar las capturas de `docs/rediseno-1.1/antes/` y `tv/capturas/`. Sin OTA ni envío a revisión. La 0113 no se aplica mientras haya móviles en 1.0.11, salvo decisión expresa.
 
 ## Orden de salida
 
