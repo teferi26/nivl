@@ -10,6 +10,8 @@ Fecha: 9 de noviembre de 2026. Estado de GitHub Actions leído a las 09:50 UTC. 
 4. Hay dos incumplimientos reales que el revisor quizá no vea, pero que no se deben enviar así: perfiles publicados sin filtro (CON-01, norma 1.2) y cambiar de modo sin avisar de que sustituye al actual antes de cobrar (PAG-02, norma 3.1.2).
 5. Nada es insalvable: de los nueve bloqueantes, cinco son trabajo en tus cuentas y tu web, dos son de código y dos compartidos. Android no está en condiciones de ir a producción y no debe frenar a iOS.
 
+**Riesgo principal de rechazo: la compra real queda sin probar.** Decisión del dueño (09/11/2026): no probará la compra en TestFlight salvo que sea obligatorio, y Apple no le obliga a hacerlo. Se sustituye por comprobaciones indirectas: los diez productos en `READY_TO_SUBMIT` y adjuntos, los ids de App Store Connect iguales a los de `planesmodo.ts` (comprobado), la clave de RevenueCat en el binario (en EAS, leído en el log) y `STORE_SANDBOX_ACCESS` (sin comprobar: es un secreto de Supabase). Ninguna demuestra que una compra funcione de principio a fin. Si el revisor compra y falla, es rechazo por 2.1.
+
 **Cómo leer esto.** `[ARREGLABLE]`: código, tamaño pequeño, se hará a continuación. `[ARREGLABLE en parte]`: el código es pequeño, pero hace falta algo tuyo antes. "Binario": solo entra compilando de nuevo, así que va antes de la compilación final. Normas leídas hoy, con su enlace en cada entrada. Las rutas parten de la raíz del repo; un nombre suelto de archivo se localiza por nombre y `0140:47` es la línea 47 de la migración 0140.
 
 **Estado de los arreglos (9/11/2026).** Hechos en `claude/tienda-1-1-b4864e`, los marcados `[HECHO…]`, con typecheck, 6625 tests, lint y exportación de iOS en verde. Ninguno está probado en un dispositivo real. Reparto en otras sesiones, sin confirmar aquí: CON-01 y P10 (`nivl-haiku`), P9 y PLAT-07 (`nivl-watch`), CON-14 (`nivl-tv`), Android, PLAT-08 y PLAT-09 (`nivl-adaptativo`), CON-08, CON-11, P2, P4 y FICHA-1 (`nivl-intuitivo`), PAG-01, P1, P13 y CON-13 (`nivl-legal-web`). Decidido por el dueño: CON-01 con filtro automático en servidor.
@@ -282,7 +284,7 @@ Fuera del repo, por los runs: el identificador de la complicación registrado en
    ```
 4. **App Store Connect, a mano:** App Privacy con Ubicación (ADV-1), cuestionario de edad (CON-10), Paid Applications Agreement, cuentas de revisión gratis y de cuatro modos con un amigo de demostración (ADV-2, NOT-2, NOT-3), casillas de Mac y Vision (PLAT-09). Captura de la pantalla de compra real en cada uno de los diez productos, y adjuntarlos a la 1.1.
 5. **Supabase y RevenueCat:** comprobar `STORE_SANDBOX_ACCESS`, que `REVENUECAT_API_KEY` empieza por `sk_` (P8), los interruptores (CON-06) y los entornos por evento del webhook. RevenueCat Android sigue sin configurar.
-6. **Con un iPhone real:** compra y restauración en sandbox, borrado de una cuenta desechable, Salud, GPS con pantalla apagada, reloj si va, iPad. Vídeo de ese recorrido (PLAT-05).
+6. **Con un iPhone real, opcional:** Salud, GPS con pantalla apagada, reloj e iPad. La compra no se prueba por decisión tuya; ver el riesgo principal arriba.
 7. **Google Play:** crea la clave de Android en RevenueCat y añádela a EAS (PLAT-03), productos, Data safety, declaraciones, huella en `assetlinks.json`, y 12 testers durante 14 días si tu cuenta entra en la regla (ADV-4).
 8. **Decisiones:** reloj sí o no (PLAT-06), idiomas de la ficha (FICHA-2), productos antiguos (PAG-03), revisión legal de la letra traducida (PAG-11).
 
