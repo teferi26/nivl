@@ -87,7 +87,7 @@ jobs:
 
       - run: npm ci
 
-      - run: npm install --global eas-cli@21.2.0
+      - run: npm install --global eas-cli@27.5.0
 
       - name: Compilar en este runner
         run: |
