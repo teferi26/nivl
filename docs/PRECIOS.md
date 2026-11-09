@@ -18,7 +18,7 @@ Instagram, TikTok y YouTube.
 | Producto | Mensual | Anual |
 |---|---|---|
 | Un modo (IRON, FOCUS, WORK o FOUNDER) | **14,99 €** | **59,99 €**, 7 días gratis |
-| Los cuatro | **30 €** | **99 €**, 7 días gratis |
+| Los cuatro | **29,99 €** | **99,99 €**, 7 días gratis |
 
 - El anual lleva 7 días gratis (oferta introductoria de la tienda) y el mensual no.
 - No hay combinaciones de 2 o 3: dos modos ya cuestan lo mismo que los cuatro, y
@@ -47,8 +47,8 @@ suscripción; desde el segundo, 15 % siempre).
 |---|---|---|---|---|
 | Un modo, mensual | 14,99 € | 12,39 € | 10,53 € | 8,67 € |
 | Un modo, anual | 59,99 € | 49,58 € | 42,14 € | 34,71 € |
-| Los cuatro, mensual | 30 € | 24,79 € | 21,07 € | 17,36 € |
-| Los cuatro, anual | 99 € | 81,82 € | 69,55 € | 57,27 € |
+| Los cuatro, mensual | 29,99 € | 24,79 € | 21,07 € | 17,35 € |
+| Los cuatro, anual | 99,99 € | 82,64 € | 70,24 € | 57,85 € |
 
 ## Un solo modelo: `claude-haiku-5-5`
 
@@ -129,7 +129,7 @@ IA al mes por cuenta**, cifra ilustrativa y sin medir:
 | Venta anual | Neto | Beneficio del año | Novato 25 % | Pro 35 % | Élite 50 % |
 |---|---|---|---|---|---|
 | Un modo, 59,99 € | 42,14 € | 36,14 € | 9,04 € | 12,65 € | 18,07 € |
-| Los cuatro, 99 € | 69,55 € | 63,55 € | 15,89 € | 22,24 € | 31,78 € |
+| Los cuatro, 99,99 € | 70,24 € | 64,24 € | 16,06 € | 22,48 € | 32,12 € |
 
 La comisión nunca supera el beneficio, así que una venta ya no puede perder
 dinero por el creador. Si una cuenta agota el freno todos los meses (un modo

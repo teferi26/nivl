@@ -29,8 +29,8 @@ Todos en el grupo de suscripción existente, de nombre de referencia `NIVL` (`do
 | 6 | `nivl_work_anual` | `anual` | `nivl_work_anual:anual` | 1 año | 59,99 € | 7 días | 4 | `work_anual` | work |
 | 7 | `nivl_founder_mensual` | `mensual` | `nivl_founder_mensual:mensual` | 1 mes | 14,99 € | no | 4 | `founder_mensual` | founder |
 | 8 | `nivl_founder_anual` | `anual` | `nivl_founder_anual:anual` | 1 año | 59,99 € | 7 días | 4 | `founder_anual` | founder |
-| 9 | `nivl_todos_mensual` | `mensual` | `nivl_todos_mensual:mensual` | 1 mes | 30 € | no | 1 | `todos_mensual` | los cuatro |
-| 10 | `nivl_todos_anual` | `anual` | `nivl_todos_anual:anual` | 1 año | 99 € | 7 días | 1 | `todos_anual` | los cuatro |
+| 9 | `nivl_todos_mensual` | `mensual` | `nivl_todos_mensual:mensual` | 1 mes | 29,99 € | no | 3 | `todos_mensual` | los cuatro |
+| 10 | `nivl_todos_anual` | `anual` | `nivl_todos_anual:anual` | 1 año | 99,99 € | 7 días | 3 | `todos_anual` | los cuatro |
 
 Durante la prueba de un anual la fila queda como `cortesia` + `trialing` con su `store_product_id`, y `mis_modos` responde según el producto.
 
@@ -42,10 +42,12 @@ La consecuencia hay que asumirla: **comprar otro modo sustituye al actual, no lo
 
 | Nivel | Productos | Por qué |
 |---|---|---|
-| 1 | `nivl_todos_mensual`, `nivl_todos_anual` | Lo que más ofrece |
-| 2 | `nivl_elite_mensual`, `nivl_elite_anual`, `nivl_elite_fundador` | Antiguos: abren los cuatro modos |
-| 3 | `nivl_pro_mensual`, `nivl_pro_anual` | Antiguos: abren los cuatro modos |
-| 4 | Los ocho de un modo | De antiguo a un modo es bajada: no se pierde lo ya pagado |
+| 1 | `nivl_elite_*` | Antiguos, ya aprobados: no se han movido |
+| 2 | `nivl_pro_*` | Antiguos, ya aprobados: no se han movido |
+| 3 | `nivl_todos_mensual`, `nivl_todos_anual` | Lo más alto de lo que se vende |
+| 4 | Los ocho de un modo | Por debajo de los cuatro: pasar a los cuatro es subida |
+
+Quien tiene Pro o Élite y pasa a un producto nuevo baja de nivel: se aplica al renovar, como supone `tipoCambioModo`, y conserva lo pagado.
 
 Efecto de cada cambio según la [documentación de Apple](https://developer.apple.com/app-store/subscriptions/):
 
@@ -65,7 +67,7 @@ Apple y Google se comportan distinto en los cruces de misma duración. El coment
 
 Tres avisos:
 
-1. **30 € y 99 € exactos.** Sin verificar que existan como punto de precio en EUR. Mirar la lista y "See Additional Prices". Si no están, es decisión del dueño (29,99 € o 99,99 €) y entonces hay que tocar `PRECIOS_CENTS`, `docs/PRECIOS.md` y el freno de la 0140.
+1. **Los cuatro:** Apple no tiene 30,00 € ni 99,00 € en España. Decisión del dueño: 29,99 € y 99,99 €. El freno de la 0140 no cambia: la diferencia es de un céntimo al mes y 0,69 € limpios al año.
 2. **Freno de IA.** `ai_plans.monthly_budget_micro_usd` está calculado sobre el precio en EUR. En un territorio donde el precio equalizado rinda menos, el freno puede superar lo que deja la cuota. Revisarlo con los primeros datos.
 3. **Territorios.** La lista la limita qué proveedores de IA admiten cada país. Esa comprobación no es de este documento. Solo el titular de la cuenta puede quitar países y eso afecta a suscriptores existentes.
 
