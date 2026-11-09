@@ -286,7 +286,7 @@ const IA_GRATIS = {
 export function rpcArnes(nombre: string, args: Fila): unknown {
   switch (nombre) {
     case 'app_flags': return { modos_1011: true };
-    case 'mis_modos': return { modos: ['iron', 'focus', 'work', 'founder'], plan: 'todos_anual', producto: 'nivl_todos_anual', expira: fecha(200), trial: false };
+    case 'mis_modos': return (globalThis as { __TIENDA__?: { plan?: string | null } }).__TIENDA__?.plan === 'free' ? { modos: [], plan: null, producto: null, expira: null, trial: false } : { modos: ['iron', 'focus', 'work', 'founder'], plan: 'todos_anual', producto: 'nivl_todos_anual', expira: fecha(200), trial: false };
     case 'my_age_confirmation': return true;
     case 'my_adult_confirmation': return true;
     case 'my_health_consent':

@@ -10,15 +10,15 @@ import * as FS from 'expo-file-system/legacy';
 import { router } from 'expo-router';
 import guion from './escenas.json';
 
-type Paso = { accion?: Objetivo; modo?: string; ir?: string; espera?: number; desplazar?: number | 'fin'; ms?: number; pulsar?: Objetivo };
+type Paso = { oferta?: { periodo: string; pack: string; modo?: string }; accion?: Objetivo; modo?: string; ir?: string; espera?: number; desplazar?: number | 'fin'; ms?: number; pulsar?: Objetivo };
 type Objetivo = { etiqueta?: string; texto?: string };
-type Escena = { id: string; titulo: string; ruta: string; plan?: string; pasos?: Paso[]; alSalir?: Paso[]; asentar?: number };
+type Escena = { id: string; titulo: string; ruta: string; plan?: string; catalogo?: boolean; pasos?: Paso[]; alSalir?: Paso[]; asentar?: number };
 type Fibra = {
   tag: number; type: unknown; stateNode: any; memoizedProps: any;
   child: Fibra | null; sibling: Fibra | null;
 };
 
-const estadoTienda = (globalThis as any).__TIENDA__ as { raiz: { current: Fibra } | null; plan: string | null; avisos: string[] };
+const estadoTienda = (globalThis as any).__TIENDA__ as { raiz: { current: Fibra } | null; plan: string | null; catalogo?: boolean; avisos: string[] };
 const ASENTAR_MS = 2600;
 const dormir = (ms: number) => new Promise<void>((ok) => setTimeout(ok, ms));
 const siguienteCuadro = () => new Promise<void>((ok) => requestAnimationFrame(() => ok()));
@@ -172,6 +172,30 @@ async function activar(o: Objetivo): Promise<void> {
   await dormir(700);
 }
 
+/** Elige producto en la oferta real con sus propios manejadores. */
+async function elegirOferta(o: { periodo: string; pack: string; modo?: string }): Promise<void> {
+  const visitar = (f: Fibra | null): any => {
+    for (let n = f; n; n = n.sibling) {
+      const v = n.memoizedProps?.oferta;
+      if (v && typeof v.onPeriodo === 'function') return n;
+      const h = visitar(n.child);
+      if (h) return h;
+    }
+    return null;
+  };
+  const leer = () => visitar(raiz())?.memoizedProps.oferta;
+  if (!leer()) throw new Error('No encuentro la oferta');
+  leer().onPeriodo(o.periodo);
+  await dormir(150);
+  leer().onPack(o.pack);
+  await dormir(150);
+  if (o.modo) leer().onModo(o.modo);
+  await dormir(500);
+  const final = leer();
+  // Sin esto saldría la lista de solo lectura y la captura no valdría.
+  if (!final.disponible || !final.precio || !final.puedeComprar) throw new Error(`Oferta sin catálogo: ${final.disponible} ${final.catalogo} ${final.precio}`);
+}
+
 /** Cambia el modo con el `cambiar` real de ModoProvider (se busca en el árbol). */
 async function cambiarModo(modo: string): Promise<void> {
   const visitar = (f: Fibra | null): ((m: string) => void) | null => {
@@ -193,6 +217,7 @@ async function correrPasos(pasos: Paso[]): Promise<void> {
   for (const p of pasos) {
     if (p.modo) await cambiarModo(p.modo);
     if (p.accion) await activar(p.accion);
+    if (p.oferta) await elegirOferta(p.oferta);
     if (p.ir) {
       await ir(p.ir);
       await dormir(120);
@@ -221,6 +246,7 @@ async function abrirEscena(id: string): Promise<void> {
   if (!e) throw new Error(`Escena desconocida: ${id}`);
   await salirDeEscena();
   estadoTienda.plan = e.plan ?? null;
+  estadoTienda.catalogo = e.catalogo === true;
   await ir(e.ruta);
   await dormir(500);
   await desplazar(0).catch(() => {});

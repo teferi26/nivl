@@ -85,7 +85,7 @@ function entornoArnes() {
     // no resuelve nunca.
     EXPO_PUBLIC_SUPABASE_URL: 'https://arnes.invalid',
     EXPO_PUBLIC_SUPABASE_KEY: 'arnes-local-sin-clave',
-    EXPO_PUBLIC_RC_IOS_KEY: '',
+    EXPO_PUBLIC_RC_IOS_KEY: 'arnes-sin-tienda',
     EXPO_PUBLIC_RC_ANDROID_KEY: '',
     EXPO_PUBLIC_PAYWALL: 'off',
   };

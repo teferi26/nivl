@@ -10,7 +10,7 @@ module.exports = function arnes(config, raiz) {
     'react-native-purchases': 'purchases.ts',
   };
   // La caché de Metro no mira el entorno y aquí los EXPO_PUBLIC_ son otros.
-  config.cacheVersion = 'arnes-tienda-1';
+  config.cacheVersion = 'arnes-tienda-2-' + (process.env.EXPO_PUBLIC_RC_IOS_KEY ?? '');
   const anterior = config.resolver.resolveRequest;
   config.resolver.resolveRequest = (context, moduleName, platform) => {
     if (directos[moduleName]) {

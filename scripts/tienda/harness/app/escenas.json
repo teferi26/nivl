@@ -177,6 +177,244 @@
         }
       ],
       "asentar": 2200
+    },
+    {
+      "id": "compra-nivl_iron_mensual",
+      "titulo": "Compra iron mensual",
+      "ruta": "/pro",
+      "plan": "free",
+      "catalogo": true,
+      "pasos": [
+        {
+          "oferta": {
+            "periodo": "mensual",
+            "pack": "uno",
+            "modo": "iron"
+          }
+        },
+        {
+          "espera": 500
+        },
+        {
+          "desplazar": "fin",
+          "ms": 0
+        }
+      ],
+      "asentar": 3200
+    },
+    {
+      "id": "compra-nivl_iron_anual",
+      "titulo": "Compra iron anual",
+      "ruta": "/pro",
+      "plan": "free",
+      "catalogo": true,
+      "pasos": [
+        {
+          "oferta": {
+            "periodo": "anual",
+            "pack": "uno",
+            "modo": "iron"
+          }
+        },
+        {
+          "espera": 500
+        },
+        {
+          "desplazar": "fin",
+          "ms": 0
+        }
+      ],
+      "asentar": 3200
+    },
+    {
+      "id": "compra-nivl_focus_mensual",
+      "titulo": "Compra focus mensual",
+      "ruta": "/pro",
+      "plan": "free",
+      "catalogo": true,
+      "pasos": [
+        {
+          "oferta": {
+            "periodo": "mensual",
+            "pack": "uno",
+            "modo": "focus"
+          }
+        },
+        {
+          "espera": 500
+        },
+        {
+          "desplazar": "fin",
+          "ms": 0
+        }
+      ],
+      "asentar": 3200
+    },
+    {
+      "id": "compra-nivl_focus_anual",
+      "titulo": "Compra focus anual",
+      "ruta": "/pro",
+      "plan": "free",
+      "catalogo": true,
+      "pasos": [
+        {
+          "oferta": {
+            "periodo": "anual",
+            "pack": "uno",
+            "modo": "focus"
+          }
+        },
+        {
+          "espera": 500
+        },
+        {
+          "desplazar": "fin",
+          "ms": 0
+        }
+      ],
+      "asentar": 3200
+    },
+    {
+      "id": "compra-nivl_work_mensual",
+      "titulo": "Compra work mensual",
+      "ruta": "/pro",
+      "plan": "free",
+      "catalogo": true,
+      "pasos": [
+        {
+          "oferta": {
+            "periodo": "mensual",
+            "pack": "uno",
+            "modo": "work"
+          }
+        },
+        {
+          "espera": 500
+        },
+        {
+          "desplazar": "fin",
+          "ms": 0
+        }
+      ],
+      "asentar": 3200
+    },
+    {
+      "id": "compra-nivl_work_anual",
+      "titulo": "Compra work anual",
+      "ruta": "/pro",
+      "plan": "free",
+      "catalogo": true,
+      "pasos": [
+        {
+          "oferta": {
+            "periodo": "anual",
+            "pack": "uno",
+            "modo": "work"
+          }
+        },
+        {
+          "espera": 500
+        },
+        {
+          "desplazar": "fin",
+          "ms": 0
+        }
+      ],
+      "asentar": 3200
+    },
+    {
+      "id": "compra-nivl_founder_mensual",
+      "titulo": "Compra founder mensual",
+      "ruta": "/pro",
+      "plan": "free",
+      "catalogo": true,
+      "pasos": [
+        {
+          "oferta": {
+            "periodo": "mensual",
+            "pack": "uno",
+            "modo": "founder"
+          }
+        },
+        {
+          "espera": 500
+        },
+        {
+          "desplazar": "fin",
+          "ms": 0
+        }
+      ],
+      "asentar": 3200
+    },
+    {
+      "id": "compra-nivl_founder_anual",
+      "titulo": "Compra founder anual",
+      "ruta": "/pro",
+      "plan": "free",
+      "catalogo": true,
+      "pasos": [
+        {
+          "oferta": {
+            "periodo": "anual",
+            "pack": "uno",
+            "modo": "founder"
+          }
+        },
+        {
+          "espera": 500
+        },
+        {
+          "desplazar": "fin",
+          "ms": 0
+        }
+      ],
+      "asentar": 3200
+    },
+    {
+      "id": "compra-nivl_todos_mensual",
+      "titulo": "Compra todos mensual",
+      "ruta": "/pro",
+      "plan": "free",
+      "catalogo": true,
+      "pasos": [
+        {
+          "oferta": {
+            "periodo": "mensual",
+            "pack": "todos"
+          }
+        },
+        {
+          "espera": 500
+        },
+        {
+          "desplazar": "fin",
+          "ms": 0
+        }
+      ],
+      "asentar": 3200
+    },
+    {
+      "id": "compra-nivl_todos_anual",
+      "titulo": "Compra todos anual",
+      "ruta": "/pro",
+      "plan": "free",
+      "catalogo": true,
+      "pasos": [
+        {
+          "oferta": {
+            "periodo": "anual",
+            "pack": "todos"
+          }
+        },
+        {
+          "espera": 500
+        },
+        {
+          "desplazar": "fin",
+          "ms": 0
+        }
+      ],
+      "asentar": 3200
     }
   ],
   "giras": {

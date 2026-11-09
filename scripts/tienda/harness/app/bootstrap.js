@@ -17,7 +17,16 @@ global.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
   onCommitFiberRoot(_id, raiz) { global.__TIENDA__.raiz = raiz; },
 };
 
-const { Linking } = require('react-native');
+const RN = require('react-native');
+const { Linking } = RN;
+// La tienda solo se «abre» en las escenas con catálogo (ver app/purchases.ts). En
+// la nueva arquitectura NativeModules es un objeto del host y no admite definir
+// propiedades: se envuelve la exportación que lee el código de la app.
+const modulosReales = RN.NativeModules;
+const modulos = new Proxy(modulosReales, {
+  get: (t, k) => (k === 'RNPurchases' ? (global.__TIENDA__.catalogo ? {} : undefined) : t[k]),
+});
+Object.defineProperty(RN, 'NativeModules', { configurable: true, enumerable: true, get: () => modulos });
 const { RELOJ_ARNES } = require('./reloj');
 
 const FechaReal = Date;
