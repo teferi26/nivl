@@ -1,0 +1,16 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "NIVL verwendet die Kamera für deine Nachweise, dein Profilbild und deine Fortschrittsfotos. Bilder werden nur an den Coach gesendet, wenn du sie ihm schickst.",
+    "NSPhotoLibraryUsageDescription": "NIVL verwendet deine Fotomediathek, um Nachweise, dein Profilbild und deine Fortschrittsfotos auszuwählen. Bilder werden nur an den Coach gesendet, wenn du sie ihm schickst.",
+    "NSMicrophoneUsageDescription": "NIVL verwendet das Mikrofon nur auf deinen Wunsch: um deinem Coach zu diktieren, während du die Sprachtaste gedrückt hältst. Es nimmt nie im Hintergrund auf.",
+    "NSPhotoLibraryAddUsageDescription": "NIVL speichert in deinen Fotos nur die Karten, die du beim Teilen speichern möchtest.",
+    "NSHealthShareUsageDescription": "NIVL liest aus Health nur die Kategorien, die du auswählst (Trainings, Schritte, aktive Energie, Puls, Schlaf und Gewicht), um deine Entwicklung zu zeigen und deine Einträge abzugleichen.",
+    "NSHealthUpdateUsageDescription": "NIVL speichert in Health die Trainings, die du mit der App misst, wenn du es erlaubst.",
+    "NSLocationWhenInUseUsageDescription": "NIVL verwendet deinen Standort während des Laufs oder der Radfahrt, die du startest, auch bei ausgeschaltetem Bildschirm, um Distanz, Tempo und Route zu berechnen. Außerhalb dieser Einheit wird er nicht verwendet.",
+    "NSSpeechRecognitionUsageDescription": "NIVL wandelt deine Stimme in Text um und sendet ihn an deinen Coach. Die Verarbeitung erfolgt nach Möglichkeit auf deinem Gerät.",
+    "NSCalendarsUsageDescription": "Wenn du deinen Kalender verbindest, kopiert NIVL Titel und Uhrzeiten deiner nächsten 14 Tage in dein Konto, und dein Coach kann sie verwenden, wenn du es erlaubt hast. NIVL liest ihn nur und ändert nie etwas darin.",
+    "NSRemindersUsageDescription": "NIVL liest nur deinen Kalender. Deine Erinnerungen werden weder gelesen noch geändert.",
+    "NSCalendarsFullAccessUsageDescription": "Wenn du deinen Kalender verbindest, kopiert NIVL Titel und Uhrzeiten deiner nächsten 14 Tage in dein Konto, und dein Coach kann sie verwenden, wenn du es erlaubt hast. NIVL liest ihn nur und ändert nie etwas darin.",
+    "NSRemindersFullAccessUsageDescription": "NIVL liest nur deinen Kalender. Deine Erinnerungen werden weder gelesen noch geändert."
+  }
+}

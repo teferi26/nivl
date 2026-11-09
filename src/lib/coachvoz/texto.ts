@@ -26,6 +26,11 @@ export interface OpcionesVoz {
    * («3 de octubre de 2027»); sin él, el año nunca se lee.
    */
   anioActual?: number;
+  /**
+   * Idioma del coach (`es`, `en`...). Leer cifras, unidades y abreviaturas en
+   * palabras solo está escrito en español: en los demás se deja al sintetizador.
+   */
+  idioma?: string;
 }
 
 // Emojis y pictogramas. Rangos explícitos (Hermes): símbolos y pictogramas
@@ -242,8 +247,10 @@ export function paraVoz(texto: string, opciones: OpcionesVoz = {}): string {
   s = lineas(s);
   s = enLinea(s);
   s = s.replace(EMOJI, '');
-  s = cifras(s, opciones);
-  s = abreviaturas(s);
+  if ((opciones.idioma ?? 'es') === 'es') {
+    s = cifras(s, opciones);
+    s = abreviaturas(s);
+  }
   // Restos sueltos de markdown que no formaban pareja.
   s = s.replace(/[*`~|]/g, '').replace(/(^|\s)#+(?=\s|$)/g, '$1').replace(/(^|\s)_+(?=\s|$)/g, '$1');
   s = s.replace(/(\w)_(\w)/g, '$1 $2');

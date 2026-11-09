@@ -236,7 +236,7 @@
     "crudo": {
       "rotulo": "Bevor wir weitermachen",
       "titulo": "Ich werde hart zu dir sein.",
-      "cuerpo": "Ich bin nicht hier, damit du mich magst. Ich bin hier, damit du in 90 Tagen nicht mehr derselbe Mensch bist.",
+      "cuerpo": "Ich bin nicht hier, um dir zu gefallen. Ich bin hier, damit du in 90 Tagen zurückblicken und sehen kannst, was du getan hast.",
       "detalle": "Ich sage dir, wenn du dich selbst belügst. Ich warne dich, wenn du dich drücken willst. Und ich bin bei dir, jedes Mal, wenn du lieferst.",
       "pregunta": "Wie soll ich mit dir reden?",
       "duro": "Ohne Filter. Sag mir alles",
@@ -287,8 +287,8 @@
       }
     },
     "veredicto": {
-      "duro": "{{cuanto}} willst du das schon, und deine Ausrede ist „{{freno}}“. Mit {{min}} am Tag reicht es. Was nicht reicht, ist weiter zu warten.",
-      "tacto": "{{cuanto}} willst du das schon. Bei „{{freno}}“ hängen zu bleiben ist normal. Mit {{min}} am Tag schaffst du es, und ich bringe dich hin."
+      "duro": "{{cuanto}} willst du das schon, und deine Ausrede ist „{{freno}}“. Mit {{min}} am Tag kannst du anfangen. Was nicht hilft, ist weiter zu warten.",
+      "tacto": "{{cuanto}} willst du das schon. Es ist normal, an „{{freno}}“ hängen zu bleiben. Mit {{min}} am Tag kannst du vorankommen, und ich begleite dich."
     },
     "hitos": {
       "deportista": {
@@ -330,7 +330,7 @@
         },
         "dia90": {
           "titulo": "Die Bilanz",
-          "detalle": "Ergebnisse, die du zeigen kannst."
+          "detalle": "Was du getan hast, gemessen."
         }
       },
       "emprendedor": {

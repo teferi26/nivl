@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+import { registroVivo } from './textosVivos';
 // Purpose/version kept independent from age and the permission to send to AI.
 export const HEALTH_CONSENT_VERSION = '2026-09-27-salud-v1';
 export interface HealthConsent {
@@ -16,15 +18,14 @@ export function readHealthConsent(value: unknown): HealthConsent {
     erasurePending: v.erasure_pending === true,
   };
 }
-export const HEALTH_COPY = {
-  title: 'Tus datos de salud',
-  purpose: 'Con tu permiso, NIVL guarda y utiliza tu peso, ficha física, entrenamientos, alimentación y diario de bienestar para mostrar tu evolución y ofrecerte las funciones del coach. Si los conectas, también guarda en tu cuenta, en nuestros servidores, lo que midas con Apple Watch o leas de Apple Salud (pulso, sueño, pasos, energía activa y sesiones) y las rutas GPS de tus entrenos, que muestran tu ubicación durante cada sesión. El diario, las fotos, los planes, su memoria y los registros que crea o modifica el coach pueden mezclar salud con otros datos.',
-  storage: 'El responsable es Teferi Samuel Laforga Ena (soporte@nivl.app). Los datos se alojan en Supabase, en Frankfurt. Este permiso no activa la IA ni autoriza por sí solo envíos a sus proveedores: el coach pide un consentimiento separado.',
-  choice: 'Es opcional. Sin aceptarlo puedes seguir con hábitos generales, campañas, metas generales y economía. El coach y el oráculo requieren este permiso porque su conversación e historial pueden incluir datos de salud.',
-  withdrawal: 'Puedes retirar este permiso desde Perfil y borrar los datos identificados como salud, TODO el diario, las fotos, la memoria y los registros marcados por el coach. Antes podrás exportarlos. Se conservan tus puntos, los importes y cuentas de Economía y los registros generales sin esas marcas. En Economía se retiran las anotaciones y se desactivan las reglas automáticas marcadas como texto de IA. El texto general anterior que no esté identificado como salud no se borra automáticamente.',
-  checkbox: 'Consiento explícitamente que NIVL guarde y utilice mis datos de salud para estas finalidades.',
-  erase: 'Se eliminarán tu ficha física, peso, entrenamiento con sus rutas GPS y datos de pulso, los datos de Apple Salud y Apple Watch (pulso, sueño, pasos y energía activa), alimentación, metas físicas, objetivos y cartas marcados como salud, hábitos y reglas físicos con sus registros, TODO el diario y sus fotos, fotos de misiones, conversaciones, memoria, resúmenes y planes. También los hábitos, reglas, campañas, agenda, compras y metas creados o modificados por el coach y marcados como contenido mixto. Pueden mezclar salud con otros datos: se elimina el registro completo. En Economía se retiran las anotaciones y se desactivan las reglas automáticas marcadas como texto de IA; se conservan las cuentas, movimientos e importes. Tus puntos y los registros generales sin marcas de salud o del coach se conservan. El texto general anterior no identificado como salud no se borra automáticamente. Exporta antes si quieres una copia. Esta acción no se puede deshacer.',
-} as const;
+/** Titular del tratamiento: fuera del catálogo para no repetirlo en seis idiomas. */
+const RESPONSABLE = 'Teferi Samuel Laforga Ena';
+
+const CLAVES_SALUD = ['title', 'purpose', 'storage', 'choice', 'withdrawal', 'checkbox', 'erase'] as const;
+
+export const HEALTH_COPY = registroVivo(CLAVES_SALUD, (c) =>
+  c === 'storage' ? t('legal:salud.storage', { responsable: RESPONSABLE }) : t(`legal:salud.${c}` as 'legal:salud.title'),
+);
 export const HEALTH_ROUTES = new Set(['gym', 'cardio', 'dieta', 'nutricion', 'diario', 'archivo', 'memoria', 'resumen', 'coach', 'oraculo', 'informe', 'fotos', 'salud-conexion', 'entreno-gps']);
 
 /**

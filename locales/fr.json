@@ -1,0 +1,16 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "NIVL utilise l'appareil photo pour vos preuves, votre photo de profil et vos photos de progression. Les images ne sont envoyées au coach que si vous les lui envoyez.",
+    "NSPhotoLibraryUsageDescription": "NIVL utilise votre photothèque pour choisir vos preuves, votre photo de profil et vos photos de progression. Les images ne sont envoyées au coach que si vous les lui envoyez.",
+    "NSMicrophoneUsageDescription": "NIVL n'utilise le micro que lorsque vous le demandez : pour dicter à votre coach pendant que vous maintenez le bouton vocal. Il n'enregistre jamais en arrière-plan.",
+    "NSPhotoLibraryAddUsageDescription": "NIVL enregistre dans vos photos uniquement les cartes que vous choisissez d'enregistrer en partageant.",
+    "NSHealthShareUsageDescription": "NIVL lit dans Santé uniquement les catégories que vous choisissez (entraînements, pas, énergie active, fréquence cardiaque, sommeil et poids) pour montrer votre évolution et recouper ce que vous enregistrez.",
+    "NSHealthUpdateUsageDescription": "NIVL enregistre dans Santé les entraînements que vous mesurez avec l'app, si vous l'autorisez.",
+    "NSLocationWhenInUseUsageDescription": "NIVL utilise votre position pendant la course ou la sortie à vélo que vous lancez, même écran éteint, pour calculer la distance, l'allure et le parcours. Il ne l'utilise pas en dehors de cette séance.",
+    "NSSpeechRecognitionUsageDescription": "NIVL convertit votre voix en texte pour l'envoyer à votre coach. Le traitement a lieu sur votre appareil lorsque c'est possible.",
+    "NSCalendarsUsageDescription": "Si vous connectez votre calendrier, NIVL copie dans votre compte le titre et les horaires de vos 14 prochains jours, et votre coach peut les utiliser si vous l'avez autorisé. Il le lit seulement : il n'y change jamais rien.",
+    "NSRemindersUsageDescription": "NIVL lit seulement votre calendrier. Il ne lit ni ne modifie vos rappels.",
+    "NSCalendarsFullAccessUsageDescription": "Si vous connectez votre calendrier, NIVL copie dans votre compte le titre et les horaires de vos 14 prochains jours, et votre coach peut les utiliser si vous l'avez autorisé. Il le lit seulement : il n'y change jamais rien.",
+    "NSRemindersFullAccessUsageDescription": "NIVL lit seulement votre calendrier. Il ne lit ni ne modifie vos rappels."
+  }
+}

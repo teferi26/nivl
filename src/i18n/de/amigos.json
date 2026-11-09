@@ -13,7 +13,13 @@
     "desbloquear": "Nutzer entsperren",
     "desbloquearMensaje": "Die Person kann dir wieder Freundschaftsanfragen schicken. Die frühere Freundschaft wird nicht wiederhergestellt. Seid ihr im selben Ludus, erscheint sie dort wieder.",
     "desbloquearConfirmar": "Entsperren",
-    "soporteNoAbierto": "Support konnte nicht geöffnet werden"
+    "soporteNoAbierto": "Support konnte nicht geöffnet werden",
+    "motivos": {
+      "name": "Beleidigender Name oder Titel",
+      "avatar": "Unangemessenes Foto",
+      "harassment": "Belästigung oder Drohungen",
+      "impersonation": "Identitätsmissbrauch"
+    }
   },
   "duelo": {
     "rivalOculto": "Rivale verborgen",

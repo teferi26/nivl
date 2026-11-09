@@ -13,7 +13,13 @@
     "desbloquear": "Desbloquear utilizador",
     "desbloquearMensaje": "Poderá voltar a pedir amizade. A amizade anterior não se recupera. Se partilharem um ludus, volta a aparecer.",
     "desbloquearConfirmar": "Desbloquear",
-    "soporteNoAbierto": "Não foi possível abrir o suporte"
+    "soporteNoAbierto": "Não foi possível abrir o suporte",
+    "motivos": {
+      "name": "Nome ou título ofensivo",
+      "avatar": "Foto inadequada",
+      "harassment": "Assédio ou ameaças",
+      "impersonation": "Usurpação de identidade"
+    }
   },
   "duelo": {
     "rivalOculto": "Rival oculto",

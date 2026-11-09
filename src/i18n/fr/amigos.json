@@ -13,7 +13,13 @@
     "desbloquear": "Débloquer l'utilisateur",
     "desbloquearMensaje": "Cette personne pourra de nouveau te demander en ami. L'ancienne amitié ne revient pas. Si vous partagez un ludus, elle y réapparaîtra.",
     "desbloquearConfirmar": "Débloquer",
-    "soporteNoAbierto": "Impossible d'ouvrir le support"
+    "soporteNoAbierto": "Impossible d'ouvrir le support",
+    "motivos": {
+      "name": "Nom ou titre offensant",
+      "avatar": "Photo inappropriée",
+      "harassment": "Harcèlement ou menaces",
+      "impersonation": "Usurpation d'identité"
+    }
   },
   "duelo": {
     "rivalOculto": "Rival masqué",

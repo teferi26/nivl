@@ -19,8 +19,8 @@ import { Interruptor } from '@/components/ui/Interruptor';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { NOMBRE_IDIOMA, t, type Idioma, type Preferencia } from '@/i18n';
 import {
-  DESCARGO_SALUD,
-  LINEA_CRISIS,
+  descargoSalud,
+  lineaCrisis,
   lineaPerfil,
   type EstadoConsentimiento,
 } from '@/lib/consent';
@@ -313,7 +313,7 @@ export function PerfilAjustes({
             accessibilityLabel={t('perfil:ajustes.envioDatosA11y')}
           />
         </Card>
-        <Text style={styles.nota}>{`${DESCARGO_SALUD} ${LINEA_CRISIS}`}</Text>
+        <Text style={styles.nota}>{`${descargoSalud()} ${lineaCrisis()}`}</Text>
       </Section>
 
       {salud ?? (sinSalud ? null : <HealthPrivacySection />)}

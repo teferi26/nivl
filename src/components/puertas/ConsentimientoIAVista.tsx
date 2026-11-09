@@ -18,7 +18,7 @@ import { TarjetaArena } from '@/components/arena';
 import { SystemButton } from '@/components/SystemButton';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
-import { DATOS_IA, DESCARGO_SALUD, LINEA_CRISIS, PROVEEDORES_IA, TEXTO_CONSENTIMIENTO as T } from '@/lib/consentmath';
+import { DATOS_IA, descargoSalud, lineaCrisis, PROVEEDORES_IA, TEXTO_CONSENTIMIENTO as T } from '@/lib/consentmath';
 import { LEGAL_URLS } from '@/lib/proplans';
 import { HojaPuerta } from './HojaPuerta';
 import { texto } from './estilos';
@@ -91,7 +91,7 @@ export function ConsentimientoIAVista({ visible, ocupada, aviso, onAceptar, onCe
         <View style={styles.descargoFila}>
           <Ionicons name="medkit-outline" size={18} color={ink.ink9} style={styles.descargoIcono} />
           <Text style={[texto.mensaje, styles.flex]} maxFontSizeMultiplier={1.6}>
-            {DESCARGO_SALUD} {LINEA_CRISIS}
+            {descargoSalud()} {lineaCrisis()}
           </Text>
         </View>
       </TarjetaArena>

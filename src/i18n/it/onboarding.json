@@ -236,7 +236,7 @@
     "crudo": {
       "rotulo": "Prima di continuare",
       "titulo": "Sarò crudo con te.",
-      "cuerpo": "Non sono qui per starti simpatico. Sono qui perché tra 90 giorni tu non sia la stessa persona.",
+      "cuerpo": "Non sono qui per piacerti. Sono qui perché tra 90 giorni tu possa guardarti indietro e vedere ciò che hai fatto.",
       "detalle": "Ti dirò quando ti stai mentendo. Ti avviserò quando vorrai svignartela. E sarò con te ogni volta che manterrai la parola.",
       "pregunta": "Come vuoi che ti parli?",
       "duro": "Senza filtri. Dimmi tutto",
@@ -287,8 +287,8 @@
       }
     },
     "veredicto": {
-      "duro": "{{cuanto}} a volerlo e la tua scusa è «{{freno}}». Con {{min}} al giorno basta. Quello che non basta è continuare ad aspettare.",
-      "tacto": "{{cuanto}} a volerlo. È normale bloccarsi su «{{freno}}». Con {{min}} al giorno ci arrivi, e ti ci porto io."
+      "duro": "{{cuanto}} che lo vuoi e la tua scusa è «{{freno}}». Con {{min}} al giorno puoi iniziare. Ciò che non aiuta è continuare ad aspettare.",
+      "tacto": "{{cuanto}} che lo vuoi. È normale bloccarsi su «{{freno}}». Con {{min}} al giorno puoi iniziare ad avanzare, e ti accompagno."
     },
     "hitos": {
       "deportista": {
@@ -330,7 +330,7 @@
         },
         "dia90": {
           "titulo": "Il bilancio",
-          "detalle": "Risultati che puoi mostrare."
+          "detalle": "Ciò che hai fatto, misurato."
         }
       },
       "emprendedor": {

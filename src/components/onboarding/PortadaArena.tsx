@@ -10,7 +10,7 @@ import { StyleSheet, Text, View, useWindowDimensions, type LayoutChangeEvent } f
 import { Arena, ASangre, Entrada, Laurel, TarjetaArena } from '@/components/arena';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
-import { DESCARGO_SALUD } from '@/lib/consentmath';
+import { descargoSalud } from '@/lib/consentmath';
 
 /** Alto mínimo del graderío: el de 375 × 667, donde la portada ya se desplaza. */
 const ALTO_ARENA_MIN = 200;
@@ -44,7 +44,7 @@ export interface PortadaArenaProps {
   descargo?: string;
 }
 
-export function PortadaArena({ descargo = DESCARGO_SALUD }: PortadaArenaProps) {
+export function PortadaArena({ descargo = descargoSalud() }: PortadaArenaProps) {
   // El graderío necesita su ancho en pt: se mide el hueco a sangre.
   const [ancho, setAncho] = useState(0);
   const medir = (e: LayoutChangeEvent) => {
