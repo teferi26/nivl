@@ -252,15 +252,13 @@ struct SesionVista: View {
 
 // MARK: Reloj
 
-/// Cinzel no trae cifras tabulares (el «1» avanza 39 y el «0» 65 a 100 pt) y
-/// `.monospacedDigit()` no hace nada con ella: cada carácter va en su celda y el
-/// reloj no baila al cambiar de segundo.
+/// Cada carácter va en su celda: el reloj no baila al cambiar de segundo.
 private struct RelojFijo: View {
     let texto: String
     let tam: CGFloat
     let transicion: Bool
 
-    /// Avance del dígito más ancho de Cinzel Bold y de los dos puntos, por punto de cuerpo.
+    /// Avance de la cifra tabular de Playfair Bold y de los dos puntos, por punto de cuerpo.
     private static let anchoCifra: CGFloat = 0.66
     private static let anchoDosPuntos: CGFloat = 0.25
 
@@ -325,10 +323,10 @@ private struct ColumnaRutina: View {
     private func fila(i: Int, ej: EjercicioTV) -> some View {
         let (pasado, actual) = estado(i)
         return HStack(spacing: Hueco.s4) {
-            Rectangle()
+            RoundedRectangle(cornerRadius: Radio.mini, style: .continuous)
                 .fill(pasado || actual ? Tinta.i10 : Color.clear)
                 .frame(width: 22, height: 22)
-                .overlay(Rectangle().strokeBorder(pasado || actual ? Tinta.i10 : Tinta.i6, lineWidth: Trazo.hairline))
+                .marcoOnix(pasado || actual ? Tinta.i10 : Tinta.i6, ancho: Trazo.hairline, radio: Radio.mini)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 4) {
                 Text(ej.nombre)
@@ -345,9 +343,9 @@ private struct ColumnaRutina: View {
             Spacer(minLength: 0)
         }
         .padding(Hueco.s4)
-        .background(Tinta.i1, ignoresSafeAreaEdges: [])
+        .fondoOnix(Tinta.i1, radio: Radio.control)
         // El actual se dice con el trazo (frame), no con color.
-        .overlay(Rectangle().strokeBorder(actual ? Tinta.i10 : Tinta.i3, lineWidth: actual ? Trazo.frame : Trazo.hairline))
+        .marcoOnix(actual ? Tinta.i10 : Tinta.i3, ancho: actual ? Trazo.frame : Trazo.hairline, radio: Radio.control)
         .accessibilityElement(children: .combine)
         .accessibilityValue(pasado ? "Terminado" : (actual ? "En curso" : "Pendiente"))
     }
@@ -385,7 +383,7 @@ private struct ColumnaTecnica: View {
                     Rotulo(texto: "Técnica")
                     ForEach(ejercicio.tecnica, id: \.self) { pista in
                         HStack(alignment: .firstTextBaseline, spacing: Hueco.s3) {
-                            Rectangle().fill(Tinta.i10).frame(width: 10, height: 10).accessibilityHidden(true)
+                            Circle().fill(Oro.hilo).frame(width: 10, height: 10).accessibilityHidden(true)
                             Text(pista).font(Tipo.cuerpoSm).foregroundStyle(Tinta.i9).lineLimit(2)
                         }
                     }

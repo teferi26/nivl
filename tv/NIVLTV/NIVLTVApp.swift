@@ -235,7 +235,7 @@ struct PestanasVista<Cuenta: View>: View {
 
     @ViewBuilder private var pestanaEntreno: some View {
         if let datos {
-            EntrenoPantalla(rutina: datos.rutina, saludActiva: datos.saludActiva, proxima: datos.proxima, estadoInicial: estadoInicial)
+            EntrenoPantalla(rutina: datos.rutina, saludActiva: datos.saludActiva, ironAbierto: datos.ironAbierto, proxima: datos.proxima, estadoInicial: estadoInicial)
         } else {
             HuecosEntreno()
         }
@@ -272,7 +272,7 @@ struct SelloFrescura: View {
                     .lineLimit(1)
                     .padding(.horizontal, Hueco.s4)
                     .padding(.vertical, Hueco.s2)
-                    .background(Tinta.i10, ignoresSafeAreaEdges: [])
+                    .fondoOnix(Tinta.i10, radio: Radio.chip)
                     .accessibilityIdentifier("selloFrescura")
             }
         }

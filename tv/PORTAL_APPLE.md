@@ -41,18 +41,20 @@ Ojo, es casi definitivo en los dos sentidos: Apple no fusiona registros separado
 - Salud y actividad física: declararla, vinculada, para funcionalidad. En sentido estricto la TV la lee y no la envía; marcarla es la opción honesta para una app de hábitos que enseña el peso.
 - Sin seguimiento, sin publicidad.
 
-**Cifrado.** Solo HTTPS del sistema. El Info.plist no lleva `ITSAppUsesNonExemptEncryption`, así que preguntará en cada build; responde que no usa cifrado no exento **[confirmar en el formulario]**.
+**Cifrado.** Solo HTTPS del sistema. El Info.plist declara `ITSAppUsesNonExemptEncryption = NO`, así que no preguntará en cada build.
 
 **Manifiesto de privacidad.** No hay `PrivacyInfo.xcprivacy`. Una búsqueda en `tv/NIVLTV` no encuentra `UserDefaults` ni las otras API de razón obligatoria, y no hay SDK de terceros. Si el validador lo pide, se añade.
 
-## 4. Lo que falta en el proyecto antes de subir
+## 4. Qué lleva ya el proyecto
 
-- **Icono: no existe.** `Assets.xcassets` solo tiene `AccentColor` y el proyecto no define `ASSETCATALOG_COMPILER_APPICON_NAME`. La subida fallará sin él. Hay que añadir un conjunto «App Icon & Top Shelf Image» (`.brandassets`) y definir ese ajuste con su nombre:
-  - Icono en capas (LSR): **de 2 a 5 capas**, rectangular, sin esquinas redondeadas, con zona segura. Tamaños: 400x240 y 800x480 en el aparato y 1280x768 para la tienda. Los 800x480 salen de las HIG actuales; 400x240 y 1280x768, de la referencia archivada de Apple y foros.
-  - Blanco y negro, como todo lo demás. El escudo con la N en una capa delantera y el mármol detrás.
-- **Top Shelf: no existe.** Imagen estática de **2320x720** a @1x y **4640x1440** a @2x (HIG actuales). No hace falta extensión. Las HIG piden al menos esta imagen si no hay contenido dinámico. La de 1920x720 aparece solo en documentación antigua: si el validador la reclama, añádela.
-- **Versión.** `MARKETING_VERSION` es 0.1.0. Ponla como la versión que abras en App Store Connect (1.0.0).
-- **Servidor.** Release sin `Config/Servidor.local.xcconfig` relleno no compila, a propósito.
+- **Icono en capas y Top Shelf**: `App Icon & Top Shelf Image.brandassets`, generado con `tv/herramientas/generar-iconos.swift`. Dos capas (escudo con la N delante, fondo Ónix detrás), a 400x240, 800x480 y 1280x768; Top Shelf a 1920x720 y 2320x720, @1x y @2x, sin alfa.
+- **Versión** 1.1.0, cifrado no exento declarado en el Info.plist (`ITSAppUsesNonExemptEncryption = NO`).
+- **Archivo Release**: comprobado sin firma para `appletvos` (el catálogo compila y el Info.plist lleva icono y Top Shelf). La validación final de Apple solo se ve al subir.
+- **Para archivar** necesitas `tv/Config/Servidor.local.xcconfig` con URL, clave pública y `DEVELOPMENT_TEAM`, y tu sesión de Apple en Xcode. Luego:
+
+```bash
+tv/herramientas/archivar.sh
+```
 
 ## 5. Revisión: cómo probará Apple el enlace
 
@@ -66,7 +68,7 @@ Y además:
 
 - **Cuenta de prueba** real en producción, con rutina para hoy, amigos e historial, creada a mano. Sus credenciales van en el campo de App Store Connect. **Nunca en el repo.**
 - **Un vídeo corto** del enlace con iPhone y TV, enlazado en las notas.
-- **La pantalla del iPhone llega por OTA.** Una instalación limpia de la App Store la recibe en el segundo arranque, a veces más tarde. Si el binario de iOS de ese momento ya la incluye, mejor.
+- **La pantalla del iPhone tiene que estar publicada antes** de mandar la TV a revisión: en Perfil, Televisores, y en el QR.
 
 Riesgos a tener claros:
 
@@ -78,7 +80,7 @@ Riesgos a tener claros:
 - TestFlight admite tvOS. Internos: hasta 100, sin revisión. Externos: el primer build pasa revisión beta. Cada build dura 90 días. El Apple TV necesita la app TestFlight.
 - Apple exige **Xcode 26 o superior** para compilar apps de tvOS. Aquí se ha compilado para simulador con Xcode 27.2.
 - **El CI no cubre tvOS.** `.github/workflows/ios-testflight.yml` solo construye la app de Expo con EAS. Hoy el binario se archiva a mano en un Mac. Tampoco vale EAS, que no conoce este proyecto.
-- A mano: en Xcode, abre `tv/NIVLTV.xcodeproj`, destino «Any tvOS Device», Product, Archive, y Distribute App a App Store Connect. Alternativas: Transporter o `xcrun altool` con plataforma tvOS.
+- En un Mac: `tv/herramientas/archivar.sh`, y sube lo exportado con Transporter. También vale Xcode: destino «Any tvOS Device», Product, Archive, Distribute App.
 
 ## Fuentes
 

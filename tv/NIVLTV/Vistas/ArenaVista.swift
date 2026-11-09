@@ -157,7 +157,7 @@ private struct FilaRanking: View {
                                 .foregroundStyle(Tinta.i0)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 2)
-                                .background(Tinta.i10)
+                                .fondoOnix(Tinta.i10, radio: Radio.mini)
                                 .fixedSize()
                         }
                         if fila.elite { LaurelElite(tam: 24).fixedSize() }
@@ -186,9 +186,9 @@ private struct FilaRanking: View {
         }
         .padding(.horizontal, Hueco.s6)
         .padding(.vertical, Hueco.s4)
-        .background(enfocada ? Tinta.i2 : Tinta.i1, ignoresSafeAreaEdges: [])
+        .fondoOnix(enfocada ? Tinta.i2 : Tinta.i1, radio: Radio.control)
         // Con foco se ve desde el sofá: marco grueso y escala. Tu fila ya lleva su etiqueta TÚ.
-        .overlay(Rectangle().strokeBorder(enfocada ? Tinta.i10 : (fila.soyYo ? Tinta.i8 : Tinta.i3),
+        .overlay(RoundedRectangle(cornerRadius: Radio.control, style: .continuous).strokeBorder(enfocada ? Tinta.i10 : (fila.soyYo ? Oro.hilo : Tinta.i3),
                                           lineWidth: enfocada ? Trazo.frame : (puesto <= 3 && !fila.soyYo ? Trazo.rule : Trazo.hairline)))
         .scaleEffect(enfocada ? 1.05 : 1)
         .animation(.easeOut(duration: Foco.duracion), value: enfocada)
@@ -219,7 +219,7 @@ private struct SelloRango: View {
             .font(Tipo.numero)
             .foregroundStyle(Tinta.i10)
             .frame(width: 64, height: 64)
-            .overlay(Rectangle().strokeBorder(Tinta.i10, lineWidth: marco))
+            .marcoOnix(Tinta.i10, ancho: marco, radio: Radio.chip)
             .accessibilityHidden(true)
     }
 }

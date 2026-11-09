@@ -1,6 +1,6 @@
 # Contrato de la TV con el servidor
 
-Migraciones `0125_tv_enlace`, `0126_tv_datos`, `0127_tv_export` y `0128_tv_proxima`. Pruebas: `scripts/test-tv-enlace.mjs` y `scripts/test-tv-proxima.mjs`.
+Migraciones `0125_tv_enlace`, `0126_tv_datos`, `0127_tv_export`, `0128_tv_proxima` y `0144_tv_modo_iron`. Pruebas: `scripts/test-tv-enlace.mjs`, `scripts/test-tv-proxima.mjs` y `scripts/test-tv-modos.mjs`.
 
 ## Transporte
 
@@ -65,6 +65,7 @@ Con `"estado":"ok"`:
 | `arena` | array | Ya ordenada. Solo filas visibles. Siempre incluye la propia |
 | `ludus` | objeto o null | null si no está en un ludus. Sin puesto ni orden por puntos |
 | `semana` | objeto | Ver abajo |
+| `iron_abierto` | bool | 0144. false si `modos_1011` está encendido y la cuenta no tiene IRON (`ai_modos`): entonces `rutina` y `proxima` son null. Arena, ludus y semana siguen. La TV lo trata como opcional (ausente = abierto) |
 | `proxima` | objeto o null | 0128. El primer día con entreno de los siete siguientes. null sin consentimiento o sin nada programado. La TV lo trata como opcional |
 
 `proxima`: `nombre` string, `dia_semana` int (1 lunes a 7 domingo), `en_dias` int (1 = mañana, hasta 7), `ejercicios` int (nunca 0).

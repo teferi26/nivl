@@ -204,8 +204,8 @@ final class CodigoTests: XCTestCase {
         XCTAssertFalse(buscador(n - 7, n - 7), "si estuviera aquí el QR saldría volteado")
 
         let datos = try XCTUnwrap(imagen.dataProvider?.data) as Data
-        XCTAssertEqual(datos[0], 0, "la zona de silencio es negra")
-        XCTAssertEqual(datos[(4 * imagen.width) + 4], 255, "el módulo es blanco")
+        XCTAssertEqual(datos[0], 234, "la zona de silencio es clara")
+        XCTAssertEqual(datos[(4 * imagen.width) + 4], 9, "el módulo es oscuro sobre hueso")
     }
 }
 

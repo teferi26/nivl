@@ -7,12 +7,14 @@ import Foundation
 
 /// Qué pinta la pestaña Entreno.
 enum EstadoEntreno: Equatable {
+    case ironCerrado
     case sinSalud
     case rutina(RutinaTV)
     case rutinaVacia(nombre: String)
     case descanso(ProximaSesion?)
 
-    static func decidir(rutina: RutinaTV?, saludActiva: Bool, proxima: ProximaSesion?) -> EstadoEntreno {
+    static func decidir(rutina: RutinaTV?, saludActiva: Bool, proxima: ProximaSesion?, ironAbierto: Bool = true) -> EstadoEntreno {
+        guard ironAbierto else { return .ironCerrado }
         guard saludActiva else { return .sinSalud }
         guard let rutina else { return .descanso(proxima) }
         return rutina.ejercicios.isEmpty ? .rutinaVacia(nombre: rutina.nombre) : .rutina(rutina)
