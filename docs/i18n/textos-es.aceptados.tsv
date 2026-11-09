@@ -2462,3 +2462,5 @@ perfil	+	Revisión manual
 perfil	+	Solo lo verás tú
 perfil	+	Esta foto no ha pasado el filtro. Los demás verán una imagen neutra. Si crees que es un error, escribe a soporte.
 perfil	+	Este nombre no ha pasado el filtro. Los demás verán un alias neutro. Si crees que es un error, escribe a soporte.
+amigos	-	Un filtro automático revisa nombres, títulos y fotos antes de mostrarlos a otros. Si algo no pasa o sigue pendiente, verán un alias y una imagen neutros. Si no autorizas el filtro de una foto, espera a una revisión manual. Puedes denunciar y bloquear a cualquiera.
+amigos	+	No se permite acoso, amenazas, suplantación ni contenido ofensivo. Un filtro automático revisa nombres, títulos y fotos antes de mostrarlos a otros. Si algo no pasa o sigue pendiente, verán un alias y una imagen neutros. Si no autorizas el filtro de una foto, espera a una revisión manual. Puedes denunciar y bloquear a cualquiera. Tu perfil conserva tus datos.

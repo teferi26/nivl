@@ -166,7 +166,7 @@
   },
   "convivencia": {
     "titulo": "Miteinander und Sicherheit",
-    "cuerpo": "Ein automatischer Filter prüft Namen, Titel und Fotos, bevor andere sie sehen. Wenn etwas nicht besteht oder noch aussteht, sehen sie einen neutralen Alias und ein neutrales Bild. Wenn du den Filter für ein Foto nicht erlaubst, wartet es auf eine manuelle Prüfung. Du kannst jeden melden und blockieren.",
+    "cuerpo": "Belästigung, Drohungen, Identitätsmissbrauch und beleidigende Inhalte sind nicht erlaubt. Ein automatischer Filter prüft Namen, Titel und Fotos, bevor andere sie sehen. Wenn etwas nicht besteht oder noch aussteht, sehen sie einen neutralen Alias und ein neutrales Bild. Wenn du den Filter für ein Foto nicht erlaubst, wartet es auf eine manuelle Prüfung. Du kannst jeden melden und blockieren. Dein Profil behält deine Daten.",
     "bloqueado": "Nutzer blockiert",
     "desbloquear": "Entsperren"
   },

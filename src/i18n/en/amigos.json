@@ -166,7 +166,7 @@
   },
   "convivencia": {
     "titulo": "Community and safety",
-    "cuerpo": "An automatic filter checks names, titles and photos before others see them. If something doesn't pass or is still pending, they'll see a neutral alias and image. If you don't authorize the filter for a photo, it waits for manual review. You can report and block anyone.",
+    "cuerpo": "No harassment, threats, impersonation or offensive content. An automatic filter checks names, titles and photos before others see them. If something doesn't pass or is still pending, they'll see a neutral alias and image. If you don't authorize the filter for a photo, it waits for manual review. You can report and block anyone. Your profile keeps your details.",
     "bloqueado": "Blocked user",
     "desbloquear": "Unblock"
   },
