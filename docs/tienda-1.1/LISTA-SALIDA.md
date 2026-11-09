@@ -292,6 +292,16 @@ Fuera del repo, por los runs: el identificador de la complicación registrado en
 7. **Google Play:** crea la clave de Android en RevenueCat y añádela a EAS (PLAT-03), productos, Data safety, declaraciones, huella en `assetlinks.json`, y 12 testers durante 14 días si tu cuenta entra en la regla (ADV-4).
 8. **Decisiones:** reloj sí o no (PLAT-06), idiomas de la ficha (FICHA-2), productos antiguos (PAG-03), revisión legal de la letra traducida (PAG-11).
 
+## 8. Enviar la 1.1.0: orden
+
+Comprobado por API el 09/11/2026: versión 1.1.0 en preparación, build 44 válido y asignado, ficha en cuatro idiomas, capturas y vídeos procesados, notas limpias, contacto y cuenta de revisión rellenos, derechos de contenido y categorías. Lanzamiento manual tras aprobar.
+
+1. Aplicar la migración 0143 y desplegar `perfil-filtro`. Es condición nuestra, no de Apple: sin esto, las notas y la pantalla de Amigos describen un filtro que no existe.
+2. En la versión 1.1.0, sección «In-App Purchases and Subscriptions», marcar los diez productos.
+3. «Add for Review» y enviar.
+
+App Privacy no se puede leer por API: si faltara, Apple bloquearía el paso 3. Apple valida el resto al pulsar. La cuenta de revisión vence el 28/11: si la revisión se alarga, renovarla.
+
 [a-guia]: https://developer.apple.com/app-store/review/guidelines/
 [a-ugc]: https://developer.apple.com/app-store/review/guidelines/#user-generated-content
 [a-subs]: https://developer.apple.com/app-store/review/guidelines/#subscriptions

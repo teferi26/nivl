@@ -13,7 +13,7 @@ WHAT IT IS
 Habit and personal organisation app for people 16+ (declared at entry; body photos 18+). Habits, planning, progress and manual logs are free. Optional paid modes add an AI coach. Labels below are quoted in Spanish. [CAMPOS: if languages are on, add "UI follows the device language"]
 
 ACCESS
-Credentials are in the App Review sign-in fields. Cover > "Ya tengo cuenta" > "Entrar". Confirm age if asked. No permission is pre-accepted. No hardware or bank needed. [CAMPOS: a free account and an all-modes account, both in the private fields, with a demo friend]
+Credentials are in the App Review sign-in fields. Cover > "Ya tengo cuenta" > "Entrar". Confirm age if asked. No permission is pre-accepted. No hardware or bank needed. The account in the sign-in fields has full access until 2026-11-28; we will add a free account on request. [CAMPOS: a free account and an all-modes account, both in the private fields, with a demo friend]
 Perfil = profile icon, top right of Hoy.
 
 SUBSCRIPTIONS
@@ -33,7 +33,7 @@ AI
 Anthropic (Claude) only. A sheet names it, the data including health data, and the countries: "Acepto y activo el coach". Sent: name, missions, agenda with connected calendar titles and times, journal, weight, messages, attached photos, measured workouts with average and max heart rate. Daily Health summary only with the separate switch "Compartir con el coach", off by default. Never GPS routes, heart-rate series or email. Withdraw: Perfil > "Datos y la IA". Each reply has "Denunciar respuesta". After 3 full days without reply the coach pauses; "Reactivar coach".
 
 SOCIAL
-No person-to-person chat. Alias, title and photo are seen only through requests, friends and groups, appear at once and are reviewed weekly afterwards. Arena > "Ajustes de la arena" > a user's row or three dots > "Enviar denuncia" or "Bloquear usuario". "Convivencia y seguridad" has "Contactar con soporte".
+No person-to-person chat. Alias, title and photo are seen only through requests, friends and groups, pass an automatic filter before others see them, and are reviewed again on report. Arena > "Ajustes de la arena" > a user's row or three dots > "Enviar denuncia" or "Bloquear usuario". "Convivencia y seguridad" has "Contactar con soporte".
 
 DELETION
 Perfil > Cuenta > "Eliminar cuenta", type ELIMINAR, "Eliminar para siempre", confirm. Use a disposable account. It does not cancel a store subscription.
