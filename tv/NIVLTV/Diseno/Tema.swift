@@ -1,25 +1,51 @@
-// NIVL TV · Tokens de «Mármol y tinta» para la pantalla grande.
+// NIVL TV · Tokens de «Ónix» para la pantalla grande.
 //
-// Espejo de src/design/tokens.ts (la fuente única de la app). Solo blanco y
-// negro: el significado va en inversión, peso del trazo y escala, nunca en
-// color. Si cambia un ink allí, cámbialo aquí.
+// Espejo de src/design/tokens.ts (la fuente única de la app). Fondo casi negro,
+// texto y botón color hueso, tarjetas redondeadas y el oro solo como hilo en
+// cifras y detalles. Si cambia un token allí, cámbialo aquí.
 //
 // Escala de TV: se lee a tres metros. La pauta de Apple para tvOS pide cuerpo
 // de 29 pt o más; aquí la lectura mínima es 30 y los rótulos 24.
 
 import CoreText
 import SwiftUI
+import UIKit
 
 enum Tinta {
-    static let i0 = Color(hex: 0x000000) // fondo
-    static let i1 = Color(hex: 0x0B0B0B) // superficie
-    static let i2 = Color(hex: 0x161616) // superficie elevada
-    static let i3 = Color(hex: 0x242424) // hairline
-    static let i4 = Color(hex: 0x3A3A3A) // pista, borde de control
-    static let i6 = Color(hex: 0x8C8C8C) // texto terciario
-    static let i8 = Color(hex: 0xBDBDBD) // texto secundario
-    static let i9 = Color(hex: 0xEDEDED) // texto principal
-    static let i10 = Color(hex: 0xFFFFFF) // la inversión
+    static let i0 = Color(hex: 0x09090B) // fondo
+    static let i1 = Color(hex: 0x151517) // superficie
+    static let i2 = Color(hex: 0x1D1D1F) // superficie elevada
+    static let i3 = Color(hex: 0x2A2A2C) // hairline
+    static let i4 = Color(hex: 0x4A494C) // pista, borde de control
+    static let i6 = Color(hex: 0x8F8C85) // texto terciario
+    static let i8 = Color(hex: 0xB8B4AB) // texto secundario
+    static let i9 = Color(hex: 0xF5F2EC) // texto principal
+    static let i10 = Color(hex: 0xEDEAE3) // hueso: inversión y botón
+}
+
+/// El oro de Ónix: un hilo en cifras, rótulos y marcos. Nunca un relleno de botón.
+enum Oro {
+    static let hilo = Color(hex: 0xC9A961)
+    static let claro = Color(hex: 0xEAD9AE)
+}
+
+/// Radios: `tokens.ts` con la escala de TV. La tarjeta manda; lo de dentro, menos.
+enum Radio {
+    static let tarjeta: CGFloat = 28
+    static let control: CGFloat = 20
+    static let chip: CGFloat = 12
+    static let mini: CGFloat = 5
+}
+
+extension View {
+    /// Fondo con radio, sin invadir el área segura.
+    func fondoOnix<S: ShapeStyle>(_ estilo: S, radio: CGFloat) -> some View {
+        background { RoundedRectangle(cornerRadius: radio, style: .continuous).fill(estilo) }
+    }
+
+    func marcoOnix<S: ShapeStyle>(_ estilo: S, ancho: CGFloat, radio: CGFloat) -> some View {
+        overlay(RoundedRectangle(cornerRadius: radio, style: .continuous).strokeBorder(estilo, lineWidth: ancho))
+    }
 }
 
 /// Trazos: la jerarquía se dice con el peso (hairline 1 · rule 2 · frame 3),
@@ -56,13 +82,25 @@ enum Foco {
 }
 
 enum Tipo {
-    // Cinzel: títulos en mayúscula y cifras. Outfit: todo lo que se lee.
-    static func monumento(_ tam: CGFloat = 220) -> Font { .custom("Cinzel-Bold", fixedSize: tam) }
-    static let display = Font.custom("Cinzel-Bold", fixedSize: 96)
-    static let rango = Font.custom("Cinzel-Bold", fixedSize: 60)
-    static let cifra = Font.custom("Cinzel-SemiBold", fixedSize: 64)
-    static let numero = Font.custom("Cinzel-SemiBold", fixedSize: 44)
-    static let inscripcion = Font.custom("Cinzel-Bold", fixedSize: 26)
+    // Playfair: títulos y cifras. Outfit: todo lo que se lee.
+    static func monumento(_ tam: CGFloat = 220) -> Font { playfair("PlayfairDisplay-Bold", tam) }
+    static let display = playfair("PlayfairDisplay-Bold", 96)
+    static let rango = playfair("PlayfairDisplay-Bold", 60)
+    static let cifra = playfair("PlayfairDisplay-SemiBold", 64)
+    static let numero = playfair("PlayfairDisplay-SemiBold", 44)
+    static let inscripcion = playfair("PlayfairDisplay-Bold", 28)
+
+    /// Playfair trae por defecto cifras de estilo antiguo, que a tres metros bailan:
+    /// se piden alineadas y tabulares.
+    private static func playfair(_ nombre: String, _ tam: CGFloat) -> Font {
+        let ajustes: [[UIFontDescriptor.FeatureKey: Int]] = [
+            [.type: kNumberCaseType, .selector: kUpperCaseNumbersSelector],
+            [.type: kNumberSpacingType, .selector: kMonospacedNumbersSelector],
+        ]
+        let descriptor = UIFontDescriptor(name: nombre, size: tam).addingAttributes([.featureSettings: ajustes])
+        return Font(UIFont(descriptor: descriptor, size: tam))
+    }
+
     static let titulo = Font.custom("Outfit-Bold", fixedSize: 52)
     static let titular = Font.custom("Outfit-Bold", fixedSize: 38)
     static let cuerpo = Font.custom("Outfit-Medium", fixedSize: 32)
@@ -72,7 +110,7 @@ enum Tipo {
 }
 
 enum Fuentes {
-    /// Registra las TTF del paquete (Cinzel y Outfit, OFL). Sin Info.plist
+    /// Registra las TTF del paquete (Playfair y Outfit, OFL). Sin Info.plist
     /// propio: el proyecto genera el suyo y así no hay que mantener UIAppFonts.
     static func registrar() {
         let urls = Bundle.main.urls(forResourcesWithExtension: "ttf", subdirectory: nil) ?? []

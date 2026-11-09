@@ -209,5 +209,50 @@
     "fila": "Usage measurement",
     "activada": "On. Only the steps of the journey, never what you write.",
     "desactivada": "Off. Nothing is stored or sent."
+  },
+  "televisores": {
+    "ceja": "Apple TV",
+    "titulo": "TVs",
+    "subtitulo": "Your training and your table on the big screen.",
+    "entradaDetalle": "Link an Apple TV or cut its access.",
+    "enlazarSeccion": "Link with a code",
+    "codigoRotulo": "Your TV code",
+    "comoEnlazar": "Open NIVL on your Apple TV. Scan its QR with the camera or type here the code it shows.",
+    "enlazados": "Linked TVs",
+    "cuantos": "{{n}} of 5",
+    "cargando": "Loading TVs",
+    "ultimoUso": "Last used: {{fecha}}",
+    "ninguno": "No TV has access to your account.",
+    "verTelevisores": "See TVs",
+    "nombrePorDefecto": "Your Apple TV",
+    "quitar": {
+      "titulo": "Unlink TV",
+      "mensaje": "{{nombre}} will stop seeing your account.",
+      "confirmar": "Unlink"
+    },
+    "confirmar": {
+      "titulo": "Link TV",
+      "noValido": "This link has no valid code. Scan your TV code again.",
+      "vasA": "You are about to link an Apple TV.",
+      "codigoA11y": "Code {{codigo}}",
+      "advertencia": "Only do this if the code is on your own screen. If someone else gave it to you, reject it: whoever has that TV will see your quests, your routine, your weight and your ranking.",
+      "enlazar": "Link this TV",
+      "noHeSidoYo": "It was not me",
+      "hechoTitulo": "TV linked.",
+      "hechoCuerpo": "{{nombre}} now reads your account. Read only: nothing is logged from there. You can cut it any time in Profile, TVs.",
+      "rechazadoTitulo": "Code rejected.",
+      "rechazadoCuerpo": "No TV has accessed your account."
+    },
+    "motivo": {
+      "invalido": "The code is not valid or has expired. Ask the TV for another.",
+      "intentos": "Too many attempts. Wait an hour.",
+      "tope": "You already have five linked TVs. Unlink one to add another.",
+      "borrado": "Your account is being deleted. It cannot be linked."
+    },
+    "aviso": {
+      "titulo": "TV linked",
+      "cuerpo": "{{nombre}} can see your account. If it was not you, cut it in Profile, TVs."
+    },
+    "continuar": "Continue"
   }
 }

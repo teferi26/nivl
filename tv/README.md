@@ -1,12 +1,12 @@
 # NIVL TV (Apple TV · modo salón)
 
-Esta es una app nativa en SwiftUI para tvOS 17 o superior, con su propio bundle `com.teferi.nivl.tv`. Vive en esta carpeta y **no toca la app de React Native**: no hay dependencias nuevas, el `package-lock.json` sigue igual y la release de iOS no se ve afectada. Lee los datos reales de la cuenta, en **solo lectura**: desde la TV no se escribe ni XP, ni racha, ni ningún registro.
+Esta es una app nativa en SwiftUI para tvOS 17 o superior, con su propio bundle `com.teferi.nivl.tv`. Vive en esta carpeta, sin dependencias nuevas ni cambios en el `package-lock.json`. En la app de iPhone solo le corresponden `src/app/tv/` y la fila «Televisores» de Perfil. Lee los datos reales de la cuenta, en **solo lectura**: desde la TV no se escribe ni XP, ni racha, ni ningún registro.
 
 ## Qué hace
 
 | Pestaña | Contenido | Mando |
 |---|---|---|
-| **Entreno** | La rutina del día y su botón Empezar, «Hoy no toca» con la próxima sesión, o «Sin rutina» si no hay nada programado. La sesión guiada se abre a pantalla completa: series × repeticiones × carga prescrita y un reloj enorme. Lo que el servidor no da (figura, técnica, carga) no se pinta. Al acabar el descanso suena un aviso. Al terminar, la TV dice que se registra en el iPhone: no escribe ni marca nada. | Clic: serie terminada, o saltar el descanso. Play/Pausa: congela el descanso. Menú: confirma antes de salir de la sesión y nunca saca de la app. |
+| **Entreno** | Es IRON: con el modo cerrado dice «IRON cerrado» y no vende nada. Si está abierto, la rutina del día y su botón Empezar, «Hoy no toca» con la próxima sesión, o «Sin rutina» si no hay nada programado. La sesión guiada se abre a pantalla completa: series × repeticiones × carga prescrita y un reloj enorme. Lo que el servidor no da (figura, técnica, carga) no se pinta. Al acabar el descanso suena un aviso. Al terminar, la TV dice que se registra en el iPhone: no escribe ni marca nada. | Clic: serie terminada, o saltar el descanso. Play/Pausa: congela el descanso. Menú: confirma antes de salir de la sesión y nunca saca de la app. |
 | **Arena** | La tabla de amigos ya ordenada por el servidor, tu puesto, y una ficha con el nivel del gladiador que tiene el foco. Debajo, tu ludus si lo hay, en el orden del servidor y sin puestos. Las filas tienen foco pero no son botones: el clic no promete nada. | Al bajar desde las pestañas, el foco cae en tu fila. Arriba y abajo recorren la tabla. |
 | **Semana** | Racha, piedras, XP ganado, misiones hechas y falladas por día (las falladas en trama), el mapa de 12 semanas y la tendencia de peso con la recta del estudio. Sin peso, sin recta o sin consentimiento, esa tarjeta no existe. Cuenta nueva: una frase en vez de ceros. | Solo lectura: nada enfocable. |
 | **Cuenta** | Quién está enlazado, última sincronización, Sincronizar ahora y Cerrar sesión con confirmación. | Arriba y abajo entre los botones. |
@@ -32,7 +32,7 @@ cp tv/Config/Servidor.ejemplo.xcconfig tv/Config/Servidor.local.xcconfig   # y r
 
 En un xcconfig `//` empieza un comentario: la URL va como `https:/$()/proyecto.supabase.co`. **Release sin configurar no compila** (fase «Comprobar servidor»). Si un binario llegara a ejecutarse sin configuración, enseña «Servicio no disponible». ATS permite la red local solo en Debug (`Config/Info-Debug.plist`).
 
-El diseño sigue «Mármol y tinta» (`docs/design-v2/SISTEMA.md`): solo blanco y negro, Cinzel para los títulos y las cifras, Outfit para el texto, que se registran en tiempo de ejecución, y radio 0, salvo la píldora de la barra de pestañas: es del sistema y tvOS no deja cambiarla sin rehacer la barra entera. El foco se marca con **escala ×1,1 y un marco blanco**, nunca con hover. Los tokens copian `src/design/tokens.ts`, con escala de TV: el texto mínimo de lectura es de 30 pt.
+El diseño sigue **Ónix** (`src/design/tokens.ts`): fondo `#09090B`, botón y texto color hueso `#EDEAE3`, oro `#C9A961` solo como hilo en cifras y detalles, tarjetas redondeadas, Playfair Display para títulos y cifras (con numerales alineados y tabulares) y Outfit para leer. El foco se marca con **escala ×1,1 y un marco hueso**, nunca con hover. La píldora de la barra de pestañas es del sistema. Los tokens copian `tokens.ts` a escala de TV: el texto mínimo de lectura es de 30 pt. El QR va oscuro sobre hueso, la polaridad que leen todas las cámaras. El icono y la Top Shelf salen de `herramientas/generar-iconos.swift`.
 
 ## Por qué SwiftUI aparte y no react-native-tvos
 
@@ -75,19 +75,15 @@ xcrun simctl launch <udid> com.teferi.nivl.tv -nivlServidor http://127.0.0.1:543
 
 ## Lo que falta, en orden de despliegue
 
-Nada de esto está hecho. Se ha probado contra el SQL real de las migraciones en local y con el iPhone simulado; nunca contra producción, con un iPhone de verdad ni en un Apple TV físico.
+Se ha probado contra el SQL real de las migraciones en local y con el iPhone simulado; nunca contra producción, con un iPhone de verdad ni en un Apple TV físico.
 
-**a. Aplicar las migraciones** 0125 a 0128: `node scripts/apply-migrations.mjs`. Van primero: la OTA llega en minutos y no espera al servidor.
+**a. Aplicar las migraciones** 0125 a 0128 y 0144: `node scripts/apply-migrations.mjs`. La 0144 necesita la 0140. Van antes que la app.
 
-**b. Copiar la pantalla del iPhone y publicar por OTA.** Pasos en `integracion/INSTRUCCIONES.md`, con los dos requisitos que aún no existen: la entrada «Televisores enlazados» en Perfil y el aviso a la cuenta al aprobar. Es solo JS:
+**b. La pantalla del iPhone** (`src/app/tv/`) y la fila de Perfil ya están en el código: salen con el binario o la OTA de la 1.1.
 
-```bash
-npx eas-cli update --channel production --platform ios --environment production --message "…" --non-interactive
-```
+**c. Rellenar `Config/Servidor.local.xcconfig`** con la URL, la clave pública y `DEVELOPMENT_TEAM`.
 
-**c. Rellenar `Config/Servidor.local.xcconfig`** con la URL y la clave pública (arriba).
-
-**d. Alta en Apple**: `PORTAL_APPLE.md`. Antes de subir falta el **icono en capas y la imagen de Top Shelf**: sin ellos compila y corre en el simulador, pero no pasa la validación de la tienda. El CI no cubre tvOS.
+**d. Alta en Apple y archivo**: `PORTAL_APPLE.md`. Para archivar y exportar: `tv/herramientas/archivar.sh`. El CI no cubre tvOS.
 
 ## Para más adelante
 

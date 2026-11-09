@@ -209,5 +209,50 @@
     "fila": "Mesure d'utilisation",
     "activada": "Activée. Seulement les étapes du parcours, jamais ce que tu écris.",
     "desactivada": "Désactivée. Rien n'est enregistré ni envoyé."
+  },
+  "televisores": {
+    "ceja": "Apple TV",
+    "titulo": "Téléviseurs",
+    "subtitulo": "Ton entraînement et ton classement sur grand écran.",
+    "entradaDetalle": "Associe une Apple TV ou coupe son accès.",
+    "enlazarSeccion": "Associer avec un code",
+    "codigoRotulo": "Code de ta TV",
+    "comoEnlazar": "Ouvre NIVL sur ton Apple TV. Scanne son QR avec l'appareil photo ou saisis ici le code affiché.",
+    "enlazados": "Téléviseurs associés",
+    "cuantos": "{{n}} sur 5",
+    "cargando": "Chargement des téléviseurs",
+    "ultimoUso": "Dernière utilisation : {{fecha}}",
+    "ninguno": "Aucun téléviseur n'a accès à ton compte.",
+    "verTelevisores": "Voir les téléviseurs",
+    "nombrePorDefecto": "Ton Apple TV",
+    "quitar": {
+      "titulo": "Dissocier le téléviseur",
+      "mensaje": "{{nombre}} ne verra plus ton compte.",
+      "confirmar": "Dissocier"
+    },
+    "confirmar": {
+      "titulo": "Associer un téléviseur",
+      "noValido": "Ce lien ne contient pas de code valide. Scanne de nouveau le code de ta TV.",
+      "vasA": "Tu vas associer une Apple TV.",
+      "codigoA11y": "Code {{codigo}}",
+      "advertencia": "Fais-le seulement si ce code est sur ton propre écran. Si quelqu'un d'autre te l'a donné, refuse-le : la personne qui a cette TV verra tes missions, ta routine, ton poids et ton classement.",
+      "enlazar": "Associer ce téléviseur",
+      "noHeSidoYo": "Ce n'est pas moi",
+      "hechoTitulo": "Téléviseur associé.",
+      "hechoCuerpo": "{{nombre}} lit désormais ton compte. Lecture seule : rien n'est enregistré depuis là. Tu peux le couper quand tu veux dans Profil, Téléviseurs.",
+      "rechazadoTitulo": "Code refusé.",
+      "rechazadoCuerpo": "Aucun téléviseur n'a accédé à ton compte."
+    },
+    "motivo": {
+      "invalido": "Le code n'est pas valide ou a expiré. Demande-en un autre sur la TV.",
+      "intentos": "Trop de tentatives. Attends une heure.",
+      "tope": "Tu as déjà cinq téléviseurs associés. Dissocies-en un pour en ajouter un autre.",
+      "borrado": "Ton compte est en cours de suppression. Impossible d'associer."
+    },
+    "aviso": {
+      "titulo": "Téléviseur associé",
+      "cuerpo": "{{nombre}} voit ton compte. Si ce n'est pas toi, coupe-le dans Profil, Téléviseurs."
+    },
+    "continuar": "Continuer"
   }
 }

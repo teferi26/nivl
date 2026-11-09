@@ -209,5 +209,50 @@
     "fila": "Medição de utilização",
     "activada": "Ativada. Só os passos do percurso, nunca o que escreves.",
     "desactivada": "Desativada. Não se guarda nem se envia nada."
+  },
+  "televisores": {
+    "ceja": "Apple TV",
+    "titulo": "Televisores",
+    "subtitulo": "O teu treino e a tua tabela no ecrã grande.",
+    "entradaDetalle": "Liga uma Apple TV ou corta o acesso dela.",
+    "enlazarSeccion": "Ligar com um código",
+    "codigoRotulo": "Código da tua TV",
+    "comoEnlazar": "Abre o NIVL na tua Apple TV. Lê o QR com a câmara ou escreve aqui o código que aparece.",
+    "enlazados": "Televisores ligados",
+    "cuantos": "{{n}} de 5",
+    "cargando": "A carregar televisores",
+    "ultimoUso": "Último uso: {{fecha}}",
+    "ninguno": "Nenhum televisor tem acesso à tua conta.",
+    "verTelevisores": "Ver televisores",
+    "nombrePorDefecto": "A tua Apple TV",
+    "quitar": {
+      "titulo": "Desligar televisor",
+      "mensaje": "{{nombre}} deixará de ver a tua conta.",
+      "confirmar": "Desligar"
+    },
+    "confirmar": {
+      "titulo": "Ligar televisor",
+      "noValido": "Esta ligação não traz um código válido. Volta a ler o código da tua TV.",
+      "vasA": "Vais ligar uma Apple TV.",
+      "codigoA11y": "Código {{codigo}}",
+      "advertencia": "Faz isto só se o código estiver no teu próprio ecrã. Se outra pessoa to deu, recusa-o: quem tiver essa TV verá as tuas missões, a tua rotina, o teu peso e o teu ranking.",
+      "enlazar": "Ligar este televisor",
+      "noHeSidoYo": "Não fui eu",
+      "hechoTitulo": "Televisor ligado.",
+      "hechoCuerpo": "{{nombre}} já lê a tua conta. Só leitura: dali não se regista nada. Podes cortá-lo quando quiseres em Perfil, Televisores.",
+      "rechazadoTitulo": "Código recusado.",
+      "rechazadoCuerpo": "Nenhum televisor acedeu à tua conta."
+    },
+    "motivo": {
+      "invalido": "O código não é válido ou expirou. Pede outro na TV.",
+      "intentos": "Demasiadas tentativas. Espera uma hora.",
+      "tope": "Já tens cinco televisores ligados. Desliga um para adicionar outro.",
+      "borrado": "A tua conta está a ser apagada. Não se pode ligar."
+    },
+    "aviso": {
+      "titulo": "Televisor ligado",
+      "cuerpo": "{{nombre}} vê a tua conta. Se não foste tu, corta-o em Perfil, Televisores."
+    },
+    "continuar": "Continuar"
   }
 }

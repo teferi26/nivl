@@ -48,7 +48,7 @@ const RUTAS = {
   'src/components/DenunciarIA.tsx': 'puertas',
   'src/components/denunciaIA.ts': 'puertas',
 };
-const RUTAS_CARPETA = { 'src/app/auth/': 'acceso', 'src/app/dungeon/': 'campanas', 'src/app/c/': 'creador' };
+const RUTAS_CARPETA = { 'src/app/tv/': 'perfil', 'src/app/auth/': 'acceso', 'src/app/dungeon/': 'campanas', 'src/app/c/': 'creador' };
 const LIB = {
   'src/lib/voice.ts': 'voz',
   'src/lib/notifications.ts': 'avisos',

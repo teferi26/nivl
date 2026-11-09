@@ -132,8 +132,8 @@ private struct BarrasSemana: View {
                     VStack(spacing: 4) {
                         Trama()
                             .frame(height: alto * CGFloat(d.falladas) / CGFloat(tope))
-                            .overlay(Rectangle().strokeBorder(Tinta.i6, lineWidth: d.falladas > 0 ? Trazo.hairline : 0))
-                        Rectangle()
+                            .overlay(RoundedRectangle(cornerRadius: Radio.mini, style: .continuous).strokeBorder(Tinta.i6, lineWidth: d.falladas > 0 ? Trazo.hairline : 0))
+                        RoundedRectangle(cornerRadius: Radio.mini, style: .continuous)
                             .fill(Tinta.i10)
                             .frame(height: alto * CGFloat(d.hechas) / CGFloat(tope))
                     }
@@ -152,11 +152,11 @@ private struct Leyenda: View {
     var body: some View {
         HStack(spacing: Hueco.s8) {
             HStack(spacing: Hueco.s2) {
-                Rectangle().fill(Tinta.i10).frame(width: 24, height: 24)
+                RoundedRectangle(cornerRadius: Radio.mini, style: .continuous).fill(Tinta.i10).frame(width: 24, height: 24)
                 Text("Hechas").font(Tipo.rotulo).foregroundStyle(Tinta.i8)
             }
             HStack(spacing: Hueco.s2) {
-                Trama().frame(width: 24, height: 24).overlay(Rectangle().strokeBorder(Tinta.i6, lineWidth: Trazo.hairline))
+                Trama().frame(width: 24, height: 24).overlay(RoundedRectangle(cornerRadius: Radio.mini, style: .continuous).strokeBorder(Tinta.i6, lineWidth: Trazo.hairline))
                 Text("Falladas").font(Tipo.rotulo).foregroundStyle(Tinta.i8)
             }
         }
@@ -170,10 +170,10 @@ private struct EscalaMapa: View {
         HStack(spacing: Hueco.s2) {
             Text("Menos").font(Tipo.rotulo).foregroundStyle(Tinta.i8)
             ForEach(MapaCalor.escala, id: \.self) { v in
-                Rectangle().fill(MapaCalor.tinta(v)).frame(width: 20, height: 20)
+                RoundedRectangle(cornerRadius: Radio.mini, style: .continuous).fill(MapaCalor.tinta(v)).frame(width: 20, height: 20)
             }
             Text("Más").font(Tipo.rotulo).foregroundStyle(Tinta.i8)
-            Rectangle().strokeBorder(Tinta.i10, lineWidth: Trazo.hairline)
+            RoundedRectangle(cornerRadius: Radio.mini, style: .continuous).strokeBorder(Tinta.i10, lineWidth: Trazo.hairline)
                 .frame(width: 20, height: 20)
                 .padding(.leading, Hueco.s4)
             Text("Esta semana").font(Tipo.rotulo).foregroundStyle(Tinta.i8)
@@ -231,12 +231,12 @@ private struct MapaCalor: View {
             ForEach(mapa.indices, id: \.self) { s in
                 VStack(spacing: 6) {
                     ForEach(mapa[s].indices, id: \.self) { d in
-                        Rectangle()
+                        RoundedRectangle(cornerRadius: Radio.mini, style: .continuous)
                             .fill(Self.tinta(mapa[s][d]))
                             .frame(maxWidth: .infinity)
                             .frame(height: celda)
                             .overlay(
-                                Rectangle().strokeBorder(Tinta.i10, lineWidth: s == mapa.count - 1 ? Trazo.hairline : 0)
+                                RoundedRectangle(cornerRadius: Radio.mini, style: .continuous).strokeBorder(Tinta.i10, lineWidth: s == mapa.count - 1 ? Trazo.hairline : 0)
                             )
                     }
                 }

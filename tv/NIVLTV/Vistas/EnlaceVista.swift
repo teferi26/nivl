@@ -81,7 +81,7 @@ struct EnlaceVista: View {
                 .font(Tipo.inscripcion)
                 .foregroundStyle(Tinta.i0)
                 .frame(width: 48, height: 48)
-                .background(Tinta.i10, ignoresSafeAreaEdges: [])
+                .fondoOnix(Tinta.i10, radio: Radio.chip)
             Text(texto).font(Tipo.cuerpo).foregroundStyle(Tinta.i9).fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)
@@ -102,6 +102,7 @@ struct QRVista: View {
                 .interpolation(.none)
                 .antialiased(false)
                 .frame(width: total * escala, height: total * escala)
+                .clipShape(RoundedRectangle(cornerRadius: Radio.tarjeta, style: .continuous))
                 .frame(width: lado, height: lado)
                 .accessibilityElement()
                 .accessibilityLabel("Código QR para enlazar esta TV")
@@ -116,7 +117,7 @@ struct HuecoCarga: View {
     @State private var encendido = false
 
     var body: some View {
-        Rectangle()
+        RoundedRectangle(cornerRadius: Radio.tarjeta, style: .continuous)
             .fill(Tinta.i2)
             .opacity(reducir ? 1 : (encendido ? 1 : 0.45))
             .onAppear {

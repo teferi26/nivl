@@ -12,6 +12,7 @@ import { ActivityIndicator, Linking, Platform, StyleSheet, Text, View } from 're
 import { HealthPrivacySection } from '@/components/ConsentimientoSalud';
 import { MedicionUsoSection } from '@/components/consentimiento/ConsentimientoAnalitica';
 import { EntradaSaludConexion } from '@/components/medicion/EntradaSaludConexion';
+import { EntradaTelevisores } from '@/components/perfil/EntradaTelevisores';
 import { Version } from '@/components/Version';
 import { AyudaPerfil } from '@/components/ayuda';
 import { Button, Card, Chip, ChipWrap, Row, RowValue, Section, Tag } from '@/components/ui';
@@ -318,6 +319,7 @@ export function PerfilAjustes({
 
       {salud ?? (sinSalud ? null : <HealthPrivacySection />)}
       {sinSalud ? null : <EntradaSaludConexion />}
+      {sinSalud || Platform.OS === 'web' ? null : <EntradaTelevisores />}
       {/* Perfil > Privacidad > Medición de uso (consulta el móvil y el flag: fuera de la galería). */}
       {sinSalud ? null : <MedicionUsoSection />}
       <AyudaPerfil />
