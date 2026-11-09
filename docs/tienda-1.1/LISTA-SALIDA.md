@@ -41,13 +41,12 @@ Otros documentos, sin repetirlos: [productos](PRODUCTOS.md) · [plataformas y co
 - **Quién:** el dueño, pasos 1 a 3 de la sección 7. La opción de compilar sin reloj ya existe en `ios-testflight.yml` (`sin_reloj`). **Tamaño:** pequeño, pero exige su cuenta.
 - **Lo cierra:** run de `ios-testflight.yml` verde hasta "Subir a TestFlight" y build VALID en App Store Connect.
 
-### 4. PAG-04. Los diez productos y la offering sin confirmar
+### 4. PAG-04. Los diez productos [CREADOS en Apple; falta captura, RevenueCat y prueba]
 
-- **Qué pasa:** la app solo compra productos con los ids exactos. Si no existen, no van adjuntos a la 1.1 o la configuración de sandbox está mal, el revisor ve una compra muerta o paga y no recibe nada.
+- **Hecho por API el 09/11/2026:** los diez en el grupo `NIVL`, 165 territorios como los de Pro, precios por equalización desde España, 7 días gratis solo en los cinco anuales. Localizados en es-ES, en-US, en-GB y fr-FR. Comprobado leyendo la API. Los antiguos, intactos.
+- **Falta:** los diez siguen en `MISSING_METADATA` porque cada uno pide la captura de revisión de la pantalla de compra real. Offering en RevenueCat, adjuntarlos a la 1.1 y compra en sandbox.
 - **Norma:** [Apple 2.1][a-compl] y [3.1.1][a-iap], [Play Billing][g-billing].
-- **Evidencia:** `pro.ts:419-428`; `docs/PRECIOS.md:157`; `supabase/functions/_shared/store-config.ts:32-39`; `docs/tienda-1.1/PRODUCTOS.md:169`. Estado real en las tiendas: sin verificar.
-- **Quién:** dueño, con [PRODUCTOS.md](PRODUCTOS.md) secciones 7 y 9. Adjuntar los diez a la versión 1.1 y dejar `STORE_SANDBOX_ACCESS` vacío o en `all`. **Tamaño:** no aplica.
-- **Lo cierra:** tabla de la sección 13 completa y compra sandbox de cada producto con `mis_modos` correcto.
+- **Quién:** el dueño, sección 7. **Lo cierra:** estado `READY_TO_SUBMIT` en los diez y compra sandbox de cada uno con `mis_modos` correcto.
 
 ### 5. PAG-01. Los Términos describen planes retirados
 
@@ -70,16 +69,14 @@ Otros documentos, sin repetirlos: [productos](PRODUCTOS.md) · [plataformas y co
 - **Qué pasa:** la 1.1 sube rutas GPS y la ficha publicada no declara Ubicación. El documento viejo manda no declararla: ya no vale.
 - **Norma:** [App privacy details][a-privacy], [Apple 5.1.1(i)][a-datos].
 - **Evidencia:** sección Privacidad de apps.apple.com leída hoy; `GpsSesion.swift:368`, `targets/watch/ServicioEntreno.swift:125`, `app.json:26-28`; obsoleto `docs/appstore-review-2026-09-29/PRIVACIDAD-FICHA.md:23`.
-- **Quién:** dueño, con [PRIVACIDAD-APP-STORE.md](PRIVACIDAD-APP-STORE.md). **Tamaño:** no aplica.
+- **Quién:** dueño, a mano: la API pública no tiene App Privacy (404 comprobado). Valores exactos en [PRIVACIDAD-APP-STORE.md](PRIVACIDAD-APP-STORE.md). **Tamaño:** no aplica.
 - **Lo cierra:** captura de App Privacy guardada y comparada con ese documento.
 
-### 8. CON-05. Ficha y notas describen otro producto
+### 8. CON-05. Ficha y notas [HECHO en App Store Connect; falta Google y repaso con el build final]
 
-- **Qué pasa:** la ficha pública vende NIVL Pro, Élite y "Modelo de mayor capacidad", ya retirados. Las notas de septiembre citan rutas que no existen, DeepSeek y que no se usa HealthKit. La descripción debe mencionar Salud.
+- **Hecho por API:** la versión pasa a 1.1.0 con build 42 asignado, ficha es-ES, en-US, en-GB y fr-FR, y notas de revisión sin marcas internas. No se ha enviado a revisión.
+- **Falta:** cambiar al build final. Repasar notas contra ese build: describen el filtro de perfiles y el reloj. Sin vídeo, las notas no lo citan. de, pt-PT e it no se han creado: dependen de encender `idiomas_1011`, y sin él las fichas en-US, en-GB y fr-FR tampoco son ciertas (FICHA-2).
 - **Norma:** [Apple 2.3.1 y 2.5.1][a-meta].
-- **Evidencia:** apps.apple.com leída hoy (1.0.10); `docs/appstore-review-2026-09-29/RESPUESTA-APPLE.md:26,38,45,57,63-73`.
-- **Quién:** dueño. Hay borradores nuevos: [fichas](fichas/es-ES.md) y [NOTAS-APPLE.txt](NOTAS-APPLE.txt); hay que rellenar sus `[CAMPOS]`. **Tamaño:** no aplica.
-- **Lo cierra:** revisión frase a frase de ficha y notas contra el binario final; Élite nunca como compra disponible.
 
 ### 9. PLAT-04. No hay capturas válidas de la 1.1 [texto arreglado; faltan las capturas]
 
@@ -284,8 +281,8 @@ Fuera del repo, por los runs: el identificador de la complicación registrado en
    ```bash
    gh workflow run ios-testflight.yml --ref claude/integracion-1-1-90cd1f -f compilar=true -f enviar=true
    ```
-4. **App Store Connect:** Paid Applications Agreement, los diez productos adjuntos a la 1.1 ([PRODUCTOS.md](PRODUCTOS.md)), App Privacy (ADV-1), edad (CON-10), cuentas de revisión gratis y de cuatro modos con un amigo de demostración (ADV-2, NOT-2, NOT-3), casillas de Mac y Vision (PLAT-09).
-5. **RevenueCat y Supabase:** offering, Restore Behavior, `STORE_SANDBOX_ACCESS`, `REVENUECAT_API_KEY` empieza por `sk_` (P8), interruptores (CON-06).
+4. **App Store Connect, a mano:** App Privacy con Ubicación (ADV-1), cuestionario de edad (CON-10), Paid Applications Agreement, cuentas de revisión gratis y de cuatro modos con un amigo de demostración (ADV-2, NOT-2, NOT-3), casillas de Mac y Vision (PLAT-09). Captura de la pantalla de compra real en cada uno de los diez productos, y adjuntarlos a la 1.1.
+5. **RevenueCat, con tu cuenta:** no hay clave de administración configurada aquí. Pasos de [PRODUCTOS.md](PRODUCTOS.md) sección 9: importar los diez productos y crear la offering `modos`; revisar Restore Behavior y webhook. En Supabase: `STORE_SANDBOX_ACCESS`, `REVENUECAT_API_KEY` empieza por `sk_` (P8) e interruptores (CON-06). `EXPO_PUBLIC_RC_IOS_KEY` sí está en EAS (leído en el log del build, PAG-05).
 6. **Con un iPhone real:** compra y restauración en sandbox, borrado de una cuenta desechable, Salud, GPS con pantalla apagada, reloj si va, iPad. Vídeo de ese recorrido (PLAT-05).
 7. **Google Play:** crea la clave de Android en RevenueCat y añádela a EAS (PLAT-03), productos, Data safety, declaraciones, huella en `assetlinks.json`, y 12 testers durante 14 días si tu cuenta entra en la regla (ADV-4).
 8. **Decisiones:** reloj sí o no (PLAT-06), idiomas de la ficha (FICHA-2), productos antiguos (PAG-03), revisión legal de la letra traducida (PAG-11).
