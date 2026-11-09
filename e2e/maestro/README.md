@@ -53,6 +53,7 @@ Regresión de `.github/workflows/qa-onboarding-ios.yml`: portada y cuestionario 
 
 - **Se ha ejecutado** el 09/11/2026 en iPad Air 11 (M3) y iPad Pro 13 (M5), en vertical y apaisado, iOS 27.2 de simulador, contra `e2e/web/mock-supabase.mjs` (`sin-onboarding@nivl.test` y `completo@nivl.test`). Con la cuenta real de capturas no se ha probado.
 - **Escribe** en la cuenta demo: nombre, perfil general, resumen del cuestionario sin salud, un modo elegido y `onboarding_done`. Solo la cuenta demo de capturas.
+- El workflow deja la demo con `onboarding_done=false` antes de cada ejecución, porque cada recorrido completo lo marca como hecho.
 - Dos partes, porque el aviso de guardar contraseña se resuelve fuera de Maestro: `onboarding-11.yaml` y luego `onboarding-11-continue.yaml`.
 - Maestro 2.10 solo admite `takeScreenshot` con ruta relativa dentro de `--test-output-dir`; el workflow copia las `qa-*.png` del tramo tras el login.
 

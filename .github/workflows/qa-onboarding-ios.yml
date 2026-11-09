@@ -168,7 +168,12 @@ jobs:
                 console.log('QA_PREFLIGHT auth=true onboarding_done=' + onboardingDone + ' age_confirmed=' + ageConfirmed);
                 if (profileError || ageError || !profile || typeof age !== 'boolean') {
                   fail('READINESS_QUERY_FAILED');
-
+                } else if (onboardingDone) {
+                  // Each run finishes the demo's onboarding: start the next one from the same state.
+                  const { data: reabierto, error: resetError } = await client.from('profiles')
+                    .update({ onboarding_done: false }).eq('id', login.user.id).select('onboarding_done').maybeSingle();
+                  console.log('QA_PREFLIGHT_RESET onboarding_done=' + (reabierto?.onboarding_done === true));
+                  if (resetError || reabierto?.onboarding_done !== false) fail('RESET_FAILED');
                 }
               }
               await client.auth.signOut({ scope: 'local' });
