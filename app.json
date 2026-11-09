@@ -16,6 +16,7 @@
       "pt": "./locales/pt.json"
     },
     "ios": {
+      "appleTeamId": "X5D8A42K4R",
       "bundleIdentifier": "com.teferi.nivl",
       "supportsTablet": true,
       "associatedDomains": [
@@ -45,8 +46,7 @@
       },
       "entitlements": {
         "com.apple.developer.usernotifications.time-sensitive": true,
-        "com.apple.developer.healthkit": true,
-        "com.apple.developer.healthkit.access": []
+        "com.apple.developer.healthkit": true
       }
     },
     "android": {

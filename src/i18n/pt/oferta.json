@@ -77,7 +77,7 @@
     "losCuatroModos": "Os quatro modos",
     "soloModo": "Só {{modo}}",
     "notaTodos": "IRON, FOCUS, WORK e FOUNDER, com o seu coach.",
-    "notaUno": "Só este modo e o seu coach.",
+    "notaUno": "Este modo, o seu coach e o coach geral.",
     "filaUno": "Um modo e o seu coach",
     "filaTodos": "Os quatro modos, com o seu coach",
     "noDisponible": "As subscrições não estão disponíveis nesta versão da app.",
@@ -118,7 +118,7 @@
         "android": "Geres e cancelas quando quiseres em Google Play > Pagamentos e subscrições > Subscrições.",
         "otra": "Geres e cancelas quando quiseres na loja onde a contrataste."
       },
-      "base": "O NIVL e os teus hábitos continuam grátis.",
+      "base": "O essencial do NIVL e os teus hábitos continuam grátis. Um modo acrescenta o seu mundo e o seu coach, além do coach geral.",
       "avisoIa": "O NIVL é uma IA, não um profissional de saúde.",
       "uso": "Uma utilização automatizada ou fora do normal pode pausar o coach temporariamente."
     },
@@ -158,5 +158,47 @@
       }
     },
     "planAnterior": "o teu plano anterior"
+  },
+  "plan": {
+    "titulo": "O coach está contigo.",
+    "subPruebaTienda": "Os teus dias grátis. No fim, a loja cobra o teu plano, a menos que canceles antes.",
+    "subPrueba": "O teu teste de 7 dias. Brief, plano do dia, treino, dieta, revisão semanal e memória. No fim não se cobra nada: não se renova.",
+    "subActivo": "Brief, plano do dia, treino, dieta, revisão semanal e memória. Tudo ativo.",
+    "secEnergia": "Energia do coach este mês",
+    "secCoach": "O teu coach",
+    "a11yEnergia": "Energia do coach: {{pct}} %",
+    "agotadaFecha": "Esgotada este mês. Recarrega a {{fecha}}. As tuas missões, a tua série e todos os módulos continuam a funcionar.",
+    "agotadaDia1": "Esgotada este mês. Recarrega no dia 1. As tuas missões, a tua série e todos os módulos continuam a funcionar.",
+    "queda": "Resta {{pct}} % do que o coach pode pensar por ti este mês.",
+    "quedaFecha": "Resta {{pct}} % do que o coach pode pensar por ti este mês. Recarrega por inteiro a {{fecha}}.",
+    "tuPlan": "O teu plano",
+    "filaPlan": "Plano",
+    "pruebaAuto": "Teste gratuito",
+    "prueba7": "Teste de 7 dias",
+    "filaModos": "Modos",
+    "renovacion": "Próxima renovação",
+    "activoHasta": "Ativo até",
+    "gestionar": "Gerir ou cancelar subscrição",
+    "gestionarNota": "Aí mudas de plano, vês a renovação ou cancelas.",
+    "fuera": "Esta subscrição foi contratada fora desta app: gere-a e cancela-a onde a contrataste.",
+    "hablar": "Falar com o coach",
+    "usoCoach": "Sem contadores nem pagamentos extra por usar o coach. Para proteger o serviço, uma utilização automatizada ou fora do normal pode pausá-lo temporariamente; o resto do NIVL continua disponível.",
+    "noComprobar": "Não foi possível verificar o teu plano.",
+    "volver": "Voltar"
+  },
+  "tienda": {
+    "sesion": "Inicia sessão para subscrever.",
+    "noVinculada": "A loja ainda não está ligada a esta conta. Fecha e volta a abrir o NIVL e tenta de novo.",
+    "cuentaCambio": "A conta mudou. Tenta de novo.",
+    "otraCuenta": "Esta compra pertence a outra conta NIVL. Entra com essa conta para a usar.",
+    "yaTiene": "A tua conta da loja já tem esta subscrição. Toca em Restaurar compras para a recuperar.",
+    "enCurso": "Já há uma operação com a loja em curso. Espera que termine.",
+    "noResponde": "A loja não responde neste momento. Não foi concluída nenhuma cobrança nova: tenta dentro de alguns minutos.",
+    "noPermite": "Este dispositivo não permite compras. Verifica as restrições da loja.",
+    "noDisponible": "Esse plano não está disponível na loja neste momento.",
+    "esperaPrecio": "Espera que o preço da loja carregue.",
+    "canceladaVigente": "A tua subscrição está cancelada mas continua válida. Reativa-a em Gerir ou cancelar subscrição.",
+    "yaActivo": "Já tens este plano ativo na loja. Se não o vês no NIVL, toca em Restaurar compras.",
+    "pendientePago": "O pagamento aguarda aprovação na loja. Hoje não se cobrou nada: o coach ativa-se quando a loja o confirmar. Se demorar, toca em Restaurar compras."
   }
 }

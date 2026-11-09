@@ -336,7 +336,7 @@ export function pasosPrueba(periodoGratis: string | null): readonly { dia: strin
   ];
 }
 
-function gestionTienda(plataforma: string): string {
+export function gestionTienda(plataforma: string): string {
   return t(`oferta:pago.legal.gestion.${plataforma === 'ios' || plataforma === 'android' ? plataforma : 'otra'}`);
 }
 

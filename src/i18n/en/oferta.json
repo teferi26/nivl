@@ -77,7 +77,7 @@
     "losCuatroModos": "All four modes",
     "soloModo": "{{modo}} only",
     "notaTodos": "IRON, FOCUS, WORK and FOUNDER, each with its coach.",
-    "notaUno": "Only this mode and its coach.",
+    "notaUno": "This mode, its coach and the general coach.",
     "filaUno": "One mode and its coach",
     "filaTodos": "All four modes, with their coach",
     "noDisponible": "Subscriptions are not available in this version of the app.",
@@ -118,7 +118,7 @@
         "android": "Manage or cancel it anytime in Google Play > Payments and subscriptions > Subscriptions.",
         "otra": "Manage or cancel it anytime from the store where you bought it."
       },
-      "base": "NIVL and your habits stay free.",
+      "base": "NIVL basics and your habits stay free. A mode adds its world and its coach, plus the general coach.",
       "avisoIa": "NIVL is an AI, not a healthcare professional.",
       "uso": "Automated or unusual use may pause the coach temporarily."
     },
@@ -158,5 +158,47 @@
       }
     },
     "planAnterior": "your previous plan"
+  },
+  "plan": {
+    "titulo": "The coach is with you.",
+    "subPruebaTienda": "Your free days. When they end, the store charges your plan unless you cancel first.",
+    "subPrueba": "Your 7-day trial. Brief, daily plan, training, diet, weekly review and memory. Nothing is charged at the end: it does not renew.",
+    "subActivo": "Brief, daily plan, training, diet, weekly review and memory. All active.",
+    "secEnergia": "Coach energy this month",
+    "secCoach": "Your coach",
+    "a11yEnergia": "Coach energy: {{pct}} %",
+    "agotadaFecha": "Used up for this month. It refills on {{fecha}}. Your missions, streak and all modules keep working.",
+    "agotadaDia1": "Used up for this month. It refills on the 1st. Your missions, streak and all modules keep working.",
+    "queda": "{{pct}} % of what the coach can think through for you this month is left.",
+    "quedaFecha": "{{pct}} % of what the coach can think through for you this month is left. It fully refills on {{fecha}}.",
+    "tuPlan": "Your plan",
+    "filaPlan": "Plan",
+    "pruebaAuto": "Free trial",
+    "prueba7": "7-day trial",
+    "filaModos": "Modes",
+    "renovacion": "Next renewal",
+    "activoHasta": "Active until",
+    "gestionar": "Manage or cancel subscription",
+    "gestionarNota": "There you change plan, see the renewal or cancel.",
+    "fuera": "This subscription was bought outside this app: manage and cancel it where you bought it.",
+    "hablar": "Talk to the coach",
+    "usoCoach": "No counters or extra charges for using the coach. To protect the service, automated or unusual use may pause it temporarily; the rest of NIVL stays available.",
+    "noComprobar": "Your plan could not be checked.",
+    "volver": "Back"
+  },
+  "tienda": {
+    "sesion": "Sign in to subscribe.",
+    "noVinculada": "The store is not linked to this account yet. Close and reopen NIVL and try again.",
+    "cuentaCambio": "The account has changed. Try again.",
+    "otraCuenta": "This store purchase belongs to another NIVL account. Sign in with that account to use it.",
+    "yaTiene": "Your store account already has this subscription. Tap Restore purchases to recover it.",
+    "enCurso": "A store operation is already in progress. Wait for it to finish.",
+    "noResponde": "The store is not responding right now. No new charge was completed: try again in a few minutes.",
+    "noPermite": "This device does not allow purchases. Check the store restrictions.",
+    "noDisponible": "That plan is not available in the store right now.",
+    "esperaPrecio": "Wait for the store price to load.",
+    "canceladaVigente": "Your subscription to this plan is cancelled but still active. Reactivate it from Manage or cancel subscription.",
+    "yaActivo": "You already have this plan active in the store. If you do not see it in NIVL, tap Restore purchases.",
+    "pendientePago": "The payment is awaiting approval in the store. Nothing was charged today: the coach will turn on when the store confirms it. If it takes a while, tap Restore purchases."
   }
 }
