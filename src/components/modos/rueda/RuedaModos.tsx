@@ -26,7 +26,7 @@
 // Las piezas de dibujo (DiscoRueda, FichaRueda, RecargaModo) se exportan para
 // la galería /kit/rueda, que las monta quietas para las capturas.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
@@ -42,7 +42,7 @@ import Animated, {
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
-import Svg, { Circle, Defs, G, Line, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Circle, Defs, Line, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { scheduleOnRN } from 'react-native-worklets';
 import { vibrar, type EventoVibracion } from '@/design/haptics';
 import { acentoRueda, ink, oro, radio, space, type as tipo, vidrio } from '@/design/tokens';
@@ -70,7 +70,6 @@ import { GlifoModo } from './GlifoModo';
 import { sonarModo } from './sonido';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-const AnimatedG = Animated.createAnimatedComponent(G);
 const AnimatedLine = Animated.createAnimatedComponent(Line);
 const AnimatedView = Animated.View;
 
@@ -525,10 +524,18 @@ export function DiscoRueda({ lado, modo, anterior, mascara, resaltado }: DiscoRu
           <Line key={i} x1={m.x1} y1={m.y1} x2={m.x2} y2={m.y2} stroke={m.fuerte ? oro.borde : vidrio.linea} strokeWidth={1} />
         ))}
         {MODOS_ETIQUETA.map((m, j) => (
-          <SectorRueda key={m} modo={m} indice={j + 1} disponible={mascara[j + 1]} resaltado={resaltado} />
+          <SectorRueda key={m} modo={m} disponible={mascara[j + 1]} />
         ))}
-        <CentroRueda resaltado={resaltado} />
+        <Circle r={RUEDA.centro} fill={ink.ink0} stroke={hilo} strokeOpacity={0.55} strokeWidth={1.5} />
       </Svg>
+
+      {/* Lo encendido va en capas aparte y la opacidad la anima una View, no
+          el SVG: en iOS react-native-svg a veces no repinta un G animado al
+          volver a 0 y los sectores se quedaban marcados hasta pasar el dedo. */}
+      {MODOS_ETIQUETA.map((m, j) =>
+        mascara[j + 1] ? <SectorEncendido key={m} modo={m} indice={j + 1} lado={lado} resaltado={resaltado} /> : null,
+      )}
+      <CentroEncendido lado={lado} resaltado={resaltado} />
 
       {/* Iconos y nombres (texto de la app, no del SVG: así usa Outfit). */}
       {MODOS_ETIQUETA.map((m, j) => (
@@ -552,43 +559,51 @@ export function DiscoRueda({ lado, modo, anterior, mascara, resaltado }: DiscoRu
   );
 }
 
-function SectorRueda({ modo, indice, disponible, resaltado }: { modo: ModoEtiqueta; indice: number; disponible: boolean; resaltado: SharedValue<number> }) {
+function SectorRueda({ modo, disponible }: { modo: ModoEtiqueta; disponible: boolean }) {
+  const d = trazoSector(0, 0, RUEDA.sectorDentro, RUEDA.sectorFuera, ANGULO_MODO[modo], 90, 2);
+  if (!disponible) {
+    return <Path d={d} fill="none" stroke={vidrio.borde} strokeWidth={1} strokeDasharray="3 4" />;
+  }
+  return <Path d={d} fill={vidrio.tarjeta} stroke={vidrio.borde} strokeWidth={1} />;
+}
+
+/** Una capa encima del disco, del mismo lado y la misma caja de vista, que solo se ve cuando su índice está apuntado. */
+function CapaEncendida({ indice, lado, resaltado, children }: { indice: number; lado: number; resaltado: SharedValue<number>; children: ReactNode }) {
+  const v = VISTA_RUEDA / 2;
+  const estilo = useAnimatedStyle(() => ({ opacity: opacidadApuntado(resaltado.value, indice) }));
+  return (
+    <Animated.View style={[styles.capaEncendida, { width: lado, height: lado, opacity: 0 }, estilo]} pointerEvents="none">
+      <Svg width={lado} height={lado} viewBox={`${-v} ${-v} ${VISTA_RUEDA} ${VISTA_RUEDA}`}>
+        {children}
+      </Svg>
+    </Animated.View>
+  );
+}
+
+function SectorEncendido({ modo, indice, lado, resaltado }: { modo: ModoEtiqueta; indice: number; lado: number; resaltado: SharedValue<number> }) {
   const col = acentoRueda[modo];
   const ang = ANGULO_MODO[modo];
   const d = trazoSector(0, 0, RUEDA.sectorDentro, RUEDA.sectorFuera, ang, 90, 2);
   const dHalo = trazoSector(0, 0, RUEDA.filoDentro, RUEDA.filoFuera, ang, 90, 5);
   // Filo exterior de 3 pt de pantalla con la rueda a ~1,35 de escala.
   const dFilo = trazoSector(0, 0, RUEDA.filoDentro + 0.6, RUEDA.filoDentro + 2.8, ang, 90, 4);
-  const encendido = useAnimatedProps(() => ({ opacity: opacidadApuntado(resaltado.value, indice) }));
-  if (!disponible) {
-    return <Path d={d} fill="none" stroke={vidrio.borde} strokeWidth={1} strokeDasharray="3 4" />;
-  }
   return (
-    <>
-      <Path d={d} fill={vidrio.tarjeta} stroke={vidrio.borde} strokeWidth={1} />
-      {/* `opacity={0}` de partida: sin él el grupo nace encendido hasta que su
-          valor animado cambia una vez (todos marcados al abrir la rueda). */}
-      <AnimatedG opacity={0} animatedProps={encendido}>
-        {/* Halo corto del filo (la lámina lo desenfoca). */}
-        <Path d={dHalo} fill="none" stroke={col} strokeOpacity={0.14} strokeWidth={6} strokeLinejoin="round" />
-        <Path d={d} fill={oro.tenue} stroke={oro.hilo} strokeWidth={1.5} />
-        <Path d={dFilo} fill={col} />
-      </AnimatedG>
-    </>
+    <CapaEncendida indice={indice} lado={lado} resaltado={resaltado}>
+      {/* Halo corto del filo (la lámina lo desenfoca). */}
+      <Path d={dHalo} fill="none" stroke={col} strokeOpacity={0.14} strokeWidth={6} strokeLinejoin="round" />
+      <Path d={d} fill={oro.tenue} stroke={oro.hilo} strokeWidth={1.5} />
+      <Path d={dFilo} fill={col} />
+    </CapaEncendida>
   );
 }
 
-function CentroRueda({ resaltado }: { resaltado: SharedValue<number> }) {
+function CentroEncendido({ lado, resaltado }: { lado: number; resaltado: SharedValue<number> }) {
   const hilo = acentoRueda.general;
-  const encendido = useAnimatedProps(() => ({ opacity: opacidadApuntado(resaltado.value, 0) }));
   return (
-    <>
-      <Circle r={RUEDA.centro} fill={ink.ink0} stroke={hilo} strokeOpacity={0.55} strokeWidth={1.5} />
-      <AnimatedG opacity={0} animatedProps={encendido}>
-        <Circle r={RUEDA.centro + 5} fill="none" stroke={hilo} strokeOpacity={0.18} strokeWidth={8} />
-        <Circle r={RUEDA.centro} fill={hilo} fillOpacity={0.25} stroke={hilo} strokeWidth={2.5} />
-      </AnimatedG>
-    </>
+    <CapaEncendida indice={0} lado={lado} resaltado={resaltado}>
+      <Circle r={RUEDA.centro + 5} fill="none" stroke={hilo} strokeOpacity={0.18} strokeWidth={8} />
+      <Circle r={RUEDA.centro} fill={hilo} fillOpacity={0.25} stroke={hilo} strokeWidth={2.5} />
+    </CapaEncendida>
   );
 }
 
@@ -857,6 +872,7 @@ const styles = StyleSheet.create({
   lleno: { flex: 1 },
   medio: { alignItems: 'center', justifyContent: 'center' },
   centroCaja: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
+  capaEncendida: { position: 'absolute', left: 0, top: 0 },
   base: { fontFamily: OUTFIT_BLACK, marginTop: 1, textAlign: 'center' },
   rotulo: { position: 'absolute', alignItems: 'center' },
   nombreSector: { fontFamily: OUTFIT_BLACK, textAlign: 'center' },
