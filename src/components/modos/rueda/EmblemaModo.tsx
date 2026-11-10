@@ -20,7 +20,7 @@
 // La rueda lleva además el suyo porque va en un Modal (en Android, otra raíz).
 
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Platform, useWindowDimensions, View, type AccessibilityActionEvent } from 'react-native';
+import { Platform, StatusBar, useWindowDimensions, View, type AccessibilityActionEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
@@ -115,8 +115,12 @@ export function EmblemaModoVista({ tamano: pedido = 56, forma = 'disco', modo, a
       setCerrando(false);
       // Dónde está el emblema en la ventana: la rueda lo repinta nítido encima
       // del desenfoque y tira de él la estela hasta el dedo.
+      // En Android measureInWindow no cuenta la barra de estado, pero la rueda
+      // es un Modal con statusBarTranslucent que sí empieza debajo de ella: sin
+      // sumarla, el emblema repintado sube y tapa el reloj.
+      const barra = Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0;
       vista.current?.measureInWindow((x, y, ancho) => {
-        if (ancho > 0) setOrigenEmblema({ x: x + ancho / 2, y: y + ancho / 2 });
+        if (ancho > 0) setOrigenEmblema({ x: x + ancho / 2, y: y + barra + ancho / 2 });
       });
       setAbierta(true);
       vibrar('ruedaAbre');
