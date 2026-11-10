@@ -57,7 +57,9 @@ async function capturar(apk, salida) {
   demo('-e command enter');
   demo('-e command clock -e hhmm 0941');
   demo('-e command battery -e level 100 -e plugged false');
-  demo('-e command network -e wifi show -e level 4 -e fully true -e mobile hide');
+  demo('-e command network -e wifi show -e level 4 -e fully true');
+  // Por separado: en la misma orden Android ignora el resto y deja otro icono de red.
+  for (const quitar of ['mobile', 'nosim', 'airplane', 'satellite']) demo(`-e command network -e ${quitar} hide`);
   demo('-e command notifications -e visible false');
   adb('install', '-r', '-g', apk);
   try { shell(`cmd locale set-app-locales ${BUNDLE_ID} --locales es-ES`); } catch { /* la app ya va en español con los idiomas apagados */ }
