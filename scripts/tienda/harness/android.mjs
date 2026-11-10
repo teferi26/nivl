@@ -54,6 +54,8 @@ async function capturar(apk, salida) {
   fs.mkdirSync(salida, { recursive: true });
   shell('cmd uimode night yes');
   shell('settings put global sysui_demo_allowed 1');
+  // Las imágenes recientes del emulador pintan satélite y otras redes aunque el modo demo diga lo contrario.
+  shell('settings put secure icon_blacklist satellite,mobile,airplane,ethernet,connected_display,rotate,headset');
   demo('-e command enter');
   demo('-e command clock -e hhmm 0941');
   demo('-e command battery -e level 100 -e plugged false');
@@ -64,6 +66,7 @@ async function capturar(apk, salida) {
   adb('logcat', '-c');
   shell(`monkey -p ${BUNDLE_ID} -c android.intent.category.LAUNCHER 1`);
   await dormir(25000);
+  demo('-e command notifications -e visible false');
   let n = 0;
   for (const id of ESCENAS) {
     n += 1;
