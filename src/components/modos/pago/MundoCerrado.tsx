@@ -17,6 +17,7 @@ export function MundoCerrado({ modo }: { modo: ModoDePago }) {
   const oferta = useOfertaModos({
     modoInicial: modo,
     actual: derechos?.producto ?? null,
+    origen: 'mundo',
     onComprado: () => void recargarDerechos(session?.user.id ?? null),
   });
   return (

@@ -82,7 +82,7 @@ function Oferta({
   onSalir: () => void;
   onComprado: () => void;
 }) {
-  const oferta = useOfertaModos({ kind, modoInicial, empezarEnTodos, actual, onComprado });
+  const oferta = useOfertaModos({ kind, modoInicial, empezarEnTodos, actual, onComprado, origen: 'pro' });
   return <OfertaModosVista oferta={oferta} etiquetaSalida={etiquetaSalida} onSalir={onSalir} />;
 }
 

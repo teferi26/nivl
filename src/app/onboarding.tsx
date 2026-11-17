@@ -440,8 +440,13 @@ export default function Onboarding() {
   };
 
   // La oferta por modos, con el modo de su perfil primero. Comprar cierra el onboarding.
-  const oferta = useOfertaModos({ kind, onComprado: () => void salir('compra') });
   const forma = pasoOferta(decisionOferta, celebrando);
+  const oferta = useOfertaModos({
+    kind,
+    onComprado: () => void salir('compra'),
+    origen: 'onboarding',
+    visible: step === 6 && forma === 'hoja',
+  });
   // Si la espera se alarga (red lenta, una celebración que no se cierra), el
   // pie enseña una salida discreta: el paso nunca se queda sin puerta.
   const [salidaEspera, setSalidaEspera] = useState(false);
