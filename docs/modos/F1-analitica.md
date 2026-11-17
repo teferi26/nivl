@@ -119,7 +119,7 @@ No sirve para un embudo que empieza antes del registro y que no debe llevar text
 | `onboarding_fin` | `salida`: `compra` \| `prueba` \| `cerrada` \| `sin_oferta` \| `ya_pro` | `onboarding.tsx` |
 | `primera_mision_creada` | `origen`: `onboarding` \| `habitos` \| `informe` \| `oraculo` \| `otro` | `data.ts` (`createQuest`, `createStarterQuests`), una vez por instalación |
 | `primera_mision_completada` | `con_foto` | `engine.ts` (`completeQuest`, también por `propagarActo`), una vez |
-| `paywall_visto` | `motivo` (momento de `paywallmoment.ts`, `onboarding` o `pro`), `compacto` | `ProOfferBody` al montarse |
+| `paywall_visto` | `motivo`, `compacto`. En la oferta por modos (1.1) el motivo es `<origen>_<visto>`: origen `onboarding` \| `pro` \| `mundo`; visto `prueba` \| `sin_prueba` \| `sin_precio` \| `sin_tienda` (`src/lib/paywallvisto.ts`). En la oferta antigua, el momento de `paywallmoment.ts`, `onboarding` o `pro` | `useOfertaModos` con `origen`, una vez por montaje y con la tienda ya contestada; `ProOfferBody` al montarse |
 | `compra_iniciada` | `plan` (id de producto) | `ProOffer` antes de `purchase()` |
 | `compra_ok` | `plan`, `resultado`: `activa` \| `pendiente` \| `programada` | `ProOffer` tras `purchase()` |
 

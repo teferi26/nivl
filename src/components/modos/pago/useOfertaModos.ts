@@ -12,6 +12,7 @@ import { avisar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
 import { t } from '@/i18n';
 import { registrar } from '@/lib/analitica';
+import { propsPaywallVisto, type OrigenOferta } from '@/lib/paywallvisto';
 import {
   avisoCambioModo,
   catalogoTrasCargar,
@@ -42,9 +43,17 @@ export interface OpcionesOfertaModos {
   /** El producto que la cuenta ya paga en la tienda: no se vende otra vez. */
   actual?: string | null;
   onComprado?: () => void;
+  /**
+   * Dónde se enseña la oferta. Con él se apunta `paywall_visto` (una vez por
+   * montaje, cuando la tienda ya ha contestado). Sin él no se apunta nada:
+   * la web y la galería no son el muro de pago.
+   */
+  origen?: OrigenOferta;
+  /** La oferta está en pantalla. Por defecto, sí; el onboarding monta el hook antes de llegar a su paso. */
+  visible?: boolean;
 }
 
-export function useOfertaModos({ modoInicial, kind, empezarEnTodos, actual, onComprado }: OpcionesOfertaModos): EstadoOfertaModos {
+export function useOfertaModos({ modoInicial, kind, empezarEnTodos, actual, onComprado, origen, visible = true }: OpcionesOfertaModos): EstadoOfertaModos {
   const disponible = purchasesAvailable();
   const [periodo, setPeriodo] = useState<Periodo>('anual');
   const [pack, setPack] = useState<'todos' | 'uno'>(empezarEnTodos || !modoInicial ? 'todos' : 'uno');
@@ -81,6 +90,18 @@ export function useOfertaModos({ modoInicial, kind, empezarEnTodos, actual, onCo
       vivo = false;
     };
   }, [disponible, intento]);
+
+  // Embudo anónimo: cuánta gente ve el muro y qué ve (con prueba, sin ella,
+  // sin precios). Una vez por montaje; reintentar el catálogo no lo repite.
+  const vistoApuntado = useRef(false);
+  const conPrueba = Object.keys(pruebas).length > 0;
+  useEffect(() => {
+    if (vistoApuntado.current || !origen || !visible) return;
+    const props = propsPaywallVisto(origen, { disponible, catalogo, conPrueba });
+    if (!props) return;
+    vistoApuntado.current = true;
+    registrar('paywall_visto', { ...props });
+  }, [origen, visible, disponible, catalogo, conPrueba]);
 
   const alcance: Alcance = pack === 'todos' ? 'todos' : modo;
   const producto = productoModo(alcance, periodo);
