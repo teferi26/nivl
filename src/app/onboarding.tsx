@@ -54,6 +54,7 @@ import { createStarterQuests, deleteQuest, ensureProfile, fetchQuests, insertEve
 import { completas, necesitaPermisoSalud, payloadObjetivo, type Respuestas } from '@/lib/embudo';
 import { guardarRespuestas, leerRespuestas, olvidarRespuestas } from '@/lib/embudoGuardado';
 import { KINDS, type ProfileKind } from '@/lib/kinds';
+import { marcarOfertaPendiente, quedaPendiente } from '@/lib/ofertapendiente';
 import { anotarOferta, fetchAiStatus, isPro, ofrecerSi, type AiStatus, type DecisionOferta, type RespuestaOferta } from '@/lib/pro';
 import { colors, fonts } from '@/lib/theme';
 import { ink, space, type as tipo, vidrio } from '@/design/tokens';
@@ -469,6 +470,8 @@ export default function Onboarding() {
       const s = estadoIA.current ?? (await conTiempoLimite(fetchAiStatus(), LECTURA_MAX_MS, 'vencida' as const));
       if (s === 'vencida') {
         setDecisionOferta(DECISION_SALTAR);
+        // No vio la oferta sin decidirlo: «Hoy» se la ofrece en la próxima apertura.
+        await marcarOfertaPendiente();
         await finish();
         return;
       }
@@ -478,11 +481,12 @@ export default function Onboarding() {
       const d = sugerida.mostrar ? { ...sugerida, forma: 'hoja' as const } : sugerida;
       // Se guarda también el «no»: si entrar falla, el pie da el botón para reintentarlo.
       setDecisionOferta(d);
+      if (quedaPendiente(d)) await marcarOfertaPendiente();
       if (!d.mostrar) await finish();
     })().catch(() => {
       // ofrecerSi no lanza; si algo falla igual, se entra sin oferta.
       setDecisionOferta({ ...DECISION_SALTAR, razon: 'error' });
-      void finish();
+      void marcarOfertaPendiente().finally(() => void finish());
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `finish` y el nivel se leen al decidir, una sola vez
   }, [step, decisionOferta, celebrando]);
