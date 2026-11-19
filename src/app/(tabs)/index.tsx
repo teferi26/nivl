@@ -20,6 +20,7 @@ import { HoyGeneralVista, type CampanaActivaHoy } from '@/components/general/Hoy
 import { useHoy } from '@/components/hoy/useHoy';
 import { EmblemaGeneral, useHayEmblema } from '@/components/modos/EmblemaMundo';
 import { NovedadModos } from '@/components/modos/NovedadModos';
+import { useOfertaPendiente } from '@/components/oferta/useOfertaPendiente';
 import { HojaOpinion } from '@/components/opinion/HojaOpinion';
 
 /** A dónde lleva cada acceso de «Todo desde aquí» (pantallas que ya existen). */
@@ -51,6 +52,11 @@ export default function Hoy() {
   const campanas = useCampanas().vista;
   const { celebrando } = useCelebracion();
   const hayEmblema = useHayEmblema();
+  // La oferta que el cuestionario no pudo enseñar (sin red): una vez, con «Hoy» en calma.
+  useOfertaPendiente({
+    enPausa: celebrando || hojas.opinion.visible || !!hojas.quest,
+    onboardingHecho: perfil.onboardingHecho,
+  });
 
   const campana = useMemo((): CampanaActivaHoy | null | undefined => {
     if (!campanas.cargado) return undefined;
